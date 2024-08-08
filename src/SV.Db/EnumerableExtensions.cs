@@ -2,36 +2,22 @@
 {
     public static partial class EnumerableExtensions
     {
-        public static IEnumerable<IEnumerable<T>> Page<T>(this IEnumerable<T> source, int pageSize)
+        public static IEnumerable<IEnumerable<T>> Chunk<T>(this List<T> source, int pageSize)
         {
-            if (source == null)
-                return null;
-            else if (source is IList<T> || source is ICollection<T>)
-            {
-                return CollectionPage(source, pageSize);
-            }
-            else
-            {
-                return source.Chunk(pageSize);
-            }
-        }
+            ArgumentNullException.ThrowIfNull(source, nameof(source));
 
-        private static IEnumerable<IEnumerable<T>> CollectionPage<T>(IEnumerable<T> source, int pageSize)
-        {
-            var t = source.Count();
-            if (t <= pageSize)
+            if (source.Count <= pageSize)
             {
                 yield return source;
             }
             else
             {
-                var totalCount = (int)Math.Ceiling(t * 1.0 / pageSize);
+                var totalCount = (int)Math.Ceiling(source.Count * 1.0 / pageSize);
                 for (int i = 0; i <= totalCount; i++)
                 {
                     yield return source.Skip(pageSize * i).Take(pageSize);
                 }
             }
-            
         }
 
         public static List<T> AsList<T>(this IEnumerable<T>? source) => source switch
