@@ -1,5 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
-using SV.Db;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Order;
 
 namespace Benchmark
 {
@@ -10,7 +11,7 @@ namespace Benchmark
         public string Name { get; set; } = "";
     }
 
-    [ShortRunJob, MemoryDiagnoser]
+    [ShortRunJob, MemoryDiagnoser, Orderer(summaryOrderPolicy: SummaryOrderPolicy.FastestToSlowest), GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory), CategoriesColumn]
     public class ChunckBenchmarks
     {
         private readonly List<Customer> data = new();
@@ -25,6 +26,14 @@ namespace Benchmark
             for (int i = 0; i < Count; i++)
             {
                 data.Add(new Customer { Id = i, Name = "Name " + i });
+            }
+        }
+
+        public IEnumerable<Customer> Enumerable()
+        {
+            foreach (var item in data)
+            {
+                yield return item;
             }
         }
 
@@ -58,6 +67,45 @@ namespace Benchmark
         {
             int sum = 0;
             foreach (var customer in data.Page(100))
+            {
+                foreach (var item in customer)
+                {
+                    sum += item.Id;
+                }
+            }
+            return sum;
+        }
+
+        [Benchmark(Baseline = true),BenchmarkCategory("Enumerable")]
+        public int SumEnumerable()
+        {
+            int sum = 0;
+            foreach (var customer in Enumerable())
+            {
+                sum += customer.Id;
+            }
+            return sum;
+        }
+
+        [Benchmark, BenchmarkCategory("Enumerable")]
+        public int ChunkEnumerable()
+        {
+            int sum = 0;
+            foreach (var customer in Enumerable().Chunk(100))
+            {
+                foreach (var item in customer)
+                {
+                    sum += item.Id;
+                }
+            }
+            return sum;
+        }
+
+        [Benchmark, BenchmarkCategory("Enumerable")]
+        public int PageEnumerable()
+        {
+            int sum = 0;
+            foreach (var customer in Enumerable().Page(100))
             {
                 foreach (var item in customer)
                 {
