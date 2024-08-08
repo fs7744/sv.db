@@ -22,8 +22,6 @@
 
         public static IEnumerable<IEnumerable<T>> Page<T>(this IEnumerable<T> source, int pageSize)
         {
-            ArgumentNullException.ThrowIfNull(source, nameof(source));
-
             if (source is List<T> s)
             {
                 return s.Chunk(pageSize);
