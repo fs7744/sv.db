@@ -54,7 +54,7 @@ namespace Benchmark
         public int ListChunk()
         {
             int sum = 0;
-            foreach (var customer in data.Chunk(100))
+            foreach (var customer in data.Page(100))
             {
                 foreach (var item in customer)
                 {
@@ -68,7 +68,7 @@ namespace Benchmark
         public int ArrayChunk()
         {
             int sum = 0;
-            foreach (var customer in array.Chunk(100))
+            foreach (var customer in array.Page(100))
             {
                 foreach (var item in customer)
                 {
@@ -91,83 +91,5 @@ namespace Benchmark
             }
             return sum;
         }
-
-        //[Benchmark(Baseline = true),BenchmarkCategory("Enumerable")]
-        //public int SumEnumerable()
-        //{
-        //    int sum = 0;
-        //    foreach (var customer in Enumerable())
-        //    {
-        //        sum += customer.Id;
-        //    }
-        //    return sum;
-        //}
-
-        //[Benchmark, BenchmarkCategory("Enumerable")]
-        //public int ChunkEnumerable()
-        //{
-        //    int sum = 0;
-        //    foreach (var customer in Enumerable().Chunk(100))
-        //    {
-        //        foreach (var item in customer)
-        //        {
-        //            sum += item.Id;
-        //        }
-        //    }
-        //    return sum;
-        //}
-
-        //[Benchmark, BenchmarkCategory("Enumerable")]
-        //public int PageEnumerable()
-        //{
-        //    int sum = 0;
-        //    foreach (var customer in Enumerable().Chunk(100))
-        //    {
-        //        foreach (var item in customer)
-        //        {
-        //            sum += item.Id;
-        //        }
-        //    }
-        //    return sum;
-        //}
-
-        //[Benchmark(Baseline = true), BenchmarkCategory("Array")]
-        //public int SumArray()
-        //{
-        //    int sum = 0;
-        //    foreach (var customer in array)
-        //    {
-        //        sum += customer.Id;
-        //    }
-        //    return sum;
-        //}
-
-        //[Benchmark, BenchmarkCategory("Array")]
-        //public int ChunkArray()
-        //{
-        //    int sum = 0;
-        //    foreach (var customer in array.Chunk(100))
-        //    {
-        //        foreach (var item in customer)
-        //        {
-        //            sum += item.Id;
-        //        }
-        //    }
-        //    return sum;
-        //}
-
-        //[Benchmark, BenchmarkCategory("Array")]
-        //public int PageArray()
-        //{
-        //    int sum = 0;
-        //    foreach (var customer in array.Chunk(100))
-        //    {
-        //        foreach (var item in customer)
-        //        {
-        //            sum += item.Id;
-        //        }
-        //    }
-        //    return sum;
-        //}
     }
 }

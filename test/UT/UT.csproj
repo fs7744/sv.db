@@ -36,4 +36,8 @@
 		<Content Include="Generated\**" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\..\src\SV.Db\SV.Db.csproj" />
+	</ItemGroup>
+
 </Project>
