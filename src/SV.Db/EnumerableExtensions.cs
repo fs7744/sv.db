@@ -20,6 +20,20 @@
             }
         }
 
+        public static IEnumerable<IEnumerable<T>> Page<T>(this IEnumerable<T> source, int pageSize)
+        {
+            ArgumentNullException.ThrowIfNull(source, nameof(source));
+
+            if (source is List<T> s)
+            {
+                return s.Chunk(pageSize);
+            }
+            else
+            {
+                return source.Chunk(pageSize);
+            }
+        }
+
         public static List<T> AsList<T>(this IEnumerable<T>? source) => source switch
         {
             null => null!,
