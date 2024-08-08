@@ -82,7 +82,7 @@ namespace Benchmark
         public int EnumerableChunk()
         {
             int sum = 0;
-            foreach (var customer in Enumerable().Chunk(100))
+            foreach (var customer in Enumerable().Page(100))
             {
                 foreach (var item in customer)
                 {
