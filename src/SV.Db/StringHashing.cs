@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.CompilerServices;
 
 namespace SV.Db
 {
@@ -14,7 +8,7 @@ namespace SV.Db
         {
             uint hash = 0;
             if (!string.IsNullOrEmpty(value))
-            { 
+            {
                 hash = 2166136261u;
                 foreach (char c in value!)
                 {
@@ -25,8 +19,6 @@ namespace SV.Db
         }
 
         [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "GetNonRandomizedHashCodeOrdinalIgnoreCase")]
-        public extern static int NonRandomizedHash(this string c);
+        public static extern int NonRandomizedHash(this string c);
     }
-
-  
 }
