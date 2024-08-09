@@ -5,7 +5,7 @@
         public static IEnumerable<IEnumerable<T>> Chunk<T>(this List<T> source, int pageSize)
         {
             ArgumentNullException.ThrowIfNull(source, nameof(source));
-
+            
             if (source.Count <= pageSize)
             {
                 yield return source;
@@ -30,6 +30,39 @@
             {
                 return source.Chunk(pageSize);
             }
+        }
+
+        public static bool IsNullOrEmpty<T>(this List<T> source)
+        {
+            return source == null || source.Count == 0;
+        }
+
+        public static bool IsNullOrEmpty<T>(this T[] source)
+        {
+            return source == null || source.Length == 0; ;
+        }
+        public static bool IsNullOrEmpty<T>(this IEnumerable<T> source)
+        {
+            return source == null 
+                || (source is IList<T> s && s.Count == 0)
+                || !source.GetEnumerator().MoveNext();
+        }
+
+        public static bool IsNotNullOrEmpty<T>(this List<T> source)
+        {
+            return source != null && source.Count > 0;
+        }
+
+        public static bool IsNotNullOrEmpty<T>(this T[] source)
+        {
+            return source != null && source.Length > 0;
+        }
+
+        public static bool IsNotNullOrEmpty<T>(this IEnumerable<T> source)
+        {
+            return source != null && 
+                ((source is IList<T> s && s.Count > 0)
+                || source.GetEnumerator().MoveNext());
         }
 
         public static List<T> AsList<T>(this IEnumerable<T>? source) => source switch
