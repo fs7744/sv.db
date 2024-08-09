@@ -1,4 +1,4 @@
 ﻿using Benchmark;
 using BenchmarkDotNet.Running;
 
-var summary = BenchmarkRunner.Run<NullEmptyBenchmarks>();
+var summary = BenchmarkRunner.Run<StringHashingBenchmarks>();
