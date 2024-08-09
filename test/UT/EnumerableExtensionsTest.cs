@@ -7,14 +7,14 @@ namespace UT
         [InlineData(198, 60)]
         public void Page(int count, int pageSize)
         {
-            Assert.Equal( Enumerable.Range(0, count).Sum(), Enumerable.Range(0, count).ToList().Page(pageSize).SelectMany(i => i).Sum());
+            Assert.Equal(Enumerable.Range(0, count).Sum(), Enumerable.Range(0, count).ToList().Page(pageSize).SelectMany(i => i).Sum());
         }
 
         [Fact]
         public void IsNullOrEmpty()
         {
             List<int> list = null;
-            Assert.True(list.IsNullOrEmpty()); 
+            Assert.True(list.IsNullOrEmpty());
             list = new List<int>();
             Assert.True(list.IsNullOrEmpty());
             list.Add(0);
@@ -33,7 +33,6 @@ namespace UT
             Assert.True(enumerable.IsNullOrEmpty());
             list.Add(3);
             Assert.False(enumerable.IsNullOrEmpty());
-
         }
 
         [Fact]
@@ -59,7 +58,6 @@ namespace UT
             Assert.False(enumerable.IsNotNullOrEmpty());
             list.Add(3);
             Assert.True(enumerable.IsNotNullOrEmpty());
-
         }
     }
 }

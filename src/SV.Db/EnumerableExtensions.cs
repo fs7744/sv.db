@@ -5,7 +5,7 @@
         public static IEnumerable<IEnumerable<T>> Chunk<T>(this List<T> source, int pageSize)
         {
             ArgumentNullException.ThrowIfNull(source, nameof(source));
-            
+
             if (source.Count <= pageSize)
             {
                 yield return source;
@@ -41,9 +41,10 @@
         {
             return source == null || source.Length == 0; ;
         }
+
         public static bool IsNullOrEmpty<T>(this IEnumerable<T> source)
         {
-            return source == null 
+            return source == null
                 || (source is IList<T> s && s.Count == 0)
                 || !source.GetEnumerator().MoveNext();
         }
@@ -60,7 +61,7 @@
 
         public static bool IsNotNullOrEmpty<T>(this IEnumerable<T> source)
         {
-            return source != null && 
+            return source != null &&
                 ((source is IList<T> s && s.Count > 0)
                 || source.GetEnumerator().MoveNext());
         }

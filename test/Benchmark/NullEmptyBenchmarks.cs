@@ -22,6 +22,7 @@ namespace Benchmark
             }
             array = data.ToArray();
         }
+
         public IEnumerable<Customer> Enumerable()
         {
             foreach (var item in data)

@@ -7,11 +7,9 @@ namespace UT
         [Fact]
         public void NormalizedHash()
         {
-            Assert.Equal("   ".SlowNonRandomizedHash(), "   ".SlowNonRandomizedHash());
-            Assert.Equal(" asds dsff".SlowNonRandomizedHash(), " ASDS dsff".SlowNonRandomizedHash());
-            Assert.Equal("   ".NonRandomizedHash(), "   ".NonRandomizedHash());
-            Assert.Equal(" asds dsff".NonRandomizedHash(), " ASDS dsff".NonRandomizedHash());
-            Assert.Equal(1666770079, " asds dsff".NonRandomizedHash());
+            Assert.Equal("   ".Hash(), "   ".Hash());
+            Assert.Equal(" asds dsff".Hash(), " ASDS dsff".Hash());
+            Assert.Equal(1666770079, " asds dsff".Hash());
         }
     }
 }
