@@ -1,4 +1,6 @@
 ﻿using SV.Db;
+using System.IO.Hashing;
+using System.Runtime.InteropServices;
 
 namespace UT
 {

@@ -2,6 +2,8 @@
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Order;
 using SV.Db;
+using System.IO.Hashing;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Benchmark
@@ -56,6 +58,18 @@ namespace Benchmark
         public int NonRandomizedHash()
         {
             return Str.Hash();
+        }
+
+        [Benchmark]
+        public uint XxHash32GetBytes()
+        {
+            return XxHash32.HashToUInt32(Encoding.UTF8.GetBytes(Str));
+        }
+
+        [Benchmark]
+        public uint XxHash32Span()
+        {
+            return XxHash32.HashToUInt32(MemoryMarshal.AsBytes(Str.AsSpan()));
         }
     }
 }
