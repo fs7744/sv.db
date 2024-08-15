@@ -57,7 +57,7 @@ namespace Benchmark
         [Benchmark]
         public int NonRandomizedHash()
         {
-            return Str.Hash();
+            return Str.HashOrdinalIgnoreCase();
         }
 
         [Benchmark]

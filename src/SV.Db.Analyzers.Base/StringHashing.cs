@@ -3,16 +3,16 @@ using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace SlowestEM.Generator
+namespace SV.Db.Analyzers
 {
     public static partial class StringHashing
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint RotateLeft(uint value, int offset)
+        internal static uint RotateLeft(uint value, int offset)
             => (value << offset) | (value >> (32 - offset));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ulong RotateLeft(ulong value, int offset)
+        internal static ulong RotateLeft(ulong value, int offset)
             => (value << offset) | (value >> (64 - offset));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -23,7 +23,7 @@ namespace SlowestEM.Generator
 
         private const uint NormalizeToLowercase = 0x0020_0020u;
 
-        internal static unsafe int GetNonRandomizedHashCodeOrdinalIgnoreCase(ReadOnlySpan<char> span)
+        public static unsafe int HashOrdinalIgnoreCase(ReadOnlySpan<char> span)
         {
             uint hash1 = (5381 << 16) + 5381;
             uint hash2 = hash1;
@@ -149,9 +149,6 @@ namespace SlowestEM.Generator
             return (int)(hash1 + (hash2 * 1566083941));
         }
 
-        public static int Hash(string value)
-        {
-            return GetNonRandomizedHashCodeOrdinalIgnoreCase(value.AsSpan());
-        }
+        public static unsafe int HashOrdinalIgnoreCase(string str) => HashOrdinalIgnoreCase(str.AsSpan());
     }
 }

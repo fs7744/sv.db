@@ -62,7 +62,7 @@ namespace SV.Db
                     var t = Convert.ToString(value, CultureInfo.InvariantCulture)!;
                     return Unsafe.As<string, T>(ref t);
                 }
-                else if(typeof(T) == typeof(int?))
+                else if (typeof(T) == typeof(int?))
                 {
                     int? t = Convert.ToInt32(value, CultureInfo.InvariantCulture);
                     return Unsafe.As<int?, T>(ref t);
@@ -218,7 +218,7 @@ namespace SV.Db
         public static T GetFieldValue<T>(DbDataReader reader, int ordinal)
         {
             if (typeof(T) == typeof(int))
-            { 
+            {
                 var t = reader.GetInt32(ordinal);
                 return Unsafe.As<int, T>(ref t);
             }

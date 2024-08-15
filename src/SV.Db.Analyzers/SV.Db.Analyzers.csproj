@@ -21,5 +21,9 @@
 		<!-- Package the generator in the analyzer directory of the nuget package -->
 		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\SV.Db.Analyzers.Base\SV.Db.Analyzers.Base.csproj" />
+	</ItemGroup>
 	
 </Project>

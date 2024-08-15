@@ -1,5 +1,4 @@
-﻿using System.Buffers;
-using System.Collections;
+﻿using System.Collections;
 using System.Data;
 using System.Data.Common;
 using System.Dynamic;
@@ -259,7 +258,7 @@ namespace SV.Db
         }
     }
 
-    public class DynamicRecordFactory<T> where T : class
+    public class DynamicRecordFactory<T> : RecordFactory<T> where T : class
     {
         public static readonly DynamicRecordFactory<T> Instance = new();
 
@@ -279,6 +278,75 @@ namespace SV.Db
                 {
                     yield return (T)(object)new DynamicRecord(arr, reader, dict);
                 }
+            }
+            finally
+            {
+                reader.Dispose();
+            }
+        }
+
+        protected override void GenerateReadTokens(DbDataReader reader, Span<int> tokens)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override T Read(IDataReader reader, ref ReadOnlySpan<int> tokens)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override T Read(DbDataReader reader)
+        {
+            var arr = new DynamicRecordField[reader.FieldCount];
+            var dict = new Dictionary<string, int>();
+            for (int i = 0; i < arr.Length; i++)
+            {
+                arr[i] = new DynamicRecordField(reader.GetName(i), reader.GetFieldType(i), reader.GetDataTypeName(i));
+                dict[arr[i].Name] = i;
+            }
+            return (T)(object)new DynamicRecord(arr, reader, dict);
+        }
+
+        public override IEnumerable<T> ReadUnBuffed(DbDataReader reader)
+        {
+            var arr = new DynamicRecordField[reader.FieldCount];
+            var dict = new Dictionary<string, int>();
+            for (int i = 0; i < arr.Length; i++)
+            {
+                arr[i] = new DynamicRecordField(reader.GetName(i), reader.GetFieldType(i), reader.GetDataTypeName(i));
+                dict[arr[i].Name] = i;
+            }
+
+            try
+            {
+                while (reader.Read())
+                {
+                    yield return (T)(object)new DynamicRecord(arr, reader, dict);
+                }
+            }
+            finally
+            {
+                reader.Dispose();
+            }
+        }
+
+        public override List<T> ReadBuffed(DbDataReader reader)
+        {
+            var arr = new DynamicRecordField[reader.FieldCount];
+            var dict = new Dictionary<string, int>();
+            for (int i = 0; i < arr.Length; i++)
+            {
+                arr[i] = new DynamicRecordField(reader.GetName(i), reader.GetFieldType(i), reader.GetDataTypeName(i));
+                dict[arr[i].Name] = i;
+            }
+            List<T> list = [];
+            try
+            {
+                while (reader.Read())
+                {
+                    list.Add((T)(object)new DynamicRecord(arr, reader, dict));
+                }
+                return list;
             }
             finally
             {

@@ -1,7 +1,5 @@
 ﻿using Benchmark;
 using BenchmarkDotNet.Running;
-using System.IO.Hashing;
-using System.Text;
 
 var a = new StringHashingBenchmarks();
 a.Setup();
