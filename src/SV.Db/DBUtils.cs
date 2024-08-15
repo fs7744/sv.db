@@ -6,7 +6,7 @@ namespace SV.Db
 {
     public static class DBUtils
     {
-        private const MethodImplOptions Optimization = MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization;
+        internal const MethodImplOptions Optimization = MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization;
         private static readonly object[] s_BoxedInt32 = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         private static readonly object s_BoxedTrue = true, s_BoxedFalse = false;
 

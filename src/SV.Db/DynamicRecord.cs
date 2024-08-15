@@ -260,32 +260,7 @@ namespace SV.Db
 
     public class DynamicRecordFactory<T> : RecordFactory<T> where T : class
     {
-        public static readonly DynamicRecordFactory<T> Instance = new();
-
-        public IEnumerable<T> Read(IDataReader reader)
-        {
-            var arr = new DynamicRecordField[reader.FieldCount];
-            var dict = new Dictionary<string, int>();
-            for (int i = 0; i < arr.Length; i++)
-            {
-                arr[i] = new DynamicRecordField(reader.GetName(i), reader.GetFieldType(i), reader.GetDataTypeName(i));
-                dict[arr[i].Name] = i;
-            }
-
-            try
-            {
-                while (reader.Read())
-                {
-                    yield return (T)(object)new DynamicRecord(arr, reader, dict);
-                }
-            }
-            finally
-            {
-                reader.Dispose();
-            }
-        }
-
-        protected override void GenerateReadTokens(DbDataReader reader, Span<int> tokens)
+        protected override void GenerateReadTokens(IDataReader reader, Span<int> tokens)
         {
             throw new NotImplementedException();
         }
@@ -295,7 +270,7 @@ namespace SV.Db
             throw new NotImplementedException();
         }
 
-        public override T Read(DbDataReader reader)
+        public override T Read(IDataReader reader)
         {
             var arr = new DynamicRecordField[reader.FieldCount];
             var dict = new Dictionary<string, int>();
@@ -307,7 +282,7 @@ namespace SV.Db
             return (T)(object)new DynamicRecord(arr, reader, dict);
         }
 
-        public override IEnumerable<T> ReadUnBuffed(DbDataReader reader)
+        public override IEnumerable<T> ReadUnBuffed(IDataReader reader)
         {
             var arr = new DynamicRecordField[reader.FieldCount];
             var dict = new Dictionary<string, int>();
@@ -330,7 +305,7 @@ namespace SV.Db
             }
         }
 
-        public override List<T> ReadBuffed(DbDataReader reader)
+        public override List<T> ReadBuffed(IDataReader reader)
         {
             var arr = new DynamicRecordField[reader.FieldCount];
             var dict = new Dictionary<string, int>();
