@@ -25,7 +25,6 @@ namespace Benchmark
 
         public override void Close()
         {
-            throw new NotImplementedException();
         }
 
         public override void Open()
@@ -319,7 +318,7 @@ namespace Benchmark
 
         public override bool IsClosed => throw new NotImplementedException();
 
-        public override int RecordsAffected => throw new NotImplementedException();
+        public override int RecordsAffected => RowCount;
 
         public override bool GetBoolean(int ordinal)
         {
@@ -430,12 +429,12 @@ namespace Benchmark
 
         public override bool IsDBNull(int ordinal)
         {
-            return data.dbNulls[ordinal] == null;
+            return data.dbNulls[ordinal] != null;
         }
 
         public override bool NextResult()
         {
-            throw new NotImplementedException();
+            return false;
         }
 
         public override bool Read()

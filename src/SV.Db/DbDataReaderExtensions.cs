@@ -60,11 +60,11 @@ namespace SV.Db
             return t.Read(reader);
         }
 
-        public static IEnumerable<T> ReadEnumerable<T>(this IDataReader reader, bool useBuffer = true)
+        public static IEnumerable<T> ReadEnumerable<T>(this IDataReader reader, int estimateRow = 4, bool useBuffer = true)
         {
             var t = GetRecordFactory<T>();
             return useBuffer
-                    ? t.ReadBuffed(reader)
+                    ? t.ReadBuffed(reader, estimateRow)
                     : t.ReadUnBuffed(reader);
         }
 

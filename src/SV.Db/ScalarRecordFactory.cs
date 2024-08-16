@@ -22,7 +22,7 @@ namespace SV.Db
             return default(T);
         }
 
-        public virtual List<T> ReadBuffed(IDataReader reader, int estimateRow = 10)
+        public virtual List<T> ReadBuffed(IDataReader reader, int estimateRow = 4)
         {
             List<T> result = new(estimateRow);
             if (reader.Read())
@@ -95,7 +95,7 @@ namespace SV.Db
             }
         }
 
-        public override List<T> ReadBuffed(IDataReader reader, int estimateRow = 10)
+        public override List<T> ReadBuffed(IDataReader reader, int estimateRow = 4)
         {
             List<T> result = new(estimateRow);
             if (reader.Read())
@@ -146,7 +146,7 @@ namespace SV.Db
             }
         }
 
-        public override List<T?> ReadBuffed(IDataReader reader, int estimateRow = 10)
+        public override List<T?> ReadBuffed(IDataReader reader, int estimateRow = 4)
         {
             List<T?> result = new(estimateRow);
             if (reader.Read())
