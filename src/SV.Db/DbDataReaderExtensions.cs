@@ -11,6 +11,8 @@ namespace SV.Db
 
     public static class DbDataReaderExtensions
     {
+        private static Func<object> cacheFactory;
+
         static DbDataReaderExtensions()
         {
             RecordFactoryCache<object>.Cache = new DynamicRecordFactory<object>();
@@ -47,6 +49,11 @@ namespace SV.Db
             RecordFactoryCache<T>.Cache = factory;
         }
 
+        public static void RegisterRecordFactory<T>(Func<RecordFactory<T>> factory)
+        {
+            cacheFactory = factory;
+        }
+
         public static T Read<T>(this IDataReader reader)
         {
             var t = GetRecordFactory<T>();
@@ -78,7 +85,9 @@ namespace SV.Db
                 }
                 else
                 {
-                    ThrowHelper.ThrowNotSupportedException();
+                    t = (IRecordFactory<T>)cacheFactory?.Invoke();
+                    if (t == null)
+                        ThrowHelper.ThrowNotSupportedException();
                 }
             }
 
