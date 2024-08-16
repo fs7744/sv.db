@@ -6,12 +6,7 @@ namespace SV.Db
 {
     internal static class RecordFactoryCache<T>
     {
-        public static RecordFactory<T> Cache { get; set; }
-    }
-
-    internal static class ScalarFactoryCache<T>
-    {
-        public static ScalarFactory<T> Cache { get; set; }
+        public static IRecordFactory<T> Cache { get; set; }
     }
 
     public static class DbDataReaderExtensions
@@ -22,29 +17,29 @@ namespace SV.Db
             RecordFactoryCache<IDataRecord>.Cache = new DynamicRecordFactory<IDataRecord>();
             RecordFactoryCache<DbDataRecord>.Cache = new DynamicRecordFactory<DbDataRecord>();
 
-            ScalarFactoryCache<string>.Cache = new ScalarFactoryString();
-            ScalarFactoryCache<int>.Cache = new ScalarFactoryInt();
-            ScalarFactoryCache<int?>.Cache = new ScalarFactoryIntNull();
-            ScalarFactoryCache<bool>.Cache = new ScalarFactoryBoolean();
-            ScalarFactoryCache<bool?>.Cache = new ScalarFactoryBooleanNull();
-            ScalarFactoryCache<float>.Cache = new ScalarFactoryFloat();
-            ScalarFactoryCache<float?>.Cache = new ScalarFactoryFloatNull();
-            ScalarFactoryCache<double>.Cache = new ScalarFactoryDouble();
-            ScalarFactoryCache<double?>.Cache = new ScalarFactoryDoubleNull();
-            ScalarFactoryCache<decimal>.Cache = new ScalarFactoryDecimal();
-            ScalarFactoryCache<decimal?>.Cache = new ScalarFactoryDecimalNull();
-            ScalarFactoryCache<DateTime>.Cache = new ScalarFactoryDateTime();
-            ScalarFactoryCache<DateTime?>.Cache = new ScalarFactoryDateTimeNull();
-            ScalarFactoryCache<Guid>.Cache = new ScalarFactoryGuid();
-            ScalarFactoryCache<Guid?>.Cache = new ScalarFactoryGuidNull();
-            ScalarFactoryCache<long>.Cache = new ScalarFactoryLong();
-            ScalarFactoryCache<long?>.Cache = new ScalarFactoryLongNull();
-            ScalarFactoryCache<short>.Cache = new ScalarFactoryShort();
-            ScalarFactoryCache<short?>.Cache = new ScalarFactoryShortNull();
-            ScalarFactoryCache<byte>.Cache = new ScalarFactoryByte();
-            ScalarFactoryCache<byte?>.Cache = new ScalarFactoryByteNull();
-            ScalarFactoryCache<char>.Cache = new ScalarFactoryChar();
-            ScalarFactoryCache<char?>.Cache = new ScalarFactoryCharNull();
+            RecordFactoryCache<string>.Cache = new ScalarRecordFactoryString();
+            RecordFactoryCache<int>.Cache = new ScalarRecordFactoryInt();
+            RecordFactoryCache<int?>.Cache = new ScalarRecordFactoryIntNull();
+            RecordFactoryCache<bool>.Cache = new ScalarRecordFactoryBoolean();
+            RecordFactoryCache<bool?>.Cache = new ScalarRecordFactoryBooleanNull();
+            RecordFactoryCache<float>.Cache = new ScalarRecordFactoryFloat();
+            RecordFactoryCache<float?>.Cache = new ScalarRecordFactoryFloatNull();
+            RecordFactoryCache<double>.Cache = new ScalarRecordFactoryDouble();
+            RecordFactoryCache<double?>.Cache = new ScalarRecordFactoryDoubleNull();
+            RecordFactoryCache<decimal>.Cache = new ScalarRecordFactoryDecimal();
+            RecordFactoryCache<decimal?>.Cache = new ScalarRecordFactoryDecimalNull();
+            RecordFactoryCache<DateTime>.Cache = new ScalarRecordFactoryDateTime();
+            RecordFactoryCache<DateTime?>.Cache = new ScalarRecordFactoryDateTimeNull();
+            RecordFactoryCache<Guid>.Cache = new ScalarRecordFactoryGuid();
+            RecordFactoryCache<Guid?>.Cache = new ScalarRecordFactoryGuidNull();
+            RecordFactoryCache<long>.Cache = new ScalarRecordFactoryLong();
+            RecordFactoryCache<long?>.Cache = new ScalarRecordFactoryLongNull();
+            RecordFactoryCache<short>.Cache = new ScalarRecordFactoryShort();
+            RecordFactoryCache<short?>.Cache = new ScalarRecordFactoryShortNull();
+            RecordFactoryCache<byte>.Cache = new ScalarRecordFactoryByte();
+            RecordFactoryCache<byte?>.Cache = new ScalarRecordFactoryByteNull();
+            RecordFactoryCache<char>.Cache = new ScalarRecordFactoryChar();
+            RecordFactoryCache<char?>.Cache = new ScalarRecordFactoryCharNull();
         }
 
         public static void RegisterRecordFactory<T>(RecordFactory<T> factory)
@@ -52,62 +47,38 @@ namespace SV.Db
             RecordFactoryCache<T>.Cache = factory;
         }
 
-        public static T Read<T>(this IDataReader reader) where T : new()
+        public static T Read<T>(this IDataReader reader)
         {
-            var t = RecordFactoryCache<T>.Cache;
-            if (t != null)
-            {
-                return t.Read(reader);
-            }
-
-            throw new NotSupportedException();
-        }
-
-        public static IEnumerable<T> ReadEnumerable<T>(this IDataReader reader, bool useBuffer = true) where T : new()
-        {
-            var t = RecordFactoryCache<T>.Cache;
-            if (t != null)
-            {
-                return useBuffer
-                    ? t.ReadBuffed(reader)
-                    : t.ReadUnBuffed(reader);
-            }
-
-            throw new NotSupportedException();
-        }
-
-        public static T ReadScalar<T>(this IDataReader reader)
-        {
-            var t = GetScalarFactory<T>();
+            var t = GetRecordFactory<T>();
             return t.Read(reader);
         }
 
-        public static IEnumerable<T> ReadScalarEnumerable<T>(this IDataReader reader, bool useBuffer = true)
+        public static IEnumerable<T> ReadEnumerable<T>(this IDataReader reader, bool useBuffer = true)
         {
-            var t = GetScalarFactory<T>();
+            var t = GetRecordFactory<T>();
             return useBuffer
                     ? t.ReadBuffed(reader)
                     : t.ReadUnBuffed(reader);
         }
 
         [MethodImpl(DBUtils.Optimization)]
-        private static ScalarFactory<T> GetScalarFactory<T>()
+        private static IRecordFactory<T> GetRecordFactory<T>()
         {
-            var t = ScalarFactoryCache<T>.Cache;
+            var t = RecordFactoryCache<T>.Cache;
             if (t == null)
             {
                 var ty = typeof(T);
                 if (ty.IsEnum)
                 {
-                    t = ScalarFactoryCache<T>.Cache = new ScalarFactoryEnum<T>();
+                    t = RecordFactoryCache<T>.Cache = new ScalarRecordFactoryEnum<T>();
                 }
                 else if (ty.IsGenericType && typeof(Nullable<>) == ty.GetGenericTypeDefinition() && Nullable.GetUnderlyingType(ty).IsEnum)
                 {
-                    t = ScalarFactoryCache<T>.Cache = (ScalarFactory<T>)Activator.CreateInstance(typeof(ScalarFactoryEnumNull<>).MakeGenericType(Nullable.GetUnderlyingType(ty)));
+                    t = RecordFactoryCache<T>.Cache = (ScalarRecordFactory<T>)Activator.CreateInstance(typeof(ScalarRecordFactoryEnumNull<>).MakeGenericType(Nullable.GetUnderlyingType(ty)));
                 }
                 else
                 {
-                    t = ScalarFactoryCache<T>.Cache = new ScalarFactory<T>();
+                    ThrowHelper.ThrowNotSupportedException();
                 }
             }
 

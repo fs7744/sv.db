@@ -4,7 +4,16 @@ using System.Runtime.InteropServices;
 
 namespace SV.Db
 {
-    public abstract class RecordFactory<T>
+    public interface IRecordFactory<T>
+    {
+        T Read(IDataReader reader);
+
+        List<T> ReadBuffed(IDataReader reader);
+
+        IEnumerable<T> ReadUnBuffed(IDataReader reader);
+    }
+
+    public abstract class RecordFactory<T> : IRecordFactory<T>
     {
         protected abstract void GenerateReadTokens(IDataReader reader, Span<int> tokens);
 

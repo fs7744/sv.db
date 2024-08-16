@@ -1,31 +1,25 @@
 ﻿using System.Data;
-using System.Data.Common;
-using System.Globalization;
 
 namespace SV.Db
 {
-    public class ScalarFactory<T>
+    public abstract class ScalarRecordFactory<T> : IRecordFactory<T>
     {
-        protected virtual T ReadScalar(IDataReader reader)
-        {
-            if (reader is DbDataReader db)
-            {
-                return DBUtils.GetFieldValue<T>(db, 0);
-            }
-            return reader.IsDBNull(0) ? default(T) : (T)reader.GetValue(0);
-        }
+        protected abstract T ReadScalar(IDataReader reader);
 
         public virtual T Read(IDataReader reader)
         {
             if (reader.Read())
             {
-                if (reader.GetFieldType(0) != typeof(T))
+                if (reader.GetFieldType(0) == typeof(T))
                 {
-                    return reader.IsDBNull(0) ? default(T) : (T)Convert.ChangeType(reader.GetValue(0), Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T), CultureInfo.InvariantCulture);
+                    return ReadScalar(reader);
                 }
-                return ReadScalar(reader);
+                else
+                {
+                    return DBUtils.As<T>(reader.GetValue(0));
+                }
             }
-            return default;
+            return default(T);
         }
 
         public virtual List<T> ReadBuffed(IDataReader reader)
@@ -45,7 +39,7 @@ namespace SV.Db
                 {
                     do
                     {
-                        result.Add(reader.IsDBNull(0) ? default(T) : (T)Convert.ChangeType(reader.GetValue(0), Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T), CultureInfo.InvariantCulture));
+                        result.Add(reader.IsDBNull(0) ? default(T) : DBUtils.As<T>(reader.GetValue(0)));
                     }
                     while (reader.Read());
                 }
@@ -70,7 +64,7 @@ namespace SV.Db
                 {
                     do
                     {
-                        yield return reader.IsDBNull(0) ? default(T) : (T)Convert.ChangeType(reader.GetValue(0), Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T), CultureInfo.InvariantCulture);
+                        yield return reader.IsDBNull(0) ? default(T) : DBUtils.As<T>(reader.GetValue(0));
                     }
                     while (reader.Read());
                 }
@@ -78,7 +72,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryEnum<T> : ScalarFactory<T>
+    public class ScalarRecordFactoryEnum<T> : ScalarRecordFactory<T>
     {
         public override T Read(IDataReader reader)
         {
@@ -129,7 +123,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryEnumNull<T> : ScalarFactory<T?> where T : struct
+    public class ScalarRecordFactoryEnumNull<T> : ScalarRecordFactory<T?> where T : struct
     {
         public override T? Read(IDataReader reader)
         {
@@ -180,7 +174,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryString : ScalarFactory<string>
+    public class ScalarRecordFactoryString : ScalarRecordFactory<string>
     {
         protected override string ReadScalar(IDataReader reader)
         {
@@ -188,7 +182,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryInt : ScalarFactory<int>
+    public class ScalarRecordFactoryInt : ScalarRecordFactory<int>
     {
         protected override int ReadScalar(IDataReader reader)
         {
@@ -196,7 +190,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryIntNull : ScalarFactory<int?>
+    public class ScalarRecordFactoryIntNull : ScalarRecordFactory<int?>
     {
         protected override int? ReadScalar(IDataReader reader)
         {
@@ -204,7 +198,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryBoolean : ScalarFactory<bool>
+    public class ScalarRecordFactoryBoolean : ScalarRecordFactory<bool>
     {
         protected override bool ReadScalar(IDataReader reader)
         {
@@ -212,7 +206,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryBooleanNull : ScalarFactory<bool?>
+    public class ScalarRecordFactoryBooleanNull : ScalarRecordFactory<bool?>
     {
         protected override bool? ReadScalar(IDataReader reader)
         {
@@ -220,7 +214,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryFloat : ScalarFactory<float>
+    public class ScalarRecordFactoryFloat : ScalarRecordFactory<float>
     {
         protected override float ReadScalar(IDataReader reader)
         {
@@ -228,7 +222,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryFloatNull : ScalarFactory<float?>
+    public class ScalarRecordFactoryFloatNull : ScalarRecordFactory<float?>
     {
         protected override float? ReadScalar(IDataReader reader)
         {
@@ -236,7 +230,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryDouble : ScalarFactory<double>
+    public class ScalarRecordFactoryDouble : ScalarRecordFactory<double>
     {
         protected override double ReadScalar(IDataReader reader)
         {
@@ -244,7 +238,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryDoubleNull : ScalarFactory<double?>
+    public class ScalarRecordFactoryDoubleNull : ScalarRecordFactory<double?>
     {
         protected override double? ReadScalar(IDataReader reader)
         {
@@ -252,7 +246,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryDecimal : ScalarFactory<decimal>
+    public class ScalarRecordFactoryDecimal : ScalarRecordFactory<decimal>
     {
         protected override decimal ReadScalar(IDataReader reader)
         {
@@ -260,7 +254,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryDecimalNull : ScalarFactory<decimal?>
+    public class ScalarRecordFactoryDecimalNull : ScalarRecordFactory<decimal?>
     {
         protected override decimal? ReadScalar(IDataReader reader)
         {
@@ -268,7 +262,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryDateTime : ScalarFactory<DateTime>
+    public class ScalarRecordFactoryDateTime : ScalarRecordFactory<DateTime>
     {
         protected override DateTime ReadScalar(IDataReader reader)
         {
@@ -276,7 +270,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryDateTimeNull : ScalarFactory<DateTime?>
+    public class ScalarRecordFactoryDateTimeNull : ScalarRecordFactory<DateTime?>
     {
         protected override DateTime? ReadScalar(IDataReader reader)
         {
@@ -284,7 +278,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryGuid : ScalarFactory<Guid>
+    public class ScalarRecordFactoryGuid : ScalarRecordFactory<Guid>
     {
         protected override Guid ReadScalar(IDataReader reader)
         {
@@ -292,7 +286,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryGuidNull : ScalarFactory<Guid?>
+    public class ScalarRecordFactoryGuidNull : ScalarRecordFactory<Guid?>
     {
         protected override Guid? ReadScalar(IDataReader reader)
         {
@@ -300,7 +294,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryLong : ScalarFactory<long>
+    public class ScalarRecordFactoryLong : ScalarRecordFactory<long>
     {
         protected override long ReadScalar(IDataReader reader)
         {
@@ -308,7 +302,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryLongNull : ScalarFactory<long?>
+    public class ScalarRecordFactoryLongNull : ScalarRecordFactory<long?>
     {
         protected override long? ReadScalar(IDataReader reader)
         {
@@ -316,7 +310,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryShort : ScalarFactory<short>
+    public class ScalarRecordFactoryShort : ScalarRecordFactory<short>
     {
         protected override short ReadScalar(IDataReader reader)
         {
@@ -324,7 +318,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryShortNull : ScalarFactory<short?>
+    public class ScalarRecordFactoryShortNull : ScalarRecordFactory<short?>
     {
         protected override short? ReadScalar(IDataReader reader)
         {
@@ -332,7 +326,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryByte : ScalarFactory<byte>
+    public class ScalarRecordFactoryByte : ScalarRecordFactory<byte>
     {
         protected override byte ReadScalar(IDataReader reader)
         {
@@ -340,7 +334,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryByteNull : ScalarFactory<byte?>
+    public class ScalarRecordFactoryByteNull : ScalarRecordFactory<byte?>
     {
         protected override byte? ReadScalar(IDataReader reader)
         {
@@ -348,7 +342,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryChar : ScalarFactory<char>
+    public class ScalarRecordFactoryChar : ScalarRecordFactory<char>
     {
         protected override char ReadScalar(IDataReader reader)
         {
@@ -356,7 +350,7 @@ namespace SV.Db
         }
     }
 
-    public class ScalarFactoryCharNull : ScalarFactory<char?>
+    public class ScalarRecordFactoryCharNull : ScalarRecordFactory<char?>
     {
         protected override char? ReadScalar(IDataReader reader)
         {
