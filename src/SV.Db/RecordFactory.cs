@@ -8,7 +8,7 @@ namespace SV.Db
     {
         T Read(IDataReader reader);
 
-        List<T> ReadBuffed(IDataReader reader);
+        List<T> ReadBuffed(IDataReader reader, int estimateRow = 10);
 
         IEnumerable<T> ReadUnBuffed(IDataReader reader);
     }
@@ -31,9 +31,9 @@ namespace SV.Db
             return Read(reader, ref readOnlyTokens);
         }
 
-        public virtual List<T> ReadBuffed(IDataReader reader)
+        public virtual List<T> ReadBuffed(IDataReader reader, int estimateRow = 10)
         {
-            List<T> results = [];
+            List<T> results = new(estimateRow);
             if (reader.Read())
             {
                 var state = new ReaderState
