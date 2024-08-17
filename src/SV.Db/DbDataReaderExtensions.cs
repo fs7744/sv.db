@@ -93,5 +93,10 @@ namespace SV.Db
 
             return t;
         }
+
+        public static T ExecuteScalar<T>(this IDbCommand command)
+        {
+            return DBUtils.As<T>(command.ExecuteScalar());
+        }
     }
 }

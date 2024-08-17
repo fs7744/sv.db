@@ -68,7 +68,7 @@ namespace Benchmark
 
         public override object? ExecuteScalar()
         {
-            throw new NotImplementedException();
+            return new TestDbDataReader(Data) { RowCount = RowCount }.GetValue(0);
         }
 
         public override void Prepare()
