@@ -1,11 +1,19 @@
 ﻿using System.Collections;
-using System.Data;
 using System.Data.Common;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace SV.Db
 {
+    public interface IParamsSetter
+    {
+        void SetParams(DbCommand cmd, object args);
+    }
+
+    public interface IParamsSetter<T> : IParamsSetter
+    {
+        void SetParams(DbCommand cmd, T args);
+    }
+
     public interface IRecordFactory<T>
     {
         T Read(DbDataReader reader);
@@ -17,8 +25,12 @@ namespace SV.Db
         IAsyncEnumerable<T> ReadUnBuffedAsync(DbDataReader reader, CancellationToken cancellationToken = default);
     }
 
-    public abstract class RecordFactory<T> : IRecordFactory<T>
+    public abstract class RecordFactory<T> : IRecordFactory<T>, IParamsSetter<T>
     {
+        public abstract void SetParams(DbCommand cmd, object args);
+
+        public abstract void SetParams(DbCommand cmd, T args);
+
         protected abstract void GenerateReadTokens(DbDataReader reader, Span<int> tokens);
 
         protected abstract T Read(DbDataReader reader, ref ReadOnlySpan<int> tokens);

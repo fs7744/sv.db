@@ -7,13 +7,13 @@ namespace SV.Db
     {
         public static T ExecuteScalar<T>(this DbCommand command, object args = null)
         {
-            //todo: params
+            command.SetParams(args);
             return DBUtils.As<T>(command.ExecuteScalar());
         }
 
         public static async Task<T> ExecuteScalarAsync<T>(this DbCommand command, object args = null, CancellationToken cancellationToken = default)
         {
-            //todo: params
+            command.SetParams(args);
             return DBUtils.As<T>(await command.ExecuteScalarAsync(cancellationToken));
         }
 
@@ -22,7 +22,7 @@ namespace SV.Db
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
-            //todo: params
+            cmd.SetParams(args);
             return cmd.ExecuteScalar();
         }
 
@@ -31,7 +31,7 @@ namespace SV.Db
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
-            //todo: params
+            cmd.SetParams(args);
             return cmd.ExecuteScalar<T>();
         }
 
@@ -40,7 +40,7 @@ namespace SV.Db
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
-            //todo: params
+            cmd.SetParams(args);
             return cmd.ExecuteScalarAsync(cancellationToken);
         }
 
@@ -49,7 +49,7 @@ namespace SV.Db
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
-            //todo: params
+            cmd.SetParams(args);
             return cmd.ExecuteScalarAsync<T>(cancellationToken);
         }
     }

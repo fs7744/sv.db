@@ -12,12 +12,41 @@ namespace SV.Db
     public static class RecordFactory
     {
         private static Func<object> cacheFactory;
+        private static readonly Dictionary<Type, DbType> dbTypeMapping = new Dictionary<Type, DbType>()
+        {
+            { typeof(long),             DbType.Int64 },
+            { typeof(bool),             DbType.Boolean },
+            { typeof(string),           DbType.String },
+            { typeof(DateTime),         DbType.DateTime },
+            { typeof(DateTimeOffset),         DbType.DateTimeOffset },
+            { typeof(decimal),          DbType.Decimal},
+            { typeof(double),           DbType.Double },
+            { typeof(int),              DbType.Int32},
+            { typeof(float),            DbType.Single  },
+            { typeof(short),            DbType.Int16  },
+            { typeof(byte),             DbType.Byte  },
+            { typeof(Guid),             DbType.Guid  },
+            { typeof(long?),             DbType.Int64 },
+            { typeof(bool?),             DbType.Boolean },
+            { typeof(DateTime?),         DbType.DateTime },
+            { typeof(DateTimeOffset?),         DbType.DateTimeOffset },
+            { typeof(decimal?),          DbType.Decimal},
+            { typeof(double?),           DbType.Double },
+            { typeof(int?),              DbType.Int32},
+            { typeof(float?),            DbType.Single  },
+            { typeof(short?),            DbType.Int16  },
+            { typeof(byte?),             DbType.Byte  },
+            { typeof(Guid?),             DbType.Guid  },
+            { typeof(DBNull),             DbType.String  }
+        };
 
         static RecordFactory()
         {
             RecordFactoryCache<object>.Cache = new DynamicRecordFactory<object>();
             RecordFactoryCache<IDataRecord>.Cache = new DynamicRecordFactory<IDataRecord>();
             RecordFactoryCache<DbDataRecord>.Cache = new DynamicRecordFactory<DbDataRecord>();
+            RecordFactoryCache<IDictionary<string, object?>>.Cache = new DynamicRecordFactory<IDictionary<string, object?>>();
+            RecordFactoryCache<IReadOnlyDictionary<string, object?>>.Cache = new DynamicRecordFactory<IReadOnlyDictionary<string, object?>>();
 
             RecordFactoryCache<string>.Cache = new ScalarRecordFactoryString();
             RecordFactoryCache<int>.Cache = new ScalarRecordFactoryInt();
@@ -52,6 +81,10 @@ namespace SV.Db
         public static void RegisterRecordFactory<T>(Func<RecordFactory<T>> factory)
         {
             cacheFactory = factory;
+        }
+        public static void RegisterDbTypeMapping<T>(DbType dbType)
+        {
+            dbTypeMapping[typeof(T)] = dbType;
         }
 
         public static T Read<T>(this DbDataReader reader)
@@ -104,6 +137,27 @@ namespace SV.Db
             }
 
             return t;
+        }
+
+        [MethodImpl(DBUtils.Optimization)]
+        public static IParamsSetter<T> GetParamsSetter<T>()
+        {
+            var t = GetRecordFactory<T>() as IParamsSetter<T>;
+            if (t == null)
+                ThrowHelper.ThrowNotSupportedException();
+            return t;
+        }
+
+        [MethodImpl(DBUtils.Optimization)]
+        public static DbType GetDbType<T>()
+        {
+            return GetDbType(typeof(T));
+        }
+
+        [MethodImpl(DBUtils.Optimization)]
+        public static DbType GetDbType(Type type)
+        {
+            return dbTypeMapping[type];
         }
     }
 }

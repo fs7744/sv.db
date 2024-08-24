@@ -7,10 +7,7 @@ namespace SV.Db
     {
         public static IEnumerable<T> ExecuteQuery<T>(this DbCommand command, object args = null, CommandBehavior behavior = CommandBehavior.Default, int estimateRow = 0, bool useBuffer = true)
         {
-            if (args != null)
-            {
-                // todo: params
-            }
+            command.SetParams(args);
             var connection = command.Connection;
             try
             {
@@ -33,10 +30,7 @@ namespace SV.Db
 
         public static async Task<IAsyncEnumerable<T>> ExecuteQueryAsync<T>(this DbCommand command, object args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default)
         {
-            if (args != null)
-            {
-                // todo: params
-            }
+            command.SetParams(args);
             var connection = command.Connection;
             try
             {
@@ -62,6 +56,7 @@ namespace SV.Db
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
+            cmd.SetParams(args);
             return ExecuteQueryAsync<T>(cmd, args, cancellationToken, behavior);
         }
 
@@ -70,15 +65,13 @@ namespace SV.Db
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
+            cmd.SetParams(args);
             return ExecuteQuery<T>(cmd, args, behavior, estimateRow, useBuffer);
         }
 
         public static T? ExecuteQueryFirstOrDefault<T>(this DbCommand command, object args = null, CommandBehavior behavior = CommandBehavior.SingleRow)
         {
-            if (args != null)
-            {
-                // todo: params
-            }
+            command.SetParams(args);
             var connection = command.Connection;
             try
             {
@@ -104,15 +97,13 @@ namespace SV.Db
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
+            cmd.SetParams(args);
             return ExecuteQueryFirstOrDefault<T>(cmd, args, behavior);
         }
 
         public static async Task<T?> ExecuteQueryFirstOrDefaultAsync<T>(this DbCommand command, object args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.SingleRow)
         {
-            if (args != null)
-            {
-                // todo: params
-            }
+            command.SetParams(args);
             var connection = command.Connection;
             try
             {
@@ -140,6 +131,7 @@ namespace SV.Db
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
+            cmd.SetParams(args);
             return ExecuteQueryFirstOrDefaultAsync<T>(cmd, args, cancellationToken, behavior);
         }
     }

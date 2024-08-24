@@ -7,13 +7,13 @@ namespace SV.Db
     {
         public static DbDataReader ExecuteReader(this DbCommand cmd, object args, CommandBehavior behavior = CommandBehavior.Default)
         {
-            //todo: params
+            cmd.SetParams(args);
             return cmd.ExecuteReader(behavior);
         }
 
         public static Task<DbDataReader> ExecuteReaderAsync(this DbCommand cmd, object args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default)
         {
-            //todo: params
+            cmd.SetParams(args);
             return cmd.ExecuteReaderAsync(behavior, cancellationToken);
         }
 
@@ -22,7 +22,7 @@ namespace SV.Db
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
-            //todo: params
+            cmd.SetParams(args);
             return cmd.ExecuteReader(behavior);
         }
 
@@ -31,7 +31,7 @@ namespace SV.Db
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
-            //todo: params
+            cmd.SetParams(args);
             return cmd.ExecuteReaderAsync(behavior, cancellationToken);
         }
     }

@@ -5,12 +5,24 @@ namespace SV.Db
 {
     public static partial class CommandExtensions
     {
+        public static int ExecuteNonQuery(this DbCommand cmd, object args = null)
+        {
+            cmd.SetParams(args);
+            return cmd.ExecuteNonQuery();
+        }
+
+        public static Task<int> ExecuteNonQueryAsync(this DbCommand cmd, object args = null, CancellationToken cancellationToken = default)
+        {
+            cmd.SetParams(args);
+            return cmd.ExecuteNonQueryAsync(cancellationToken);
+        }
+
         public static int ExecuteNonQuery(this DbConnection connection, string sql, object args = null, CommandType commandType = CommandType.Text)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
-            //todo: params
+            cmd.SetParams(args);
             return cmd.ExecuteNonQuery();
         }
 
@@ -19,7 +31,7 @@ namespace SV.Db
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
-            //todo: params
+            cmd.SetParams(args);
             return cmd.ExecuteNonQueryAsync(cancellationToken);
         }
     }
