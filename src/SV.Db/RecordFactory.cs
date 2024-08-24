@@ -68,6 +68,12 @@ namespace SV.Db
                     : t.ReadUnBuffed(reader);
         }
 
+        public static IEnumerable<T> ReadUnBuffedEnumerable<T>(this DbDataReader reader)
+        {
+            var t = GetRecordFactory<T>();
+            return t.ReadUnBuffed(reader);
+        }
+
         public static IAsyncEnumerable<T> ReadEnumerableAsync<T>(this DbDataReader reader, CancellationToken cancellationToken = default)
         {
             var t = GetRecordFactory<T>();
