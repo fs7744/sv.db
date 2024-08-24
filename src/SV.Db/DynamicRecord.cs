@@ -260,17 +260,17 @@ namespace SV.Db
 
     public class DynamicRecordFactory<T> : RecordFactory<T> where T : class
     {
-        protected override void GenerateReadTokens(IDataReader reader, Span<int> tokens)
+        protected override void GenerateReadTokens(DbDataReader reader, Span<int> tokens)
         {
             throw new NotImplementedException();
         }
 
-        protected override T Read(IDataReader reader, ref ReadOnlySpan<int> tokens)
+        protected override T Read(DbDataReader reader, ref ReadOnlySpan<int> tokens)
         {
             throw new NotImplementedException();
         }
 
-        public override T Read(IDataReader reader)
+        public override T Read(DbDataReader reader)
         {
             var arr = new DynamicRecordField[reader.FieldCount];
             var dict = new Dictionary<string, int>();
@@ -282,7 +282,7 @@ namespace SV.Db
             return (T)(object)new DynamicRecord(arr, reader, dict);
         }
 
-        public override IEnumerable<T> ReadUnBuffed(IDataReader reader)
+        public override IEnumerable<T> ReadUnBuffed(DbDataReader reader)
         {
             var arr = new DynamicRecordField[reader.FieldCount];
             var dict = new Dictionary<string, int>();
@@ -305,7 +305,7 @@ namespace SV.Db
             }
         }
 
-        public override List<T> ReadBuffed(IDataReader reader, int estimateRow = 0)
+        public override List<T> ReadBuffed(DbDataReader reader, int estimateRow = 0)
         {
             var arr = new DynamicRecordField[reader.FieldCount];
             var dict = new Dictionary<string, int>();
@@ -322,6 +322,29 @@ namespace SV.Db
                     list.Add((T)(object)new DynamicRecord(arr, reader, dict));
                 }
                 return list;
+            }
+            finally
+            {
+                reader.Dispose();
+            }
+        }
+
+        public override async IAsyncEnumerable<T> ReadUnBuffedAsync(DbDataReader reader, CancellationToken cancellationToken = default)
+        {
+            var arr = new DynamicRecordField[reader.FieldCount];
+            var dict = new Dictionary<string, int>();
+            for (int i = 0; i < arr.Length; i++)
+            {
+                arr[i] = new DynamicRecordField(reader.GetName(i), reader.GetFieldType(i), reader.GetDataTypeName(i));
+                dict[arr[i].Name] = i;
+            }
+
+            try
+            {
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    yield return (T)(object)new DynamicRecord(arr, reader, dict);
+                }
             }
             finally
             {

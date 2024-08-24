@@ -54,18 +54,24 @@ namespace SV.Db
             cacheFactory = factory;
         }
 
-        public static T Read<T>(this IDataReader reader)
+        public static T Read<T>(this DbDataReader reader)
         {
             var t = GetRecordFactory<T>();
             return t.Read(reader);
         }
 
-        public static IEnumerable<T> ReadEnumerable<T>(this IDataReader reader, int estimateRow = 0, bool useBuffer = true)
+        public static IEnumerable<T> ReadEnumerable<T>(this DbDataReader reader, int estimateRow = 0, bool useBuffer = true)
         {
             var t = GetRecordFactory<T>();
             return useBuffer
                     ? t.ReadBuffed(reader, estimateRow)
                     : t.ReadUnBuffed(reader);
+        }
+
+        public static IAsyncEnumerable<T> ReadEnumerableAsync<T>(this DbDataReader reader, CancellationToken cancellationToken = default)
+        {
+            var t = GetRecordFactory<T>();
+            return t.ReadUnBuffedAsync(reader, cancellationToken);
         }
 
         [MethodImpl(DBUtils.Optimization)]

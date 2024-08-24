@@ -2,25 +2,28 @@
 using System.Data;
 using System.Data.Common;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace SV.Db
 {
     public interface IRecordFactory<T>
     {
-        T Read(IDataReader reader);
+        T Read(DbDataReader reader);
 
-        List<T> ReadBuffed(IDataReader reader, int estimateRow = 0);
+        List<T> ReadBuffed(DbDataReader reader, int estimateRow = 0);
 
-        IEnumerable<T> ReadUnBuffed(IDataReader reader);
+        IEnumerable<T> ReadUnBuffed(DbDataReader reader);
+
+        IAsyncEnumerable<T> ReadUnBuffedAsync(DbDataReader reader, CancellationToken cancellationToken = default);
     }
 
     public abstract class RecordFactory<T> : IRecordFactory<T>
     {
-        protected abstract void GenerateReadTokens(IDataReader reader, Span<int> tokens);
+        protected abstract void GenerateReadTokens(DbDataReader reader, Span<int> tokens);
 
-        protected abstract T Read(IDataReader reader, ref ReadOnlySpan<int> tokens);
+        protected abstract T Read(DbDataReader reader, ref ReadOnlySpan<int> tokens);
 
-        public virtual T Read(IDataReader reader)
+        public virtual T Read(DbDataReader reader)
         {
             var state = new ReaderState
             {
@@ -32,7 +35,7 @@ namespace SV.Db
             return Read(reader, ref readOnlyTokens);
         }
 
-        public virtual List<T> ReadBuffed(IDataReader reader, int estimateRow = 0)
+        public virtual List<T> ReadBuffed(DbDataReader reader, int estimateRow = 0)
         {
             List<T> results = new(estimateRow);
             if (reader.Read())
@@ -61,7 +64,7 @@ namespace SV.Db
             return results;
         }
 
-        public virtual IEnumerable<T> ReadUnBuffed(IDataReader reader)
+        public virtual IEnumerable<T> ReadUnBuffed(DbDataReader reader)
         {
             var state = new ReaderState
             {
@@ -74,7 +77,7 @@ namespace SV.Db
 
         internal unsafe struct UnBuffedEnumerator : IEnumerable<T>, IEnumerator<T>
         {
-            private readonly IDataReader reader;
+            private readonly DbDataReader reader;
             private readonly RecordFactory<T> factory;
             private readonly ReaderState state;
             private readonly int* tokens;
@@ -84,7 +87,7 @@ namespace SV.Db
 
             object IEnumerator.Current => Current;
 
-            public UnBuffedEnumerator(IDataReader reader, Span<int> span, RecordFactory<T> factory, ReaderState state)
+            public UnBuffedEnumerator(DbDataReader reader, Span<int> span, RecordFactory<T> factory, ReaderState state)
             {
                 this.reader = reader;
                 this.factory = factory;
@@ -128,7 +131,7 @@ namespace SV.Db
             }
         }
 
-        public virtual IAsyncEnumerable<T> ReadUnBuffedAsync(DbDataReader reader)
+        public virtual IAsyncEnumerable<T> ReadUnBuffedAsync(DbDataReader reader, CancellationToken cancellationToken = default)
         {
             var state = new ReaderState
             {
@@ -136,7 +139,7 @@ namespace SV.Db
             };
             var s = state.GetTokens();
             GenerateReadTokens(reader, s);
-            return new UnBuffedAsyncEnumerator(reader, s, this, state);
+            return new UnBuffedAsyncEnumerator(reader, s, this, state, ref cancellationToken);
         }
 
         internal struct UnBuffedAsyncEnumerator : IAsyncEnumerable<T>, IAsyncEnumerator<T>
@@ -146,14 +149,16 @@ namespace SV.Db
             private readonly ReaderState state;
             private readonly unsafe int* tokens;
             private readonly int length;
+            private readonly CancellationToken cancellationToken;
 
             public T Current { get; private set; }
 
-            public UnBuffedAsyncEnumerator(DbDataReader reader, Span<int> span, RecordFactory<T> factory, ReaderState state)
+            public UnBuffedAsyncEnumerator(DbDataReader reader, Span<int> span, RecordFactory<T> factory, ReaderState state, ref CancellationToken cancellationToken)
             {
                 this.reader = reader;
                 this.factory = factory;
                 this.state = state;
+                this.cancellationToken = cancellationToken;
                 unsafe
                 {
                     fixed (int* ptr = &span.GetPinnableReference())
@@ -177,7 +182,7 @@ namespace SV.Db
 
             public async ValueTask<bool> MoveNextAsync()
             {
-                if (await reader.ReadAsync())
+                if (await reader.ReadAsync(cancellationToken))
                 {
                     Read();
                     return true;
