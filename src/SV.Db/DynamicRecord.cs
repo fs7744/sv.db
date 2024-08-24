@@ -305,7 +305,7 @@ namespace SV.Db
             }
         }
 
-        public override List<T> ReadBuffed(IDataReader reader, int estimateRow = 4)
+        public override List<T> ReadBuffed(IDataReader reader, int estimateRow = 0)
         {
             var arr = new DynamicRecordField[reader.FieldCount];
             var dict = new Dictionary<string, int>();
