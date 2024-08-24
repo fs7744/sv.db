@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Concurrent;
+using System.Data;
 using System.Data.Common;
 using System.Runtime.CompilerServices;
 
@@ -12,6 +13,7 @@ namespace SV.Db
     public static class RecordFactory
     {
         private static Func<object> cacheFactory;
+
         private static readonly Dictionary<Type, DbType> dbTypeMapping = new Dictionary<Type, DbType>()
         {
             { typeof(long),             DbType.Int64 },
@@ -47,6 +49,8 @@ namespace SV.Db
             RecordFactoryCache<DbDataRecord>.Cache = new DynamicRecordFactory<DbDataRecord>();
             RecordFactoryCache<IDictionary<string, object?>>.Cache = new DynamicRecordFactory<IDictionary<string, object?>>();
             RecordFactoryCache<IReadOnlyDictionary<string, object?>>.Cache = new DynamicRecordFactory<IReadOnlyDictionary<string, object?>>();
+            RecordFactoryCache<Dictionary<string, object?>>.Cache = new DictionaryRecord();
+            RecordFactoryCache<ConcurrentDictionary<string, object?>>.Cache = new ConcurrentDictionaryRecord();
 
             RecordFactoryCache<string>.Cache = new ScalarRecordFactoryString();
             RecordFactoryCache<int>.Cache = new ScalarRecordFactoryInt();
@@ -82,6 +86,7 @@ namespace SV.Db
         {
             cacheFactory = factory;
         }
+
         public static void RegisterDbTypeMapping<T>(DbType dbType)
         {
             dbTypeMapping[typeof(T)] = dbType;

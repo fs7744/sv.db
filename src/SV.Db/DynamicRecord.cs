@@ -272,14 +272,18 @@ namespace SV.Db
 
         public override T Read(DbDataReader reader)
         {
-            var arr = new DynamicRecordField[reader.FieldCount];
-            var dict = new Dictionary<string, int>();
-            for (int i = 0; i < arr.Length; i++)
+            if (reader.Read())
             {
-                arr[i] = new DynamicRecordField(reader.GetName(i), reader.GetFieldType(i), reader.GetDataTypeName(i));
-                dict[arr[i].Name] = i;
+                var arr = new DynamicRecordField[reader.FieldCount];
+                var dict = new Dictionary<string, int>();
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    arr[i] = new DynamicRecordField(reader.GetName(i), reader.GetFieldType(i), reader.GetDataTypeName(i));
+                    dict[arr[i].Name] = i;
+                }
+                return (T)(object)new DynamicRecord(arr, reader, dict);
             }
-            return (T)(object)new DynamicRecord(arr, reader, dict);
+            return default(T);
         }
 
         public override IEnumerable<T> ReadUnBuffed(DbDataReader reader)
