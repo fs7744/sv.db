@@ -67,7 +67,7 @@ namespace SV.Db
             {
                 Reader = reader
             };
-            var s = reader.FieldCount <= 64 ? MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(stackalloc int[reader.FieldCount]), reader.FieldCount) : state.GetTokens();
+            var s = state.GetTokens();
             GenerateReadTokens(reader, s);
             return new UnBuffedEnumerator(reader, s, this, state);
         }
@@ -134,7 +134,7 @@ namespace SV.Db
             {
                 Reader = reader
             };
-            var s = reader.FieldCount <= 64 ? MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(stackalloc int[reader.FieldCount]), reader.FieldCount) : state.GetTokens();
+            var s = state.GetTokens();
             GenerateReadTokens(reader, s);
             return new UnBuffedAsyncEnumerator(reader, s, this, state);
         }
