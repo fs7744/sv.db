@@ -28,18 +28,49 @@ namespace SV.Db
             RealConnection.ChangeDatabase(databaseName);
         }
 
+        public override Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken = default)
+        {
+            return RealConnection.ChangeDatabaseAsync(databaseName, cancellationToken);
+        }
+
+        public override void EnlistTransaction(Transaction? transaction)
+        {
+        }
+
         public override void Close()
         {
         }
 
+        public override Task CloseAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public override void Open()
         {
-            RealConnection.Open();
+            if (RealConnection.State != System.Data.ConnectionState.Open)
+            {
+                RealConnection.Open();
+            }
+        }
+
+        public override Task OpenAsync(CancellationToken cancellationToken)
+        {
+            if (RealConnection.State != System.Data.ConnectionState.Open)
+            {
+                return RealConnection.OpenAsync(cancellationToken);
+            }
+            return Task.CompletedTask;
         }
 
         protected override DbTransaction BeginDbTransaction(System.Data.IsolationLevel isolationLevel)
         {
             return RealConnection.BeginTransaction(isolationLevel);
+        }
+
+        protected override ValueTask<DbTransaction> BeginDbTransactionAsync(System.Data.IsolationLevel isolationLevel, CancellationToken cancellationToken)
+        {
+            return RealConnection.BeginTransactionAsync(isolationLevel, cancellationToken);
         }
 
         protected override DbCommand CreateDbCommand()
