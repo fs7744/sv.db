@@ -26,5 +26,23 @@ namespace SV.Db
         {
             RecordFactory.GetParamsSetter<T>().SetParams(cmd, args);
         }
+
+        public static void SetParams(this DbBatchCommand cmd, object args = null)
+        {
+            if (args != null)
+            {
+                var t = args.GetType();
+                var setter = paramsSetterCache.GetOrAdd(t, type =>
+                {
+                    return method.MakeGenericMethod(type).Invoke(null, null) as IParamsSetter;
+                });
+                setter.SetParams(cmd, args);
+            }
+        }
+
+        public static void SetParams<T>(this DbBatchCommand cmd, T args)
+        {
+            RecordFactory.GetParamsSetter<T>().SetParams(cmd, args);
+        }
     }
 }

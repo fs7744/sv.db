@@ -21,6 +21,27 @@ namespace SV.Db
             }
         }
 
+        public override void SetParams(DbBatchCommand cmd, T args)
+        {
+            SetParams(cmd, (object)args);
+        }
+
+        public override void SetParams(DbBatchCommand cmd, object args)
+        {
+            if (args is IEnumerable<KeyValuePair<string, object>> vs)
+            {
+                var ps = cmd.Parameters;
+                foreach (var item in vs)
+                {
+                    var p = cmd.CreateParameter();
+                    p.ParameterName = item.Key;
+                    p.Value = DBUtils.AsDBValue(item.Value);
+                    p.DbType = RecordFactory.GetDbType(item.Value == null ? typeof(DBNull) : item.Value.GetType());
+                    ps.Add(p);
+                }
+            }
+        }
+
         public override void SetParams(DbCommand cmd, T args)
         {
             SetParams(cmd, (object)args);

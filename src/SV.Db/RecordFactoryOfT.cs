@@ -7,11 +7,15 @@ namespace SV.Db
     public interface IParamsSetter
     {
         void SetParams(DbCommand cmd, object args);
+
+        void SetParams(DbBatchCommand cmd, object args);
     }
 
     public interface IParamsSetter<T> : IParamsSetter
     {
         void SetParams(DbCommand cmd, T args);
+
+        void SetParams(DbBatchCommand cmd, T args);
     }
 
     public interface IRecordFactory<T>
@@ -30,6 +34,10 @@ namespace SV.Db
         public abstract void SetParams(DbCommand cmd, object args);
 
         public abstract void SetParams(DbCommand cmd, T args);
+
+        public abstract void SetParams(DbBatchCommand cmd, object args);
+
+        public abstract void SetParams(DbBatchCommand cmd, T args);
 
         protected abstract void GenerateReadTokens(DbDataReader reader, Span<int> tokens);
 
