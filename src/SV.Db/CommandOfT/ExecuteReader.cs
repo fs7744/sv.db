@@ -34,5 +34,33 @@ namespace SV.Db
             cmd.SetParams(args);
             return cmd.ExecuteReaderAsync(behavior, cancellationToken);
         }
+
+        public static T? QueryFirstOrDefault<T>(this DbDataReader reader)
+        {
+            var r = reader.Read<T>();
+            reader.NextResult();
+            return r;
+        }
+
+        public static async Task<T?> QueryFirstOrDefaultAsync<T>(this DbDataReader reader, CancellationToken cancellationToken = default)
+        {
+            var r = reader.Read<T>();
+            await reader.NextResultAsync(cancellationToken);
+            return r;
+        }
+
+        public static IEnumerable<T> Query<T>(this DbDataReader reader, int estimateRow = 0, bool useBuffer = true)
+        {
+            var r = reader.ReadEnumerable<T>(estimateRow, useBuffer);
+            reader.NextResult();
+            return r;
+        }
+
+        public static async Task<IAsyncEnumerable<T>> QueryAsync<T>(this DbDataReader reader, CancellationToken cancellationToken = default)
+        {
+            var r = reader.ReadEnumerableAsync<T>(cancellationToken);
+            await reader.NextResultAsync(cancellationToken);
+            return r;
+        }
     }
 }

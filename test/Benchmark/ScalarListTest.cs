@@ -40,62 +40,18 @@ namespace Benchmark
             return dogs;
         }
 
-        public List<string> GetStringListRowCount()
+        [Benchmark]
+        public List<string> ExecuteQueryRowCount()
         {
-            var dogs = new List<string>(RowCount);
             var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
-            try
-            {
-                connection.Open();
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = "select ";
-                using (var reader = cmd.ExecuteReader(CommandBehavior.Default))
-                {
-                    while (reader.Read())
-                    {
-                        dogs.Add(reader.GetString(0));
-                    }
-                }
-            }
-            finally
-            {
-                connection.Close();
-            }
-            return dogs;
+            return EnumerableExtensions.AsList(connection.ExecuteQuery<string>("select ", estimateRow: RowCount));
         }
 
         [Benchmark]
-        public List<string> ReadEnumerableRowCount()
+        public List<string> ExecuteQuery()
         {
             var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
-            try
-            {
-                connection.Open();
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = "select ";
-                return System.Linq.EnumerableExtensions.AsList(cmd.ExecuteReader().ReadEnumerable<string>(RowCount));
-            }
-            finally
-            {
-                connection.Close();
-            }
-        }
-
-        [Benchmark]
-        public List<string> ReadEnumerable()
-        {
-            var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
-            try
-            {
-                connection.Open();
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = "select ";
-                return System.Linq.EnumerableExtensions.AsList(cmd.ExecuteReader().ReadEnumerable<string>());
-            }
-            finally
-            {
-                connection.Close();
-            }
+            return EnumerableExtensions.AsList(connection.ExecuteQuery<string>("select "));
         }
 
         [Benchmark]
@@ -149,37 +105,14 @@ namespace Benchmark
         public string ExecuteScalar()
         {
             var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
-            try
-            {
-                connection.Open();
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = "select ";
-                return cmd.ExecuteScalar<string>();
-            }
-            finally
-            {
-                connection.Close();
-            }
+            return connection.ExecuteScalar<string>("select ");
         }
 
         [Benchmark]
-        public string Read()
+        public string ExecuteQueryFirstOrDefault()
         {
             var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
-            try
-            {
-                connection.Open();
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = "select ";
-                using (var reader = cmd.ExecuteReader(CommandBehavior.Default))
-                {
-                    return reader.Read<string>();
-                }
-            }
-            finally
-            {
-                connection.Close();
-            }
+            return connection.ExecuteQueryFirstOrDefault<string>("select ");
         }
 
         [Benchmark]

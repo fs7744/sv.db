@@ -92,13 +92,15 @@ namespace SV.Db
             dbTypeMapping[typeof(T)] = dbType;
         }
 
-        public static T Read<T>(this DbDataReader reader)
+        [MethodImpl(DBUtils.Optimization)]
+        internal static T Read<T>(this DbDataReader reader)
         {
             var t = GetRecordFactory<T>();
             return t.Read(reader);
         }
 
-        public static IEnumerable<T> ReadEnumerable<T>(this DbDataReader reader, int estimateRow = 0, bool useBuffer = true)
+        [MethodImpl(DBUtils.Optimization)]
+        internal static IEnumerable<T> ReadEnumerable<T>(this DbDataReader reader, int estimateRow = 0, bool useBuffer = true)
         {
             var t = GetRecordFactory<T>();
             return useBuffer
@@ -106,13 +108,15 @@ namespace SV.Db
                     : t.ReadUnBuffed(reader);
         }
 
-        public static IEnumerable<T> ReadUnBuffedEnumerable<T>(this DbDataReader reader)
+        [MethodImpl(DBUtils.Optimization)]
+        internal static IEnumerable<T> ReadUnBuffedEnumerable<T>(this DbDataReader reader)
         {
             var t = GetRecordFactory<T>();
             return t.ReadUnBuffed(reader);
         }
 
-        public static IAsyncEnumerable<T> ReadEnumerableAsync<T>(this DbDataReader reader, CancellationToken cancellationToken = default)
+        [MethodImpl(DBUtils.Optimization)]
+        internal static IAsyncEnumerable<T> ReadEnumerableAsync<T>(this DbDataReader reader, CancellationToken cancellationToken = default)
         {
             var t = GetRecordFactory<T>();
             return t.ReadUnBuffedAsync(reader, cancellationToken);

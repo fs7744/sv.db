@@ -38,7 +38,7 @@ namespace Benchmark
 
         protected override DbCommand CreateDbCommand()
         {
-            return new TestDbCommand() { Data = Data, RowCount = RowCount };
+            return new TestDbCommand() { Data = Data, RowCount = RowCount, Connection = this };
         }
     }
 
