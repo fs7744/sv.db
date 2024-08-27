@@ -8,31 +8,77 @@ namespace SV.Db
         public static int ExecuteNonQuery(this DbCommand cmd, object args = null)
         {
             cmd.SetParams(args);
-            return cmd.ExecuteNonQuery();
+            var connection = cmd.Connection;
+            try
+            {
+                if (connection.State != ConnectionState.Open)
+                {
+                    connection.Open();
+                }
+                return cmd.ExecuteNonQuery();
+            }
+            finally
+            {
+                connection.Close();
+            }
         }
 
-        public static Task<int> ExecuteNonQueryAsync(this DbCommand cmd, object args = null, CancellationToken cancellationToken = default)
+        public static async Task<int> ExecuteNonQueryAsync(this DbCommand cmd, object args = null, CancellationToken cancellationToken = default)
         {
             cmd.SetParams(args);
-            return cmd.ExecuteNonQueryAsync(cancellationToken);
+            var connection = cmd.Connection;
+            try
+            {
+                if (connection.State != ConnectionState.Open)
+                {
+                    await connection.OpenAsync();
+                }
+                return await cmd.ExecuteNonQueryAsync(cancellationToken);
+            }
+            finally
+            {
+                await connection.CloseAsync();
+            }
         }
 
         public static int ExecuteNonQuery(this DbConnection connection, string sql, object args = null, CommandType commandType = CommandType.Text)
         {
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = sql;
-            cmd.CommandType = commandType;
-            cmd.SetParams(args);
-            return cmd.ExecuteNonQuery();
+            try
+            {
+                if (connection.State != ConnectionState.Open)
+                {
+                    connection.Open();
+                }
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = sql;
+                cmd.CommandType = commandType;
+                cmd.SetParams(args);
+                return cmd.ExecuteNonQuery();
+            }
+            finally
+            {
+                connection.Close();
+            }
         }
 
-        public static Task<int> ExecuteNonQueryAsync(this DbConnection connection, string sql, object args = null, CancellationToken cancellationToken = default, CommandType commandType = CommandType.Text)
+        public static async Task<int> ExecuteNonQueryAsync(this DbConnection connection, string sql, object args = null, CancellationToken cancellationToken = default, CommandType commandType = CommandType.Text)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
             cmd.SetParams(args);
-            return cmd.ExecuteNonQueryAsync(cancellationToken);
+            try
+            {
+                if (connection.State != ConnectionState.Open)
+                {
+                    await connection.OpenAsync(cancellationToken);
+                }
+                return await cmd.ExecuteNonQueryAsync(cancellationToken);
+            }
+            finally
+            {
+                await connection.CloseAsync();
+            }
         }
     }
 }
