@@ -37,30 +37,46 @@ namespace SV.Db
 
         public static T? QueryFirstOrDefault<T>(this DbDataReader reader)
         {
-            var r = reader.Read<T>();
-            reader.NextResult();
-            return r;
+            if (reader.HasRows)
+            {
+                var r = reader.Read<T>();
+                reader.NextResult();
+                return r;
+            }
+            return default;
         }
 
         public static async Task<T?> QueryFirstOrDefaultAsync<T>(this DbDataReader reader, CancellationToken cancellationToken = default)
         {
-            var r = reader.Read<T>();
-            await reader.NextResultAsync(cancellationToken);
-            return r;
+            if (reader.HasRows)
+            {
+                var r = reader.Read<T>();
+                await reader.NextResultAsync(cancellationToken);
+                return r;
+            }
+            return default;
         }
 
         public static IEnumerable<T> Query<T>(this DbDataReader reader, int estimateRow = 0, bool useBuffer = true)
         {
-            var r = reader.ReadEnumerable<T>(estimateRow, useBuffer);
-            reader.NextResult();
-            return r;
+            if (reader.HasRows)
+            {
+                var r = reader.ReadEnumerable<T>(estimateRow, useBuffer);
+                reader.NextResult();
+                return r;
+            }
+            return Enumerable.Empty<T>();
         }
 
         public static async Task<IAsyncEnumerable<T>> QueryAsync<T>(this DbDataReader reader, CancellationToken cancellationToken = default)
         {
-            var r = reader.ReadEnumerableAsync<T>(cancellationToken);
-            await reader.NextResultAsync(cancellationToken);
-            return r;
+            if (reader.HasRows)
+            {
+                var r = reader.ReadEnumerableAsync<T>(cancellationToken);
+                await reader.NextResultAsync(cancellationToken);
+                return r;
+            }
+            return EmptyAsyncEnumerator<T>.Instance;
         }
     }
 }

@@ -80,5 +80,34 @@
             List<T> list => list,
             _ => Enumerable.ToArray(source),
         };
+
+        public static IAsyncEnumerable<TValue> AsyncEmpty<TValue>()
+        {
+            return EmptyAsyncEnumerator<TValue>.Instance;
+        }
+    }
+
+    internal sealed class EmptyAsyncEnumerator<TValue> : IAsyncEnumerator<TValue>, IAsyncEnumerable<TValue>
+    {
+        private static readonly ValueTask<bool> f = ValueTask.FromResult(false);
+
+        public static readonly EmptyAsyncEnumerator<TValue> Instance = new();
+
+        public TValue Current => default!;
+
+        public ValueTask DisposeAsync()
+        {
+            return ValueTask.CompletedTask;
+        }
+
+        public ValueTask<bool> MoveNextAsync()
+        {
+            return f;
+        }
+
+        public IAsyncEnumerator<TValue> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        {
+            return this;
+        }
     }
 }
