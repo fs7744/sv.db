@@ -119,14 +119,14 @@ namespace Benchmark
         public string Dapper()
         {
             var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
-            return connection.ExecuteScalar<string>("select * from dog");
+            return SqlMapper.ExecuteScalar<string>(connection, "select * from dog");
         }
 
         [Benchmark, DapperAot]
         public string DapperAot()
         {
             var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
-            return connection.ExecuteScalar<string>("select * from dog");
+            return SqlMapper.ExecuteScalar<string>(connection, "select * from dog");
         }
 
         [Benchmark]
