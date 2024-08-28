@@ -66,7 +66,7 @@ namespace SV.Db
                 {
                     do
                     {
-                        yield return reader.IsDBNull(0) ? default(T) : DBUtils.As<T>(reader.GetValue(0));
+                        yield return reader.IsDBNull(0) ? default : DBUtils.As<T>(reader.GetValue(0));
                     }
                     while (reader.Read());
                 }
@@ -175,11 +175,11 @@ namespace SV.Db
         {
             if (reader.GetFieldType(0) == typeof(string))
             {
-                return reader.IsDBNull(0) ? default(T) : (T)Enum.Parse(typeof(T), reader.GetString(0));
+                return reader.IsDBNull(0) ? default : (T)Enum.Parse(typeof(T), reader.GetString(0));
             }
             else
             {
-                return reader.IsDBNull(0) ? default(T) : (T)Enum.ToObject(typeof(T), reader.GetValue(0));
+                return reader.IsDBNull(0) ? default : (T)Enum.ToObject(typeof(T), reader.GetValue(0));
             }
         }
 

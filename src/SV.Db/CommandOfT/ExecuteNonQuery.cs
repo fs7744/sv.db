@@ -31,7 +31,7 @@ namespace SV.Db
             {
                 if (connection.State != ConnectionState.Open)
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync(cancellationToken);
                 }
                 return await cmd.ExecuteNonQueryAsync(cancellationToken);
             }
