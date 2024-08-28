@@ -8,26 +8,17 @@
 	  <IncludeBuildOutput>false</IncludeBuildOutput>
 	  <!-- Do not include the generator as a lib dependency -->
 	  <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-	  <DevelopmentDependency>true</DevelopmentDependency>
 	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="..\SV.Db.Analyzers.Base\StringHashing.cs" Link="StringHashing.cs" />
-  </ItemGroup>
-
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" Pack="false" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" Pack="false" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.10.0" Pack="false" PrivateAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<!-- Package the generator in the analyzer directory of the nuget package -->
 		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\SV.Db.Analyzers.Base\SV.Db.Analyzers.Base.csproj" />
 	</ItemGroup>
 	
 </Project>

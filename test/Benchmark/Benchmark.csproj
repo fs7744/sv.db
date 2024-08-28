@@ -18,6 +18,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\src\SV.Db.Analyzers\SV.Db.Analyzers.csproj"  OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
 	  <ProjectReference Include="..\..\src\SV.Db\SV.Db.csproj" />
 	</ItemGroup>
 

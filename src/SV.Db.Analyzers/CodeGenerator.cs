@@ -5,6 +5,7 @@ using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 
 namespace SV.Db.Analyzers
@@ -21,10 +22,11 @@ namespace SV.Db.Analyzers
             context.RegisterImplementationSourceOutput(combined, Generate);
         }
 
-        private void Generate(SourceProductionContext context, (Compilation Compilation, ImmutableArray<SourceState> Sources) tuple)
+        private void Generate(SourceProductionContext context, (Compilation Compilation, ImmutableArray<SourceState> Sources) state)
         {
             try
             {
+                context.AddSource((state.Compilation.AssemblyName ?? "package") + ".generated.cs", $"// {state.Sources.Length} \r\n" + string.Join("", state.Sources.Select(i => i.ToString())));
             }
             catch (Exception ex)
             {
@@ -44,30 +46,7 @@ namespace SV.Db.Analyzers
 
         private bool FilterFuncName(string funcName)
         {
-            switch (funcName)
-            {
-                case "ExecuteNonQuery":
-                case "ExecuteNonQueryAsync":
-                case "ExecuteNonQuerys":
-                case "ExecuteNonQuerysAsync":
-                case "ExecuteQuery":
-                case "ExecuteQueryAsync":
-                case "ExecuteQueryFirstOrDefault":
-                case "ExecuteQueryFirstOrDefaultAsync":
-                case "ExecuteReader":
-                case "ExecuteReaderAsync":
-                case "QueryFirstOrDefault":
-                case "QueryFirstOrDefaultAsync":
-                case "Query":
-                case "QueryAsync":
-                case "ExecuteScalar":
-                case "ExecuteScalarAsync":
-                case "SetParams":
-                    return true;
-
-                default:
-                    return false;
-            }
+            return funcName.StartsWith("Execute") || funcName.StartsWith("Query") || funcName.StartsWith("SetParams");
         }
 
         private SourceState TransformFunc(GeneratorSyntaxContext ctx, CancellationToken token)
@@ -76,7 +55,7 @@ namespace SV.Db.Analyzers
             {
                 if (ctx.Node is not InvocationExpressionSyntax ie
                     || ctx.SemanticModel.GetOperation(ie) is not IInvocationOperation op
-                    || IsDbFunc(op))
+                    || !IsDbFunc(op))
 
                 {
                     return null;
@@ -102,9 +81,36 @@ namespace SV.Db.Analyzers
                     case "ExecuteScalar":
                     case "ExecuteScalarAsync":
                     case "SetParams":
-                        return new SourceState()
                         {
-                        };
+                            IOperation argExpression = null;
+                            foreach (var arg in op.Arguments)
+                            {
+                                switch (arg.Parameter?.Name)
+                                {
+                                    case "args":
+                                        if (arg.Value is not IDefaultValueOperation)
+                                        {
+                                            var expr = arg.Value;
+                                            while (expr is IConversionOperation conv && expr.Type?.SpecialType == SpecialType.System_Object)
+                                            {
+                                                expr = conv.Operand;
+                                            }
+                                            if (!(expr.ConstantValue.HasValue && expr.ConstantValue.Value is null))
+                                            {
+                                                argExpression = expr;
+                                            }
+                                        }
+                                        break;
+
+                                    default: break;
+                                }
+                            }
+                            return new SourceState()
+                            {
+                                Invocation = op,
+                                Args = argExpression
+                            };
+                        }
 
                     default:
                         return null;
@@ -125,7 +131,7 @@ namespace SV.Db.Analyzers
                 return false;
             }
             var type = method.ContainingType;
-            if (type is not { Name: "CommandExtensions", ContainingNamespace: { Name: "SV.Db", ContainingNamespace.IsGlobalNamespace: true } })
+            if (type is not { Name: "CommandExtensions", ContainingNamespace: { Name: "Db", IsGlobalNamespace: false, ContainingNamespace: { Name: "SV", IsGlobalNamespace: false, ContainingNamespace.IsGlobalNamespace: true } } })
             {
                 return false;
             }
