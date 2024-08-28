@@ -56,7 +56,6 @@ namespace SV.Db.Analyzers
                 if (ctx.Node is not InvocationExpressionSyntax ie
                     || ctx.SemanticModel.GetOperation(ie) is not IInvocationOperation op
                     || !IsDbFunc(op))
-
                 {
                     return null;
                 }
@@ -99,6 +98,10 @@ namespace SV.Db.Analyzers
                                             {
                                                 argExpression = expr;
                                             }
+                                            if (argExpression != null && argExpression.Type.SpecialType == SpecialType.System_Object)
+                                            {
+                                                argExpression = null;
+                                            }
                                         }
                                         break;
 
@@ -107,6 +110,7 @@ namespace SV.Db.Analyzers
                             }
                             return new SourceState()
                             {
+                                IsAsync = method.Name.EndsWith("Async"),
                                 Invocation = op,
                                 Args = argExpression
                             };

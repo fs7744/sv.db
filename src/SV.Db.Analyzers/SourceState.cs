@@ -10,10 +10,11 @@ namespace SV.Db.Analyzers
     {
         public IOperation? Args { get; set; }
         public IInvocationOperation Invocation { get; set; }
+        public bool IsAsync { get; set; }
 
         public override string ToString()
         {
-            return $"// {Invocation?.TargetMethod?.ToDisplayString()} ( arg: {Args?.Type.ToDisplayString()} ) \r\n";
+            return $"// IsAsync:{IsAsync} {Invocation?.TargetMethod?.ToDisplayString()} ( arg: {Args?.Type.ToDisplayString()} ) \r\n";
         }
     }
 }
