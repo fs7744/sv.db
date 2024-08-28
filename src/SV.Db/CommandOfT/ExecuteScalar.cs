@@ -5,7 +5,7 @@ namespace SV.Db
 {
     public static partial class CommandExtensions
     {
-        public static T ExecuteScalar<T>(this DbCommand command, object args = null)
+        public static T ExecuteScalar<T>(this DbCommand command, object? args = null)
         {
             command.SetParams(args);
             var connection = command.Connection;
@@ -23,7 +23,7 @@ namespace SV.Db
             }
         }
 
-        public static async Task<T> ExecuteScalarAsync<T>(this DbCommand command, object args = null, CancellationToken cancellationToken = default)
+        public static async Task<T> ExecuteScalarAsync<T>(this DbCommand command, object? args = null, CancellationToken cancellationToken = default)
         {
             command.SetParams(args);
             var connection = command.Connection;
@@ -41,7 +41,7 @@ namespace SV.Db
             }
         }
 
-        public static object? ExecuteScalar(this DbConnection connection, string sql, object args = null, CommandType commandType = CommandType.Text)
+        public static object? ExecuteScalar(this DbConnection connection, string sql, object? args = null, CommandType commandType = CommandType.Text)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
@@ -61,7 +61,7 @@ namespace SV.Db
             }
         }
 
-        public static T ExecuteScalar<T>(this DbConnection connection, string sql, object args = null, CommandType commandType = CommandType.Text)
+        public static T ExecuteScalar<T>(this DbConnection connection, string sql, object? args = null, CommandType commandType = CommandType.Text)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
@@ -70,7 +70,7 @@ namespace SV.Db
             return cmd.ExecuteScalar<T>();
         }
 
-        public static async Task<object?> ExecuteScalarAsync(this DbConnection connection, string sql, object args = null, CancellationToken cancellationToken = default, CommandType commandType = CommandType.Text)
+        public static async Task<object?> ExecuteScalarAsync(this DbConnection connection, string sql, object? args = null, CancellationToken cancellationToken = default, CommandType commandType = CommandType.Text)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
@@ -90,7 +90,7 @@ namespace SV.Db
             }
         }
 
-        public static Task<T> ExecuteScalarAsync<T>(this DbConnection connection, string sql, object args = null, CancellationToken cancellationToken = default, CommandType commandType = CommandType.Text)
+        public static Task<T> ExecuteScalarAsync<T>(this DbConnection connection, string sql, object? args = null, CancellationToken cancellationToken = default, CommandType commandType = CommandType.Text)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;

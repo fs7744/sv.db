@@ -41,14 +41,14 @@ namespace Benchmark
         }
 
         [Benchmark]
-        public List<string> ExecuteQueryRowCount()
+        public List<string?> ExecuteQueryRowCount()
         {
             var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
             return EnumerableExtensions.AsList(connection.ExecuteQuery<string>("select ", estimateRow: RowCount));
         }
 
         [Benchmark]
-        public List<string> ExecuteQuery()
+        public List<string?> ExecuteQuery()
         {
             var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
             return EnumerableExtensions.AsList(connection.ExecuteQuery<string>("select "));
@@ -78,7 +78,7 @@ namespace Benchmark
         private TestData data = new TestData(("a", "oo"));
 
         [Benchmark(Baseline = true)]
-        public string GetString()
+        public string? GetString()
         {
             var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
             try
@@ -109,35 +109,35 @@ namespace Benchmark
         }
 
         [Benchmark]
-        public string ExecuteQueryFirstOrDefault()
+        public string? ExecuteQueryFirstOrDefault()
         {
             var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
             return connection.ExecuteQueryFirstOrDefault<string>("select ");
         }
 
         [Benchmark]
-        public string Dapper()
+        public string? Dapper()
         {
             var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
             return SqlMapper.ExecuteScalar<string>(connection, "select * from dog");
         }
 
         [Benchmark, DapperAot]
-        public string DapperAot()
+        public string? DapperAot()
         {
             var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
             return SqlMapper.ExecuteScalar<string>(connection, "select * from dog");
         }
 
         [Benchmark]
-        public string DapperQueryFirstOrDefault()
+        public string? DapperQueryFirstOrDefault()
         {
             var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
             return connection.QueryFirstOrDefault<string>("select * from dog");
         }
 
         [Benchmark, DapperAot]
-        public string DapperAotQueryFirstOrDefault()
+        public string? DapperAotQueryFirstOrDefault()
         {
             var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
             return connection.QueryFirstOrDefault<string>("select * from dog");

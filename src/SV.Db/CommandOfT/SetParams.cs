@@ -6,10 +6,10 @@ namespace SV.Db
 {
     public static partial class CommandExtensions
     {
-        private static readonly ConcurrentDictionary<Type, IParamsSetter> paramsSetterCache = new();
-        private static readonly MethodInfo method = typeof(RecordFactory).GetMethod("GetParamsSetter");
+        private static readonly ConcurrentDictionary<Type, IParamsSetter?> paramsSetterCache = new();
+        private static readonly MethodInfo? method = typeof(RecordFactory).GetMethod("GetParamsSetter");
 
-        public static void SetParams(this DbCommand cmd, object args = null)
+        public static void SetParams(this DbCommand cmd, object? args = null)
         {
             if (args != null)
             {
@@ -27,7 +27,7 @@ namespace SV.Db
             RecordFactory.GetParamsSetter<T>().SetParams(cmd, args);
         }
 
-        public static void SetParams(this DbBatchCommand cmd, object args = null)
+        public static void SetParams(this DbBatchCommand cmd, object? args = null)
         {
             if (args != null)
             {

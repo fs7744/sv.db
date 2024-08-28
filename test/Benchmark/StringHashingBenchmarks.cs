@@ -31,7 +31,7 @@ namespace Benchmark
         [Params(0, 1, 10, 100)]
         public int Count { get; set; }
 
-        public string Str { get; set; }
+        public string Str { get; set; } = string.Empty;
 
         [GlobalSetup]
         public void Setup()
@@ -43,7 +43,7 @@ namespace Benchmark
         }
 
         [Benchmark(Baseline = true)]
-        public int GetHashCode()
+        public int HashCode()
         {
             return Str.GetHashCode();
         }

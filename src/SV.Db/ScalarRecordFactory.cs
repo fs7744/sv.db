@@ -1,13 +1,14 @@
 ﻿using System.Data;
 using System.Data.Common;
+using System.Runtime.CompilerServices;
 
 namespace SV.Db
 {
     public abstract class ScalarRecordFactory<T> : IRecordFactory<T>
     {
-        protected abstract T ReadScalar(DbDataReader reader);
+        protected abstract T? ReadScalar(DbDataReader reader);
 
-        public virtual T Read(DbDataReader reader)
+        public virtual T? Read(DbDataReader reader)
         {
             if (reader.Read())
             {
@@ -20,12 +21,12 @@ namespace SV.Db
                     return DBUtils.As<T>(reader.GetValue(0));
                 }
             }
-            return default(T);
+            return default;
         }
 
-        public virtual List<T> ReadBuffed(DbDataReader reader, int estimateRow = 0)
+        public virtual List<T?> ReadBuffed(DbDataReader reader, int estimateRow = 0)
         {
-            List<T> result = new(estimateRow);
+            List<T?> result = new(estimateRow);
             if (reader.Read())
             {
                 if (reader.GetFieldType(0) == typeof(T))
@@ -40,7 +41,7 @@ namespace SV.Db
                 {
                     do
                     {
-                        result.Add(reader.IsDBNull(0) ? default(T) : DBUtils.As<T>(reader.GetValue(0)));
+                        result.Add(reader.IsDBNull(0) ? default : DBUtils.As<T>(reader.GetValue(0)));
                     }
                     while (reader.Read());
                 }
@@ -49,7 +50,7 @@ namespace SV.Db
             return result;
         }
 
-        public virtual IEnumerable<T> ReadUnBuffed(DbDataReader reader)
+        public virtual IEnumerable<T?> ReadUnBuffed(DbDataReader reader)
         {
             if (reader.Read())
             {
@@ -72,7 +73,7 @@ namespace SV.Db
             }
         }
 
-        public virtual async IAsyncEnumerable<T> ReadUnBuffedAsync(DbDataReader reader, CancellationToken cancellationToken = default)
+        public virtual async IAsyncEnumerable<T?> ReadUnBuffedAsync(DbDataReader reader, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             if (await reader.ReadAsync(cancellationToken))
             {
@@ -88,7 +89,7 @@ namespace SV.Db
                 {
                     do
                     {
-                        yield return reader.IsDBNull(0) ? default(T) : DBUtils.As<T>(reader.GetValue(0));
+                        yield return reader.IsDBNull(0) ? default : DBUtils.As<T>(reader.GetValue(0));
                     }
                     while (await reader.ReadAsync(cancellationToken));
                 }
@@ -98,7 +99,7 @@ namespace SV.Db
 
     public class ScalarRecordFactoryEnum<T> : ScalarRecordFactory<T>
     {
-        public override T Read(DbDataReader reader)
+        public override T? Read(DbDataReader reader)
         {
             if (reader.Read())
             {
@@ -107,21 +108,21 @@ namespace SV.Db
             return default;
         }
 
-        protected override T ReadScalar(DbDataReader reader)
+        protected override T? ReadScalar(DbDataReader reader)
         {
             if (reader.GetFieldType(0) == typeof(string))
             {
-                return reader.IsDBNull(0) ? default(T) : (T)Enum.Parse(typeof(T), reader.GetString(0));
+                return reader.IsDBNull(0) ? default : (T)Enum.Parse(typeof(T), reader.GetString(0));
             }
             else
             {
-                return reader.IsDBNull(0) ? default(T) : (T)Enum.ToObject(typeof(T), reader.GetValue(0));
+                return reader.IsDBNull(0) ? default : (T)Enum.ToObject(typeof(T), reader.GetValue(0));
             }
         }
 
-        public override List<T> ReadBuffed(DbDataReader reader, int estimateRow = 0)
+        public override List<T?> ReadBuffed(DbDataReader reader, int estimateRow = 0)
         {
-            List<T> result = new(estimateRow);
+            List<T?> result = new(estimateRow);
             if (reader.Read())
             {
                 do
@@ -131,10 +132,10 @@ namespace SV.Db
                 while (reader.Read());
             }
 
-            return result;
+            return result!;
         }
 
-        public override IEnumerable<T> ReadUnBuffed(DbDataReader reader)
+        public override IEnumerable<T?> ReadUnBuffed(DbDataReader reader)
         {
             if (reader.Read())
             {
@@ -146,7 +147,7 @@ namespace SV.Db
             }
         }
 
-        public override async IAsyncEnumerable<T> ReadUnBuffedAsync(DbDataReader reader, CancellationToken cancellationToken = default)
+        public override async IAsyncEnumerable<T?> ReadUnBuffedAsync(DbDataReader reader, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             if (await reader.ReadAsync(cancellationToken))
             {
@@ -209,7 +210,7 @@ namespace SV.Db
             }
         }
 
-        public override async IAsyncEnumerable<T?> ReadUnBuffedAsync(DbDataReader reader, CancellationToken cancellationToken = default)
+        public override async IAsyncEnumerable<T?> ReadUnBuffedAsync(DbDataReader reader, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             if (await reader.ReadAsync(cancellationToken))
             {
@@ -224,7 +225,7 @@ namespace SV.Db
 
     public class ScalarRecordFactoryString : ScalarRecordFactory<string>
     {
-        protected override string ReadScalar(DbDataReader reader)
+        protected override string? ReadScalar(DbDataReader reader)
         {
             return reader.IsDBNull(0) ? null : reader.GetString(0);
         }

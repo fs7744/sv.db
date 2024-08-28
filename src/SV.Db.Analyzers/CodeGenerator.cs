@@ -102,6 +102,9 @@ namespace SV.Db.Analyzers
                     case "ExecuteScalar":
                     case "ExecuteScalarAsync":
                     case "SetParams":
+                        return new SourceState()
+                        {
+                        };
 
                     default:
                         return null;

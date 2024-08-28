@@ -5,19 +5,19 @@ namespace SV.Db
 {
     public static partial class CommandExtensions
     {
-        public static DbDataReader ExecuteReader(this DbCommand cmd, object args, CommandBehavior behavior = CommandBehavior.Default)
+        public static DbDataReader ExecuteReader(this DbCommand cmd, object? args = null, CommandBehavior behavior = CommandBehavior.Default)
         {
             cmd.SetParams(args);
             return cmd.ExecuteReader(behavior);
         }
 
-        public static Task<DbDataReader> ExecuteReaderAsync(this DbCommand cmd, object args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default)
+        public static Task<DbDataReader> ExecuteReaderAsync(this DbCommand cmd, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default)
         {
             cmd.SetParams(args);
             return cmd.ExecuteReaderAsync(behavior, cancellationToken);
         }
 
-        public static DbDataReader ExecuteReader(this DbConnection connection, string sql, object args = null, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text)
+        public static DbDataReader ExecuteReader(this DbConnection connection, string sql, object? args = null, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
@@ -26,7 +26,7 @@ namespace SV.Db
             return cmd.ExecuteReader(behavior);
         }
 
-        public static Task<DbDataReader> ExecuteReaderAsync(this DbConnection connection, string sql, object args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text)
+        public static Task<DbDataReader> ExecuteReaderAsync(this DbConnection connection, string sql, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
@@ -57,7 +57,7 @@ namespace SV.Db
             return default;
         }
 
-        public static IEnumerable<T> Query<T>(this DbDataReader reader, int estimateRow = 0, bool useBuffer = true)
+        public static IEnumerable<T?> Query<T>(this DbDataReader reader, int estimateRow = 0, bool useBuffer = true)
         {
             if (reader.HasRows)
             {
@@ -68,7 +68,7 @@ namespace SV.Db
             return Enumerable.Empty<T>();
         }
 
-        public static async Task<IAsyncEnumerable<T>> QueryAsync<T>(this DbDataReader reader, CancellationToken cancellationToken = default)
+        public static async Task<IAsyncEnumerable<T?>> QueryAsync<T>(this DbDataReader reader, CancellationToken cancellationToken = default)
         {
             if (reader.HasRows)
             {

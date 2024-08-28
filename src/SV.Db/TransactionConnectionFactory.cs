@@ -13,7 +13,9 @@ namespace SV.Db
             this.RealConnection = connection;
         }
 
+#pragma warning disable CS8765 // Nullability of type of parameter doesn't match overridden member (possibly because of nullability attributes).
         public override string ConnectionString { get => RealConnection.ConnectionString; set => RealConnection.ConnectionString = value; }
+#pragma warning restore CS8765 // Nullability of type of parameter doesn't match overridden member (possibly because of nullability attributes).
 
         public override string Database => RealConnection.Database;
 
@@ -101,9 +103,9 @@ namespace SV.Db
             return new ConcurrentDictionary<string, TransactionConnection>();
         }
 
-        private static void TransactionCompleted(object sender, TransactionEventArgs e)
+        private static void TransactionCompleted(object? sender, TransactionEventArgs e)
         {
-            if (connections.TryGetValue(e.Transaction, out ConcurrentDictionary<string, TransactionConnection> dict))
+            if (e.Transaction != null && connections.TryGetValue(e.Transaction, out var dict))
             {
                 foreach (var conn in dict.Values)
                 {

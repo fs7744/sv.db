@@ -20,13 +20,13 @@ namespace SV.Db
 
     public interface IRecordFactory<T>
     {
-        T Read(DbDataReader reader);
+        T? Read(DbDataReader reader);
 
-        List<T> ReadBuffed(DbDataReader reader, int estimateRow = 0);
+        List<T?> ReadBuffed(DbDataReader reader, int estimateRow = 0);
 
-        IEnumerable<T> ReadUnBuffed(DbDataReader reader);
+        IEnumerable<T?> ReadUnBuffed(DbDataReader reader);
 
-        IAsyncEnumerable<T> ReadUnBuffedAsync(DbDataReader reader, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<T?> ReadUnBuffedAsync(DbDataReader reader, CancellationToken cancellationToken = default);
     }
 
     public abstract class RecordFactory<T> : IRecordFactory<T>, IParamsSetter<T>
@@ -41,9 +41,9 @@ namespace SV.Db
 
         protected abstract void GenerateReadTokens(DbDataReader reader, Span<int> tokens);
 
-        protected abstract T Read(DbDataReader reader, ref ReadOnlySpan<int> tokens);
+        protected abstract T? Read(DbDataReader reader, ref ReadOnlySpan<int> tokens);
 
-        public virtual T Read(DbDataReader reader)
+        public virtual T? Read(DbDataReader reader)
         {
             var state = new ReaderState
             {
@@ -55,9 +55,9 @@ namespace SV.Db
             return Read(reader, ref readOnlyTokens);
         }
 
-        public virtual List<T> ReadBuffed(DbDataReader reader, int estimateRow = 0)
+        public virtual List<T?> ReadBuffed(DbDataReader reader, int estimateRow = 0)
         {
-            List<T> results = new(estimateRow);
+            List<T?> results = new(estimateRow);
             if (reader.Read())
             {
                 var state = new ReaderState
@@ -95,7 +95,7 @@ namespace SV.Db
             return new UnBuffedEnumerator(reader, s, this, state);
         }
 
-        internal unsafe struct UnBuffedEnumerator : IEnumerable<T>, IEnumerator<T>
+        internal unsafe struct UnBuffedEnumerator : IEnumerable<T?>, IEnumerator<T?>
         {
             private readonly DbDataReader reader;
             private readonly RecordFactory<T> factory;
@@ -103,9 +103,9 @@ namespace SV.Db
             private readonly int* tokens;
             private readonly int length;
 
-            public T Current { get; private set; }
+            public T? Current { get; private set; }
 
-            object IEnumerator.Current => Current;
+            object? IEnumerator.Current => Current;
 
             public UnBuffedEnumerator(DbDataReader reader, Span<int> span, RecordFactory<T> factory, ReaderState state)
             {
@@ -162,7 +162,7 @@ namespace SV.Db
             return new UnBuffedAsyncEnumerator(reader, s, this, state, ref cancellationToken);
         }
 
-        internal struct UnBuffedAsyncEnumerator : IAsyncEnumerable<T>, IAsyncEnumerator<T>
+        internal struct UnBuffedAsyncEnumerator : IAsyncEnumerable<T?>, IAsyncEnumerator<T?>
         {
             private readonly DbDataReader reader;
             private readonly RecordFactory<T> factory;
@@ -171,7 +171,7 @@ namespace SV.Db
             private readonly int length;
             private readonly CancellationToken cancellationToken;
 
-            public T Current { get; private set; }
+            public T? Current { get; private set; }
 
             public UnBuffedAsyncEnumerator(DbDataReader reader, Span<int> span, RecordFactory<T> factory, ReaderState state, ref CancellationToken cancellationToken)
             {

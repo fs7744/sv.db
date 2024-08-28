@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Data.Common;
+using System.Runtime.CompilerServices;
 
 namespace SV.Db
 {
@@ -59,14 +60,14 @@ namespace SV.Db
 
         public abstract T Create();
 
-        public override T Read(DbDataReader reader)
+        public override T? Read(DbDataReader reader)
         {
             if (reader.Read())
             {
                 T dict = ReadDict(reader);
                 return dict;
             }
-            return default(T);
+            return default;
         }
 
         private T ReadDict(DbDataReader reader)
@@ -81,9 +82,9 @@ namespace SV.Db
             return dict;
         }
 
-        public override List<T> ReadBuffed(DbDataReader reader, int estimateRow = 0)
+        public override List<T?> ReadBuffed(DbDataReader reader, int estimateRow = 0)
         {
-            List<T> list = new(estimateRow);
+            List<T?> list = new(estimateRow);
             try
             {
                 while (reader.Read())
@@ -113,7 +114,7 @@ namespace SV.Db
             }
         }
 
-        public override async IAsyncEnumerable<T> ReadUnBuffedAsync(DbDataReader reader, CancellationToken cancellationToken = default)
+        public override async IAsyncEnumerable<T> ReadUnBuffedAsync(DbDataReader reader, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             try
             {

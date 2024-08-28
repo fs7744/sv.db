@@ -37,7 +37,9 @@ namespace SV.Db
         {
             get
             {
+#pragma warning disable CS8604 // Possible null reference argument.
                 return MemoryMarshal.CreateReadOnlySpan(ref MemoryMarshal.GetArrayDataReference(Tokens), FieldCount);
+#pragma warning restore CS8604 // Possible null reference argument.
             }
         }
 

@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Dynamic;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace SV.Db
 {
@@ -270,7 +271,7 @@ namespace SV.Db
             throw new NotImplementedException();
         }
 
-        public override T Read(DbDataReader reader)
+        public override T? Read(DbDataReader reader)
         {
             if (reader.Read())
             {
@@ -283,7 +284,7 @@ namespace SV.Db
                 }
                 return (T)(object)new DynamicRecord(arr, reader, dict);
             }
-            return default(T);
+            return default;
         }
 
         public override IEnumerable<T> ReadUnBuffed(DbDataReader reader)
@@ -309,7 +310,7 @@ namespace SV.Db
             }
         }
 
-        public override List<T> ReadBuffed(DbDataReader reader, int estimateRow = 0)
+        public override List<T?> ReadBuffed(DbDataReader reader, int estimateRow = 0)
         {
             var arr = new DynamicRecordField[reader.FieldCount];
             var dict = new Dictionary<string, int>();
@@ -318,7 +319,7 @@ namespace SV.Db
                 arr[i] = new DynamicRecordField(reader.GetName(i), reader.GetFieldType(i), reader.GetDataTypeName(i));
                 dict[arr[i].Name] = i;
             }
-            List<T> list = new(estimateRow);
+            List<T?> list = new(estimateRow);
             try
             {
                 while (reader.Read())
@@ -333,7 +334,7 @@ namespace SV.Db
             }
         }
 
-        public override async IAsyncEnumerable<T> ReadUnBuffedAsync(DbDataReader reader, CancellationToken cancellationToken = default)
+        public override async IAsyncEnumerable<T> ReadUnBuffedAsync(DbDataReader reader, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var arr = new DynamicRecordField[reader.FieldCount];
             var dict = new Dictionary<string, int>();
@@ -356,7 +357,7 @@ namespace SV.Db
             }
         }
 
-        public override void SetParams(DbCommand cmd, object args)
+        public override void SetParams(DbCommand cmd, object? args)
         {
             if (args is IEnumerable<KeyValuePair<string, object>> vs)
             {
@@ -377,7 +378,7 @@ namespace SV.Db
             SetParams(cmd, (object)args);
         }
 
-        public override void SetParams(DbBatchCommand cmd, object args)
+        public override void SetParams(DbBatchCommand cmd, object? args)
         {
             if (args is IEnumerable<KeyValuePair<string, object>> vs)
             {

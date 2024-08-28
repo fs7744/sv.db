@@ -5,7 +5,7 @@ namespace SV.Db
 {
     public static partial class CommandExtensions
     {
-        public static IEnumerable<T> ExecuteQuery<T>(this DbCommand command, object args = null, CommandBehavior behavior = CommandBehavior.Default, int estimateRow = 0, bool useBuffer = true)
+        public static IEnumerable<T?> ExecuteQuery<T>(this DbCommand command, object? args = null, CommandBehavior behavior = CommandBehavior.Default, int estimateRow = 0, bool useBuffer = true)
         {
             command.SetParams(args);
             var connection = command.Connection;
@@ -28,7 +28,7 @@ namespace SV.Db
             }
         }
 
-        public static async Task<IAsyncEnumerable<T>> ExecuteQueryAsync<T>(this DbCommand command, object args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default)
+        public static async Task<IAsyncEnumerable<T?>> ExecuteQueryAsync<T>(this DbCommand command, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default)
         {
             command.SetParams(args);
             var connection = command.Connection;
@@ -51,7 +51,7 @@ namespace SV.Db
             }
         }
 
-        public static Task<IAsyncEnumerable<T>> ExecuteQueryAsync<T>(this DbConnection connection, string sql, object args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text)
+        public static Task<IAsyncEnumerable<T?>> ExecuteQueryAsync<T>(this DbConnection connection, string sql, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
@@ -60,7 +60,7 @@ namespace SV.Db
             return ExecuteQueryAsync<T>(cmd, args, cancellationToken, behavior);
         }
 
-        public static IEnumerable<T> ExecuteQuery<T>(this DbConnection connection, string sql, object args = null, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text, int estimateRow = 0, bool useBuffer = true)
+        public static IEnumerable<T?> ExecuteQuery<T>(this DbConnection connection, string sql, object? args = null, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text, int estimateRow = 0, bool useBuffer = true)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
@@ -69,7 +69,7 @@ namespace SV.Db
             return ExecuteQuery<T>(cmd, args, behavior, estimateRow, useBuffer);
         }
 
-        public static T? ExecuteQueryFirstOrDefault<T>(this DbCommand command, object args = null, CommandBehavior behavior = CommandBehavior.SingleRow)
+        public static T? ExecuteQueryFirstOrDefault<T>(this DbCommand command, object? args = null, CommandBehavior behavior = CommandBehavior.SingleRow)
         {
             command.SetParams(args);
             var connection = command.Connection;
@@ -92,7 +92,7 @@ namespace SV.Db
             }
         }
 
-        public static T? ExecuteQueryFirstOrDefault<T>(this DbConnection connection, string sql, object args = null, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text, int estimateRow = 0, bool useBuffer = true)
+        public static T? ExecuteQueryFirstOrDefault<T>(this DbConnection connection, string sql, object? args = null, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text, int estimateRow = 0, bool useBuffer = true)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
@@ -101,7 +101,7 @@ namespace SV.Db
             return ExecuteQueryFirstOrDefault<T>(cmd, args, behavior);
         }
 
-        public static async Task<T?> ExecuteQueryFirstOrDefaultAsync<T>(this DbCommand command, object args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.SingleRow)
+        public static async Task<T?> ExecuteQueryFirstOrDefaultAsync<T>(this DbCommand command, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.SingleRow)
         {
             command.SetParams(args);
             var connection = command.Connection;
@@ -126,7 +126,7 @@ namespace SV.Db
             }
         }
 
-        public static Task<T?> ExecuteQueryFirstOrDefaultAsync<T>(this DbConnection connection, string sql, object args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.SingleRow, CommandType commandType = CommandType.Text)
+        public static Task<T?> ExecuteQueryFirstOrDefaultAsync<T>(this DbConnection connection, string sql, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.SingleRow, CommandType commandType = CommandType.Text)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;

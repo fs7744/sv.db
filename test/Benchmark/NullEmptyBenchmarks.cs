@@ -8,7 +8,7 @@ namespace Benchmark
     public class NullEmptyBenchmarks
     {
         private readonly List<Customer> data = new();
-        private Customer[] array;
+        private Customer?[] array = [];
 
         public int Count { get; set; } = 100;
 
@@ -94,7 +94,7 @@ namespace Benchmark
         [Benchmark, BenchmarkCategory("Enumerable")]
         public bool ArrayEnumerableIsNotNullOrEmpty()
         {
-            return ((IEnumerable<Customer>)array).IsNotNullOrEmpty();
+            return ((IEnumerable<Customer?>)array).IsNotNullOrEmpty();
         }
     }
 }

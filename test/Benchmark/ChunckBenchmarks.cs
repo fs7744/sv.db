@@ -15,7 +15,7 @@ namespace Benchmark
     public class ChunckBenchmarks
     {
         private readonly List<Customer> data = new();
-        private Customer[] array;
+        private Customer[] array = [];
 
         [Params(0, 1, 10, 100, 1000, 10000, 100000)]
         public int Count { get; set; }

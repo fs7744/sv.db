@@ -3,20 +3,22 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
+#pragma warning disable CS8764 // Nullability of return type doesn't match overridden member (possibly because of nullability attributes).
+
 namespace Benchmark
 {
     public class TestDbConnection : DbConnection
     {
-        public override string ConnectionString { get; set; }
+        public override string? ConnectionString { get; set; }
 
-        public override string Database { get; }
+        public override string? Database { get; }
 
-        public override string DataSource { get; }
+        public override string? DataSource { get; }
 
-        public override string ServerVersion { get; }
+        public override string? ServerVersion { get; }
 
         public override ConnectionState State { get; }
-        public TestData Data { get; set; }
+        public TestData? Data { get; set; }
         public int RowCount { get; set; }
 
         public override void ChangeDatabase(string databaseName)
@@ -44,12 +46,12 @@ namespace Benchmark
 
     public class TestDbCommand : DbCommand
     {
-        public override string CommandText { get; set; }
+        public override string? CommandText { get; set; }
         public override int CommandTimeout { get; set; }
         public override CommandType CommandType { get; set; }
         public override bool DesignTimeVisible { get; set; }
         public override UpdateRowSource UpdatedRowSource { get; set; }
-        public TestData Data { get; set; }
+        public TestData? Data { get; set; }
         public int RowCount { get; set; }
         protected override DbConnection? DbConnection { get; set; }
 
@@ -90,7 +92,7 @@ namespace Benchmark
     {
         public override int Count { get; }
 
-        public override object SyncRoot { get; }
+        public override object? SyncRoot { get; }
 
         public override int Add(object value)
         {
@@ -181,9 +183,9 @@ namespace Benchmark
         public override DbType DbType { get; set; }
         public override ParameterDirection Direction { get; set; }
         public override bool IsNullable { get; set; }
-        public override string ParameterName { get; set; }
+        public override string? ParameterName { get; set; }
         public override int Size { get; set; }
-        public override string SourceColumn { get; set; }
+        public override string? SourceColumn { get; set; }
         public override bool SourceColumnNullMapping { get; set; }
         public override object? Value { get; set; }
 
@@ -210,7 +212,7 @@ namespace Benchmark
         internal readonly short[] shorts;
         internal readonly int[] ints;
         internal readonly long[] longs;
-        internal readonly DBNull[] dbNulls;
+        internal readonly DBNull?[] dbNulls;
 
         public TestData(params (string name, object value)[] fields)
         {
@@ -297,11 +299,11 @@ namespace Benchmark
 
     public class TestDbDataReader : DbDataReader
     {
-        private readonly TestData data;
+        private readonly TestData? data;
         public int RowCount { get; set; }
         private int calls = 0;
 
-        public TestDbDataReader(TestData data)
+        public TestDbDataReader(TestData? data)
         {
             this.data = data;
         }
@@ -444,3 +446,5 @@ namespace Benchmark
         }
     }
 }
+
+#pragma warning restore CS8764 // Nullability of return type doesn't match overridden member (possibly because of nullability attributes).

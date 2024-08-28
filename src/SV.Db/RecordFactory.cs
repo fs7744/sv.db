@@ -7,12 +7,12 @@ namespace SV.Db
 {
     internal static class RecordFactoryCache<T>
     {
-        public static IRecordFactory<T> Cache { get; set; }
+        public static IRecordFactory<T>? Cache { get; set; }
     }
 
     public static class RecordFactory
     {
-        private static Func<object> cacheFactory;
+        private static Func<object?> cacheFactory = () => null;
 
         private static readonly Dictionary<Type, DbType> dbTypeMapping = new Dictionary<Type, DbType>()
         {
@@ -93,14 +93,14 @@ namespace SV.Db
         }
 
         [MethodImpl(DBUtils.Optimization)]
-        internal static T Read<T>(this DbDataReader reader)
+        internal static T? Read<T>(this DbDataReader reader)
         {
             var t = GetRecordFactory<T>();
             return t.Read(reader);
         }
 
         [MethodImpl(DBUtils.Optimization)]
-        internal static IEnumerable<T> ReadEnumerable<T>(this DbDataReader reader, int estimateRow = 0, bool useBuffer = true)
+        internal static IEnumerable<T?> ReadEnumerable<T>(this DbDataReader reader, int estimateRow = 0, bool useBuffer = true)
         {
             var t = GetRecordFactory<T>();
             return useBuffer
@@ -109,14 +109,14 @@ namespace SV.Db
         }
 
         [MethodImpl(DBUtils.Optimization)]
-        internal static IEnumerable<T> ReadUnBuffedEnumerable<T>(this DbDataReader reader)
+        internal static IEnumerable<T?> ReadUnBuffedEnumerable<T>(this DbDataReader reader)
         {
             var t = GetRecordFactory<T>();
             return t.ReadUnBuffed(reader);
         }
 
         [MethodImpl(DBUtils.Optimization)]
-        internal static IAsyncEnumerable<T> ReadEnumerableAsync<T>(this DbDataReader reader, CancellationToken cancellationToken = default)
+        internal static IAsyncEnumerable<T?> ReadEnumerableAsync<T>(this DbDataReader reader, CancellationToken cancellationToken = default)
         {
             var t = GetRecordFactory<T>();
             return t.ReadUnBuffedAsync(reader, cancellationToken);
@@ -135,17 +135,19 @@ namespace SV.Db
                 }
                 else if (ty.IsGenericType && typeof(Nullable<>) == ty.GetGenericTypeDefinition() && Nullable.GetUnderlyingType(ty).IsEnum)
                 {
-                    t = RecordFactoryCache<T>.Cache = (ScalarRecordFactory<T>)Activator.CreateInstance(typeof(ScalarRecordFactoryEnumNull<>).MakeGenericType(Nullable.GetUnderlyingType(ty)));
+#pragma warning disable CS8604 // Possible null reference argument.
+                    t = RecordFactoryCache<T>.Cache = (ScalarRecordFactory<T>?)Activator.CreateInstance(typeof(ScalarRecordFactoryEnumNull<>).MakeGenericType(Nullable.GetUnderlyingType(ty)));
+#pragma warning restore CS8604 // Possible null reference argument.
                 }
                 else
                 {
-                    t = (IRecordFactory<T>)cacheFactory?.Invoke();
+                    t = (IRecordFactory<T>?)cacheFactory?.Invoke();
                     if (t == null)
                         ThrowHelper.ThrowNotSupportedException();
                 }
             }
 
-            return t;
+            return t!;
         }
 
         [MethodImpl(DBUtils.Optimization)]

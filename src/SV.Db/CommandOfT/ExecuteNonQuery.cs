@@ -5,7 +5,7 @@ namespace SV.Db
 {
     public static partial class CommandExtensions
     {
-        public static int ExecuteNonQuery(this DbCommand cmd, object args = null)
+        public static int ExecuteNonQuery(this DbCommand cmd, object? args = null)
         {
             cmd.SetParams(args);
             var connection = cmd.Connection;
@@ -23,7 +23,7 @@ namespace SV.Db
             }
         }
 
-        public static async Task<int> ExecuteNonQueryAsync(this DbCommand cmd, object args = null, CancellationToken cancellationToken = default)
+        public static async Task<int> ExecuteNonQueryAsync(this DbCommand cmd, object? args = null, CancellationToken cancellationToken = default)
         {
             cmd.SetParams(args);
             var connection = cmd.Connection;
@@ -41,7 +41,7 @@ namespace SV.Db
             }
         }
 
-        public static int ExecuteNonQuery(this DbConnection connection, string sql, object args = null, CommandType commandType = CommandType.Text)
+        public static int ExecuteNonQuery(this DbConnection connection, string sql, object? args = null, CommandType commandType = CommandType.Text)
         {
             try
             {
@@ -61,7 +61,7 @@ namespace SV.Db
             }
         }
 
-        public static async Task<int> ExecuteNonQueryAsync(this DbConnection connection, string sql, object args = null, CancellationToken cancellationToken = default, CommandType commandType = CommandType.Text)
+        public static async Task<int> ExecuteNonQueryAsync(this DbConnection connection, string sql, object? args = null, CancellationToken cancellationToken = default, CommandType commandType = CommandType.Text)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
