@@ -7,4 +7,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="SV.Enums" Version="0.0.1" />
+  </ItemGroup>
+
 </Project>
