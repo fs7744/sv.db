@@ -76,7 +76,7 @@ namespace SV.Db
                 await reader.NextResultAsync(cancellationToken);
                 return r;
             }
-            return EmptyAsyncEnumerator<T>.Instance;
+            return EnumerableExtensions.AsyncEmpty<T>();
         }
     }
 }

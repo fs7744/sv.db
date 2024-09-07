@@ -111,7 +111,7 @@ namespace SV.Db
         protected override T ReadScalar(DbDataReader reader)
         {
             if (reader.IsDBNull(0)) return default;
-            return Enums<T>.ToEnum(reader.GetValue(0));
+            return DBUtils.ToEnum<T>(Type.GetTypeCode(reader.GetFieldType(0)), reader, 0);
         }
 
         public override List<T> ReadBuffed(DbDataReader reader, int estimateRow = 0)
@@ -119,9 +119,10 @@ namespace SV.Db
             List<T> result = new(estimateRow);
             if (reader.Read())
             {
+                var t = Type.GetTypeCode(reader.GetFieldType(0));
                 do
                 {
-                    result.Add(ReadScalar(reader));
+                    result.Add(reader.IsDBNull(0) ? default : DBUtils.ToEnum<T>(t, reader, 0));
                 }
                 while (reader.Read());
             }
@@ -133,9 +134,10 @@ namespace SV.Db
         {
             if (reader.Read())
             {
+                var t = Type.GetTypeCode(reader.GetFieldType(0));
                 do
                 {
-                    yield return ReadScalar(reader);
+                    yield return reader.IsDBNull(0) ? default : DBUtils.ToEnum<T>(t, reader, 0);
                 }
                 while (reader.Read());
             }
@@ -145,9 +147,10 @@ namespace SV.Db
         {
             if (await reader.ReadAsync(cancellationToken))
             {
+                var t = Type.GetTypeCode(reader.GetFieldType(0));
                 do
                 {
-                    yield return ReadScalar(reader);
+                    yield return reader.IsDBNull(0) ? default : DBUtils.ToEnum<T>(t, reader, 0);
                 }
                 while (await reader.ReadAsync(cancellationToken));
             }
@@ -168,7 +171,7 @@ namespace SV.Db
         protected override T? ReadScalar(DbDataReader reader)
         {
             if (reader.IsDBNull(0)) return default;
-            return Enums<T>.ToEnum(reader.GetValue(0));
+            return DBUtils.ToEnum<T>(Type.GetTypeCode(reader.GetFieldType(0)), reader, 0);
         }
 
         public override List<T?> ReadBuffed(DbDataReader reader, int estimateRow = 0)
@@ -176,9 +179,10 @@ namespace SV.Db
             List<T?> result = new(estimateRow);
             if (reader.Read())
             {
+                var t = Type.GetTypeCode(reader.GetFieldType(0));
                 do
                 {
-                    result.Add(ReadScalar(reader));
+                    result.Add(reader.IsDBNull(0) ? default : DBUtils.ToEnum<T>(t, reader, 0));
                 }
                 while (reader.Read());
             }
@@ -190,9 +194,10 @@ namespace SV.Db
         {
             if (reader.Read())
             {
+                var t = Type.GetTypeCode(reader.GetFieldType(0));
                 do
                 {
-                    yield return ReadScalar(reader);
+                    yield return reader.IsDBNull(0) ? default : DBUtils.ToEnum<T>(t, reader, 0);
                 }
                 while (reader.Read());
             }
@@ -202,9 +207,10 @@ namespace SV.Db
         {
             if (await reader.ReadAsync(cancellationToken))
             {
+                var t = Type.GetTypeCode(reader.GetFieldType(0));
                 do
                 {
-                    yield return ReadScalar(reader);
+                    yield return reader.IsDBNull(0) ? default : DBUtils.ToEnum<T>(t, reader, 0);
                 }
                 while (await reader.ReadAsync(cancellationToken));
             }

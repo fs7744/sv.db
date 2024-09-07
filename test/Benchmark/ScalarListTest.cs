@@ -143,4 +143,72 @@ namespace Benchmark
             return connection.QueryFirstOrDefault<string>("select * from dog");
         }
     }
+
+    public enum TestEnum
+    {
+        oo = 3,
+        ooo = 4,
+    }
+
+    [MemoryDiagnoser, Orderer(summaryOrderPolicy: SummaryOrderPolicy.FastestToSlowest), GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory), CategoriesColumn]
+    public class ScalarEnumStringTest
+    {
+        [Params(1, 10, 100, 1000, 10000, 100000, 1000000)]
+        public int RowCount { get; set; }
+
+        private TestData data = new TestData(("a", "oo"));
+
+        [Benchmark(Baseline = true)]
+        public List<TestEnum> GetList()
+        {
+            var dogs = new List<TestEnum>();
+            var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
+            try
+            {
+                connection.Open();
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = "select ";
+                using (var reader = cmd.ExecuteReader(CommandBehavior.Default))
+                {
+                    while (reader.Read())
+                    {
+                        dogs.Add(Enum.Parse<TestEnum>(reader.GetString(0)));
+                    }
+                }
+            }
+            finally
+            {
+                connection.Close();
+            }
+            return dogs;
+        }
+
+        [Benchmark]
+        public List<TestEnum> ExecuteQueryRowCount()
+        {
+            var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
+            return EnumerableExtensions.AsList(connection.ExecuteQuery<TestEnum>("select ", estimateRow: RowCount));
+        }
+
+        [Benchmark]
+        public List<TestEnum> ExecuteQuery()
+        {
+            var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
+            return EnumerableExtensions.AsList(connection.ExecuteQuery<TestEnum>("select "));
+        }
+
+        [Benchmark]
+        public List<TestEnum> Dapper()
+        {
+            var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
+            return System.Linq.EnumerableExtensions.AsList(connection.Query<string>("select * from dog").Select(i => Enum.Parse<TestEnum>(i)));
+        }
+
+        [Benchmark, DapperAot]
+        public List<TestEnum> DapperAot()
+        {
+            var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
+            return System.Linq.EnumerableExtensions.AsList(connection.Query<string>("select * from dog").Select(i => Enum.Parse<TestEnum>(i)));
+        }
+    }
 }

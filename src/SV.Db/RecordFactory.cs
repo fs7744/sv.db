@@ -131,7 +131,7 @@ namespace SV.Db
                 var ty = typeof(T);
                 if (ty.IsEnum)
                 {
-                    t = RecordFactoryCache<T>.Cache = new ScalarRecordFactoryEnum<T>();
+                    t = RecordFactoryCache<T>.Cache = (ScalarRecordFactory<T>?)Activator.CreateInstance(typeof(ScalarRecordFactoryEnum<>).MakeGenericType(ty));
                 }
                 else if (ty.IsGenericType && typeof(Nullable<>) == ty.GetGenericTypeDefinition() && Nullable.GetUnderlyingType(ty).IsEnum)
                 {

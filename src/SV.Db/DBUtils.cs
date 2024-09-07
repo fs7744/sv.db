@@ -334,5 +334,33 @@ namespace SV.Db
             }
             return reader.GetFieldValue<T>(ordinal);
         }
+
+        [MethodImpl(Optimization)]
+        public static T ToEnum<T>(TypeCode type, DbDataReader reader, int ordinal) where T : struct, Enum
+        {
+            switch (type)
+            {
+                case TypeCode.Int32:
+                    return Enums<T>.ToEnum(reader.GetInt32(ordinal));
+
+                case TypeCode.Byte:
+                    return Enums<T>.ToEnum(reader.GetByte(ordinal));
+
+                case TypeCode.Char:
+                    return Enums<T>.ToEnum(reader.GetChar(ordinal));
+
+                case TypeCode.Int16:
+                    return Enums<T>.ToEnum(reader.GetInt16(ordinal));
+
+                case TypeCode.Int64:
+                    return Enums<T>.ToEnum(reader.GetInt64(ordinal));
+
+                case TypeCode.String:
+                    return Enums<T>.ToEnum(reader.GetString(ordinal));
+
+                default:
+                    return Enums<T>.ToEnum(reader.GetValue(ordinal));
+            }
+        }
     }
 }

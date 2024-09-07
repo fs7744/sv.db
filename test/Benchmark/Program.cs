@@ -16,6 +16,6 @@ using BenchmarkDotNet.Running;
 //var d3 = a.DapperAot();
 //var d4 = a.ExecuteQueryRowCount();
 
-//var summary = BenchmarkRunner.Run<ScalarListTest>();
+var summary = BenchmarkRunner.Run<ScalarEnumStringTest>();
 
-var summary = BenchmarkRunner.Run(typeof(Program).Assembly);
+//var summary = BenchmarkRunner.Run(typeof(Program).Assembly);

@@ -12,13 +12,14 @@
 
 	<ItemGroup>
 		<PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
+		<PackageReference Include="SV.Enums.Analyzers" Version="1.0.0" />
 		<PackageReference Include="System.IO.Hashing" Version="8.0.0" />
 		<PackageReference Include="Dapper" Version="2.1.35" />
 		<PackageReference Include="Dapper.AOT" Version="1.0.31" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\src\SV.Db.Analyzers\SV.Db.Analyzers.csproj"  OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+	  <ProjectReference Include="..\..\src\SV.Db.Analyzers\SV.Db.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
 	  <ProjectReference Include="..\..\src\SV.Db\SV.Db.csproj" />
 	</ItemGroup>
 
