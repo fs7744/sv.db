@@ -9,13 +9,13 @@ using BenchmarkDotNet.Running;
 //var d4 = a.ExecuteQueryFirstOrDefault();
 //var summary = BenchmarkRunner.Run<ScalarOneTest>();
 
-//var a = new ScalarListTest() { RowCount = 12 };
-//var d0 = a.GetStringList();
-//var d1 = a.ExecuteQuery();
-//var d2 = a.Dapper();
-//var d3 = a.DapperAot();
-//var d4 = a.ExecuteQueryRowCount();
+var a = new QueryDynamicBenchmarks() { RowCount = 12 };
+var d0 = a.DynamicExpandoObject();
+var d1 = a.ExecuteQuery();
+var d2 = a.ExecuteQueryRowCount();
+var d3 = a.DapperDynamic();
+var d4 = a.DapperAotDynamic();
 
-var summary = BenchmarkRunner.Run<ScalarEnumStringTest>();
+var summary = BenchmarkRunner.Run<QueryDynamicBenchmarks>();
 
 //var summary = BenchmarkRunner.Run(typeof(Program).Assembly);

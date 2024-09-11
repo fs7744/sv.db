@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Frozen;
 using System.Data;
 using System.Data.Common;
 using System.Dynamic;
@@ -25,10 +26,10 @@ namespace SV.Db
     IDynamicMetaObjectProvider
     {
         private readonly DynamicRecordField[] fields;
-        private readonly Dictionary<string, int> keys;
+        private readonly FrozenDictionary<string, int> keys;
         private readonly object[] values;
 
-        public DynamicRecord(DynamicRecordField[] fields, IDataReader source, Dictionary<string, int> keys)
+        public DynamicRecord(DynamicRecordField[] fields, IDataReader source, FrozenDictionary<string, int> keys)
         {
             this.fields = fields;
             this.keys = keys;
@@ -276,12 +277,11 @@ namespace SV.Db
             if (reader.Read())
             {
                 var arr = new DynamicRecordField[reader.FieldCount];
-                var dict = new Dictionary<string, int>();
-                for (int i = 0; i < arr.Length; i++)
+                var dict = arr.Select((_, i) =>
                 {
                     arr[i] = new DynamicRecordField(reader.GetName(i), reader.GetFieldType(i), reader.GetDataTypeName(i));
-                    dict[arr[i].Name] = i;
-                }
+                    return new KeyValuePair<string, int>(arr[i].Name, i);
+                }).ToFrozenDictionary();
                 return (T)(object)new DynamicRecord(arr, reader, dict);
             }
             return default;
@@ -290,12 +290,11 @@ namespace SV.Db
         public override IEnumerable<T> ReadUnBuffed(DbDataReader reader)
         {
             var arr = new DynamicRecordField[reader.FieldCount];
-            var dict = new Dictionary<string, int>();
-            for (int i = 0; i < arr.Length; i++)
+            var dict = arr.Select((_, i) =>
             {
                 arr[i] = new DynamicRecordField(reader.GetName(i), reader.GetFieldType(i), reader.GetDataTypeName(i));
-                dict[arr[i].Name] = i;
-            }
+                return new KeyValuePair<string, int>(arr[i].Name, i);
+            }).ToFrozenDictionary();
 
             try
             {
@@ -313,12 +312,11 @@ namespace SV.Db
         public override List<T?> ReadBuffed(DbDataReader reader, int estimateRow = 0)
         {
             var arr = new DynamicRecordField[reader.FieldCount];
-            var dict = new Dictionary<string, int>();
-            for (int i = 0; i < arr.Length; i++)
+            var dict = arr.Select((_, i) =>
             {
                 arr[i] = new DynamicRecordField(reader.GetName(i), reader.GetFieldType(i), reader.GetDataTypeName(i));
-                dict[arr[i].Name] = i;
-            }
+                return new KeyValuePair<string, int>(arr[i].Name, i);
+            }).ToFrozenDictionary();
             List<T?> list = new(estimateRow);
             try
             {
@@ -337,12 +335,11 @@ namespace SV.Db
         public override async IAsyncEnumerable<T> ReadUnBuffedAsync(DbDataReader reader, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var arr = new DynamicRecordField[reader.FieldCount];
-            var dict = new Dictionary<string, int>();
-            for (int i = 0; i < arr.Length; i++)
+            var dict = arr.Select((_, i) =>
             {
                 arr[i] = new DynamicRecordField(reader.GetName(i), reader.GetFieldType(i), reader.GetDataTypeName(i));
-                dict[arr[i].Name] = i;
-            }
+                return new KeyValuePair<string, int>(arr[i].Name, i);
+            }).ToFrozenDictionary();
 
             try
             {
