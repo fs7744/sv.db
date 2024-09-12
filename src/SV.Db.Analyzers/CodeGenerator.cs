@@ -2,10 +2,12 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
 using System.Threading;
 
 namespace SV.Db.Analyzers
@@ -26,11 +28,47 @@ namespace SV.Db.Analyzers
         {
             try
             {
-                context.AddSource((state.Compilation.AssemblyName ?? "package") + ".generated.cs", $"// {state.Sources.Length} \r\n" + string.Join("", state.Sources.Select(i => i.ToString())));
+                var code = GenerateCode(state.Sources);
+
+                context.AddSource((state.Compilation.AssemblyName ?? "package") + ".generated.cs", code);
             }
             catch (Exception ex)
             {
                 Debug.Fail(ex.Message);
+            }
+        }
+
+        private string GenerateCode(ImmutableArray<SourceState> sources)
+        {
+            var sb = new StringBuilder();
+            var omap = new Dictionary<string, List<SourceState>>();
+            foreach (var item in sources)
+            {
+                if (item.Args == null && item.ReturnType == null) continue;
+
+                if (item.NeedGenerateArgs())
+                {
+                    Add(omap, item.Args.Type.ToDisplayString(), item);
+                }
+
+                if (item.NeedGenerateReturnType())
+                {
+                    Add(omap, item.ReturnType.ToDisplayString(), item);
+                }
+            }
+#if DEBUG
+            sb.Insert(0, $"// total: {omap.Count} \r\n\r\n" + string.Join("", omap.Select(i => $"// {i.Key}: {i.Value.Count} \r\n{string.Join("", i.Value.Select(i => i.ToString()))}\r\n")));
+#endif
+            return sb.ToString();
+
+            static void Add(Dictionary<string, List<SourceState>> dict, string key, SourceState source)
+            {
+                if (!dict.TryGetValue(key, out var value))
+                {
+                    value = new List<SourceState>();
+                    dict.Add(key, value);
+                }
+                value.Add(source);
             }
         }
 
@@ -59,7 +97,8 @@ namespace SV.Db.Analyzers
                 {
                     return null;
                 }
-
+                bool hasArgs = false;
+                bool hasResultType = false;
                 var method = op.TargetMethod;
                 switch (method.Name)
                 {
@@ -67,58 +106,68 @@ namespace SV.Db.Analyzers
                     case "ExecuteNonQueryAsync":
                     case "ExecuteNonQuerys":
                     case "ExecuteNonQuerysAsync":
+                    case "SetParams":
+                    case "ExecuteReader":
+                    case "ExecuteReaderAsync":
+                        hasArgs = true;
+                        break;
+
                     case "ExecuteQuery":
                     case "ExecuteQueryAsync":
                     case "ExecuteQueryFirstOrDefault":
                     case "ExecuteQueryFirstOrDefaultAsync":
-                    case "ExecuteReader":
-                    case "ExecuteReaderAsync":
+                    case "ExecuteScalar":
+                    case "ExecuteScalarAsync":
+                        hasArgs = true;
+                        hasResultType = true;
+                        break;
+
                     case "QueryFirstOrDefault":
                     case "QueryFirstOrDefaultAsync":
                     case "Query":
                     case "QueryAsync":
-                    case "ExecuteScalar":
-                    case "ExecuteScalarAsync":
-                    case "SetParams":
-                        {
-                            IOperation argExpression = null;
-                            foreach (var arg in op.Arguments)
-                            {
-                                switch (arg.Parameter?.Name)
-                                {
-                                    case "args":
-                                        if (arg.Value is not IDefaultValueOperation)
-                                        {
-                                            var expr = arg.Value;
-                                            while (expr is IConversionOperation conv && expr.Type?.SpecialType == SpecialType.System_Object)
-                                            {
-                                                expr = conv.Operand;
-                                            }
-                                            if (!(expr.ConstantValue.HasValue && expr.ConstantValue.Value is null))
-                                            {
-                                                argExpression = expr;
-                                            }
-                                            if (argExpression != null && argExpression.Type.SpecialType == SpecialType.System_Object)
-                                            {
-                                                argExpression = null;
-                                            }
-                                        }
-                                        break;
-
-                                    default: break;
-                                }
-                            }
-                            return new SourceState()
-                            {
-                                IsAsync = method.Name.EndsWith("Async"),
-                                Invocation = op,
-                                Args = argExpression
-                            };
-                        }
+                        hasResultType = true;
+                        break;
 
                     default:
                         return null;
                 }
+
+                IOperation argExpression = null;
+                foreach (var arg in op.Arguments)
+                {
+                    switch (arg.Parameter?.Name)
+                    {
+                        case "args":
+                            if (hasArgs && arg.Value is not IDefaultValueOperation)
+                            {
+                                var expr = arg.Value;
+                                while (expr is IConversionOperation conv && expr.Type?.SpecialType == SpecialType.System_Object)
+                                {
+                                    expr = conv.Operand;
+                                }
+                                if (!(expr.ConstantValue.HasValue && expr.ConstantValue.Value is null))
+                                {
+                                    argExpression = expr;
+                                }
+                                if (argExpression != null && argExpression.Type.SpecialType == SpecialType.System_Object)
+                                {
+                                    argExpression = null;
+                                }
+                            }
+                            break;
+
+                        default: break;
+                    }
+                }
+
+                return new SourceState()
+                {
+                    IsAsync = method.Name.EndsWith("Async"),
+                    Invocation = op,
+                    Args = argExpression,
+                    ReturnType = hasResultType ? op.GetResultType() : null,
+                };
             }
             catch (Exception ex)
             {
