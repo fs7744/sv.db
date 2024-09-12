@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 
@@ -29,7 +28,6 @@ namespace SV.Db.Analyzers
             try
             {
                 var code = GenerateCode(state.Sources);
-
                 context.AddSource((state.Compilation.AssemblyName ?? "package") + ".generated.cs", code);
             }
             catch (Exception ex)
