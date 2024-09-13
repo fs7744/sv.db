@@ -39,35 +39,15 @@ namespace SV.Db.Analyzers
         private string GenerateCode(ImmutableArray<SourceState> sources)
         {
             var sb = new StringBuilder();
-            var omap = new Dictionary<string, List<SourceState>>();
+            var omap = new Dictionary<string, GeneratedMapping>();
             foreach (var item in sources)
             {
-                if (item.Args == null && item.ReturnType == null) continue;
-
-                if (item.NeedGenerateArgs())
-                {
-                    Add(omap, item.Args.Type.ToDisplayString(), item);
-                }
-
-                if (item.NeedGenerateReturnType())
-                {
-                    Add(omap, item.ReturnType.ToDisplayString(), item);
-                }
+                item.GenerateMapping(omap);
             }
 #if DEBUG
-            sb.Insert(0, $"// total: {omap.Count} \r\n\r\n" + string.Join("", omap.Select(i => $"// {i.Key}: {i.Value.Count} \r\n{string.Join("", i.Value.Select(i => i.ToString()))}\r\n")));
+            sb.Insert(0, $"// total: {omap.Count} \r\n\r\n" + string.Join("", omap.Select(i => $"// {i.Key}: {i.Value.Sources.Count} \r\n{string.Join("", i.Value.Sources.Select(i => i.ToString()))}\r\n")));
 #endif
             return sb.ToString();
-
-            static void Add(Dictionary<string, List<SourceState>> dict, string key, SourceState source)
-            {
-                if (!dict.TryGetValue(key, out var value))
-                {
-                    value = new List<SourceState>();
-                    dict.Add(key, value);
-                }
-                value.Add(source);
-            }
         }
 
         private bool FilterFunc(SyntaxNode node, CancellationToken token)

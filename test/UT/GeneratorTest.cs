@@ -76,6 +76,8 @@ namespace UT
                    MetadataReference.CreateFromFile(typeof(IValidatableObject).Assembly.Location),
                    MetadataReference.CreateFromFile(typeof(TestData).Assembly.Location),
                    MetadataReference.CreateFromFile(typeof(Assert).Assembly.Location),
+                   MetadataReference.CreateFromFile(typeof(System.Collections.Concurrent.ConcurrentDictionary<,>).Assembly.Location),
+                   MetadataReference.CreateFromFile(typeof(System.Collections.ObjectModel.ReadOnlyDictionary<,>).Assembly.Location),
                },
                options: new CSharpCompilationOptions(OutputKind.ConsoleApplication, allowUnsafe: true));
 
@@ -175,6 +177,7 @@ namespace UT
         public void TestGenerateCode(string path)
         {
             var code = File.ReadAllText(path);
+            code = code.Substring(0, code.IndexOf("public void Check(")) + "}}";
             (var compilation, var result) = TestGenerate(code);
             var results = Assert.Single(result.Results);
             string generatedCode = results.GeneratedSources.Any() ? results.GeneratedSources.Single().SourceText?.ToString() ?? "" : "";

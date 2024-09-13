@@ -2,6 +2,8 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SV.Db.Analyzers
 {
@@ -49,6 +51,55 @@ namespace SV.Db.Analyzers
                 }
             }
             return syntax;
+        }
+
+        public static IEnumerable<IPropertySymbol> GetAllSettableProperties(this ITypeSymbol typeSymbol)
+        {
+            var result = typeSymbol
+                .GetMembers()
+                .Where(s => s.Kind == SymbolKind.Property).Cast<IPropertySymbol>()
+                .Where(p => p.SetMethod?.DeclaredAccessibility == Accessibility.Public)
+                .Union(typeSymbol.BaseType == null ? new IPropertySymbol[0] : typeSymbol.BaseType.GetAllSettableProperties());
+
+            return result;
+        }
+
+        public static IEnumerable<IPropertySymbol> GetAllGettableProperties(this ITypeSymbol typeSymbol)
+        {
+            var result = typeSymbol
+                .GetMembers()
+                .Where(s => s.Kind == SymbolKind.Property).Cast<IPropertySymbol>()
+                .Where(p => p.GetMethod?.DeclaredAccessibility == Accessibility.Public)
+                .Union(typeSymbol.BaseType == null ? new IPropertySymbol[0] : typeSymbol.BaseType.GetAllGettableProperties());
+
+            return result;
+        }
+
+        public static IEnumerable<IFieldSymbol> GetAllGettableFields(this ITypeSymbol typeSymbol)
+        {
+            var result = typeSymbol
+                .GetMembers()
+                .Where(s => s.Kind == SymbolKind.Field).Cast<IFieldSymbol>()
+                .Where(p => p.DeclaredAccessibility == Accessibility.Public)
+                .Union(typeSymbol.BaseType == null ? new IFieldSymbol[0] : typeSymbol.BaseType.GetAllGettableFields());
+
+            return result;
+        }
+
+        public static string ToDisplayString(this Accessibility declaredAccessibility)
+        {
+            switch (declaredAccessibility)
+            {
+                case Accessibility.Private:
+                    return "private";
+
+                case Accessibility.Public:
+                    return "public";
+
+                case Accessibility.Internal:
+                default:
+                    return "internal";
+            }
         }
     }
 }

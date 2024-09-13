@@ -3,17 +3,20 @@ using System.Data.Common;
 
 namespace UT.GeneratorTestCases
 {
-    public class ShouldRunTestCase
+    public class EmptyClassSetTestCase
     {
         public void TestCase()
         {
             DbConnection connection = null;
-            connection.ExecuteNonQueryAsync("", "");
+            connection.CreateCommand().SetParams<EmptyClassTestData>(new EmptyClassTestData());
         }
 
         public void Check(string generatedCode)
         {
-            Assert.Contains("// total: 0", generatedCode);
+            Assert.NotEmpty(generatedCode);
         }
     }
+
+    public class EmptyClassTestData
+    { }
 }

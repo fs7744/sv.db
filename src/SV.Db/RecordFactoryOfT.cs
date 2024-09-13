@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Data;
 using System.Data.Common;
 using System.Runtime.InteropServices;
 
@@ -29,15 +30,80 @@ namespace SV.Db
         IAsyncEnumerable<T?> ReadUnBuffedAsync(DbDataReader reader, CancellationToken cancellationToken = default);
     }
 
+    public interface IDbCmd
+    {
+        public string CommandText { get; set; }
+
+        public CommandType CommandType { get; set; }
+
+        public DbParameterCollection Parameters { get; }
+
+        public DbParameter CreateParameter();
+    }
+
+    public readonly struct DbCmd : IDbCmd
+    {
+        private readonly DbCommand command;
+
+        public DbCmd(DbCommand command)
+        {
+            this.command = command;
+        }
+
+        public string CommandText { get => command.CommandText; set => command.CommandText = value; }
+        public CommandType CommandType { get => command.CommandType; set => command.CommandType = value; }
+
+        public DbParameterCollection Parameters => command.Parameters;
+
+        public DbParameter CreateParameter()
+        {
+            return command.CreateParameter();
+        }
+    }
+
+    public readonly struct DbBatchCmd : IDbCmd
+    {
+        private readonly DbBatchCommand command;
+
+        public DbBatchCmd(DbBatchCommand command)
+        {
+            this.command = command;
+        }
+
+        public string CommandText { get => command.CommandText; set => command.CommandText = value; }
+        public CommandType CommandType { get => command.CommandType; set => command.CommandType = value; }
+
+        public DbParameterCollection Parameters => command.Parameters;
+
+        public DbParameter CreateParameter()
+        {
+            return command.CreateParameter();
+        }
+    }
+
     public abstract class RecordFactory<T> : IRecordFactory<T>, IParamsSetter<T>
     {
-        public abstract void SetParams(DbCommand cmd, object args);
+        public virtual void SetParams(DbCommand cmd, object args)
+        {
+            SetParams(cmd, (T)args);
+        }
 
-        public abstract void SetParams(DbCommand cmd, T args);
+        public void SetParams(DbCommand cmd, T args)
+        {
+            SetParams(new DbCmd(cmd), args);
+        }
 
-        public abstract void SetParams(DbBatchCommand cmd, object args);
+        public virtual void SetParams(DbBatchCommand cmd, object args)
+        {
+            SetParams(cmd, (T)args);
+        }
 
-        public abstract void SetParams(DbBatchCommand cmd, T args);
+        public void SetParams(DbBatchCommand cmd, T args)
+        {
+            SetParams(new DbBatchCmd(cmd), args);
+        }
+
+        public abstract void SetParams(IDbCmd cmd, T args);
 
         protected abstract void GenerateReadTokens(DbDataReader reader, Span<int> tokens);
 

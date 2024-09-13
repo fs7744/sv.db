@@ -19,6 +19,8 @@ namespace SV.Db.Analyzers
         public IInvocationOperation Invocation { get; set; }
         public bool IsAsync { get; set; }
         public ITypeSymbol ReturnType { get; set; }
+        public string GeneratedArgs { get; set; }
+        public string GeneratedReturn { get; set; }
 
         public override string ToString()
         {

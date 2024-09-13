@@ -356,7 +356,7 @@ namespace SV.Db
 
         public override void SetParams(DbCommand cmd, object? args)
         {
-            if (args is IEnumerable<KeyValuePair<string, object>> vs)
+            if (args != null && args is IEnumerable<KeyValuePair<string, object>> vs)
             {
                 var ps = cmd.Parameters;
                 foreach (var item in vs)
@@ -368,11 +368,6 @@ namespace SV.Db
                     ps.Add(p);
                 }
             }
-        }
-
-        public override void SetParams(DbCommand cmd, T args)
-        {
-            SetParams(cmd, (object)args);
         }
 
         public override void SetParams(DbBatchCommand cmd, object? args)
@@ -391,9 +386,20 @@ namespace SV.Db
             }
         }
 
-        public override void SetParams(DbBatchCommand cmd, T args)
+        public override void SetParams(IDbCmd cmd, T args)
         {
-            SetParams(cmd, (object)args);
+            if (args != null && args is IEnumerable<KeyValuePair<string, object>> vs)
+            {
+                var ps = cmd.Parameters;
+                foreach (var item in vs)
+                {
+                    var p = cmd.CreateParameter();
+                    p.ParameterName = item.Key;
+                    p.Value = DBUtils.AsDBValue(item.Value);
+                    p.DbType = RecordFactory.GetDbType(item.Value == null ? typeof(DBNull) : item.Value.GetType());
+                    ps.Add(p);
+                }
+            }
         }
     }
 }
