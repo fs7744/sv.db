@@ -144,12 +144,12 @@ public class {r.ClassName} : RecordFactory<{typeName}>
                 var dbType = GetDbType(item);
                 if (string.IsNullOrEmpty(dbType)) continue;
                 sb.Append($@"
-            p = cmd.CreateParameter();
-            p.Direction = ParameterDirection.Input;
-            p.ParameterName = ""{item.Name}"";
-            p.DbType = {dbType};
-            p.Value = args.{item.Name};
-            ps.Add(p);
+        p = cmd.CreateParameter();
+        p.Direction = ParameterDirection.Input;
+        p.ParameterName = ""{item.Name}"";
+        p.DbType = {dbType};
+        p.Value = args.{item.Name};
+        ps.Add(p);
 ");
             }
             return sb.ToString();
@@ -163,12 +163,12 @@ public class {r.ClassName} : RecordFactory<{typeName}>
                 var dbType = GetDbType(item);
                 if (string.IsNullOrEmpty(dbType)) continue;
                 sb.Append($@"
-            p = cmd.CreateParameter();
-            p.Direction = ParameterDirection.Input;
-            p.ParameterName = ""{item.Name}"";
-            p.DbType = {dbType};
-            p.Value = args.{item.Name};
-            ps.Add(p);
+        p = cmd.CreateParameter();
+        p.Direction = ParameterDirection.Input;
+        p.ParameterName = ""{item.Name}"";
+        p.DbType = {dbType};
+        p.Value = args.{item.Name};
+        ps.Add(p);
 ");
             }
             return sb.ToString();
