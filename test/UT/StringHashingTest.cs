@@ -1,4 +1,5 @@
-﻿using SV.Db;
+﻿using SV;
+using System.Xml.Linq;
 
 namespace UT
 {
@@ -13,6 +14,7 @@ namespace UT
             Assert.Equal(1666770079, " asds dsff".HashOrdinalIgnoreCase());
             Assert.Equal(1666770079, hash(" asds dsff"));
             Assert.Equal(" asds dsff".HashOrdinalIgnoreCase(), hash(" ASDS dsff"));
+            var a = StringHashing.HashOrdinalIgnoreCase("Int32");
         }
     }
 }

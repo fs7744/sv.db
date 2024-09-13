@@ -14,6 +14,9 @@ namespace UT.GeneratorTestCases
         public void Check(string generatedCode)
         {
             Assert.NotEmpty(generatedCode);
+            Assert.Contains("public class EmptyClassTestData_", generatedCode);
+            Assert.DoesNotContain("p.ParameterName =", generatedCode);
+            Assert.Contains("RecordFactory.RegisterRecordFactory<global::UT.GeneratorTestCases.EmptyClassTestData>(new EmptyClassTestData_", generatedCode);
         }
     }
 

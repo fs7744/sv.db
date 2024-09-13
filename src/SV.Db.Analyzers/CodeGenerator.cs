@@ -38,15 +38,17 @@ namespace SV.Db.Analyzers
 
         private string GenerateCode(ImmutableArray<SourceState> sources)
         {
-            var sb = new StringBuilder();
             var omap = new Dictionary<string, GeneratedMapping>();
             foreach (var item in sources)
             {
                 item.GenerateMapping(omap);
             }
+
+            var sb = new StringBuilder();
 #if DEBUG
-            sb.Insert(0, $"// total: {omap.Count} \r\n\r\n" + string.Join("", omap.Select(i => $"// {i.Key}: {i.Value.Sources.Count} \r\n{string.Join("", i.Value.Sources.Select(i => i.ToString()))}\r\n")));
+            sb.Append($"// total: {omap.Count} \r\n\r\n" + string.Join("", omap.Select(i => $"// {i.Key}: {i.Value.Sources.Count} \r\n{string.Join("", i.Value.Sources.Select(i => i.ToString()))}\r\n\r\n")));
 #endif
+            sb.Append(omap.GenerateCode());
             return sb.ToString();
         }
 

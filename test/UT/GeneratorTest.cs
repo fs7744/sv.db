@@ -153,12 +153,11 @@ namespace UT
             this.output = output;
         }
 
-        protected (Compilation? Compilation, GeneratorDriverRunResult Result) TestGenerate(string code)
+        protected (Compilation? Compilation, GeneratorDriverRunResult Result, int errorCount) TestGenerate(string code)
         {
             (var compilation, var result, var diagnostics, var errorCount, var diagnosticsTo) = GeneratorTest.CodeGenerate(code);
             output.WriteLine(diagnosticsTo);
-            Assert.Equal(0, errorCount);
-            return (compilation, result);
+            return (compilation, result, errorCount);
         }
     }
 
@@ -178,12 +177,13 @@ namespace UT
         {
             var code = File.ReadAllText(path);
             code = code.Substring(0, code.IndexOf("public void Check(")) + "}}";
-            (var compilation, var result) = TestGenerate(code);
+            (var compilation, var result, var errorCount) = TestGenerate(code);
             var results = Assert.Single(result.Results);
             string generatedCode = results.GeneratedSources.Any() ? results.GeneratedSources.Single().SourceText?.ToString() ?? "" : "";
+            output.WriteLine(generatedCode);
+            Assert.Equal(0, errorCount);
             dynamic a = Activator.CreateInstance(this.GetType().Assembly.GetName().FullName, $"UT.GeneratorTestCases.{Path.GetFileName(path).Replace(".cs", "")}").Unwrap();
             a.Check(generatedCode);
-            output.WriteLine(generatedCode);
         }
     }
 }

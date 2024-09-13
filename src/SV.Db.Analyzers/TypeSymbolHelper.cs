@@ -75,13 +75,13 @@ namespace SV.Db.Analyzers
             return result;
         }
 
-        public static IEnumerable<IFieldSymbol> GetAllGettableFields(this ITypeSymbol typeSymbol)
+        public static IEnumerable<IFieldSymbol> GetAllPublicFields(this ITypeSymbol typeSymbol)
         {
             var result = typeSymbol
                 .GetMembers()
                 .Where(s => s.Kind == SymbolKind.Field).Cast<IFieldSymbol>()
                 .Where(p => p.DeclaredAccessibility == Accessibility.Public)
-                .Union(typeSymbol.BaseType == null ? new IFieldSymbol[0] : typeSymbol.BaseType.GetAllGettableFields());
+                .Union(typeSymbol.BaseType == null ? new IFieldSymbol[0] : typeSymbol.BaseType.GetAllPublicFields());
 
             return result;
         }
