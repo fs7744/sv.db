@@ -39,5 +39,8 @@
 	    <SubType>Component</SubType>
 	  </Compile>
 	</ItemGroup>
-
+	<ItemGroup>
+		<None Include="GeneratorTestCases/**/*.*" />
+		<None Update="GeneratorTestCases/**/*.*" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
 </Project>

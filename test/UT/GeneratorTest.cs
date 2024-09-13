@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using SV.Db.Analyzers;
 using System.Globalization;
 using Xunit.Abstractions;
+using UT.GeneratorTestCases;
 
 namespace UT
 {
@@ -74,6 +75,7 @@ namespace UT
                    MetadataReference.CreateFromFile(typeof(DynamicAttribute).Assembly.Location),
                    MetadataReference.CreateFromFile(typeof(IValidatableObject).Assembly.Location),
                    MetadataReference.CreateFromFile(typeof(TestData).Assembly.Location),
+                   MetadataReference.CreateFromFile(typeof(Assert).Assembly.Location),
                },
                options: new CSharpCompilationOptions(OutputKind.ConsoleApplication, allowUnsafe: true));
 
@@ -142,7 +144,7 @@ namespace UT
 
     public abstract class GeneratorTestBase
     {
-        private readonly ITestOutputHelper output;
+        protected readonly ITestOutputHelper output;
 
         public GeneratorTestBase(ITestOutputHelper output)
         {
@@ -155,6 +157,30 @@ namespace UT
             output.WriteLine(diagnosticsTo);
             Assert.Equal(0, errorCount);
             return (compilation, result);
+        }
+    }
+
+    public class GeneratorTestCase : GeneratorTestBase
+    {
+        public GeneratorTestCase(ITestOutputHelper output) : base(output)
+        {
+        }
+
+        public static IEnumerable<object[]> GetFiles() =>
+           from path in Directory.GetFiles("GeneratorTestCases", "*.cs", SearchOption.AllDirectories)
+           where path.EndsWith("TestCase.cs", StringComparison.OrdinalIgnoreCase)
+           select new object[] { path };
+
+        [Theory, MemberData(nameof(GetFiles))]
+        public void TestGenerateCode(string path)
+        {
+            var code = File.ReadAllText(path);
+            (var compilation, var result) = TestGenerate(code);
+            var results = Assert.Single(result.Results);
+            string generatedCode = results.GeneratedSources.Any() ? results.GeneratedSources.Single().SourceText?.ToString() ?? "" : "";
+            dynamic a = Activator.CreateInstance(this.GetType().Assembly.GetName().FullName, $"UT.GeneratorTestCases.{Path.GetFileName(path).Replace(".cs", "")}").Unwrap();
+            a.Check(generatedCode);
+            output.WriteLine(generatedCode);
         }
     }
 }
