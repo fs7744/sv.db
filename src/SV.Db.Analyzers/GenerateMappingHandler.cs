@@ -120,7 +120,7 @@ public class {r.ClassName} : RecordFactory<{typeName}>
 
     protected override {typeName} Read(DbDataReader reader, ref ReadOnlySpan<int> tokens)
     {{
-        var d = new {typeName}();
+        var d = {GenerateCtor(type, typeName)};
         for (int j = 0; j < tokens.Length; j++)
         {{
             switch (tokens[j])
@@ -136,6 +136,17 @@ public class {r.ClassName} : RecordFactory<{typeName}>
 ";
             }
             return r;
+        }
+
+        private static string GenerateCtor(ITypeSymbol type, string typeName)
+        {
+            var ctor = type.ChooseConstructor();
+            string p = string.Empty;
+            if (ctor != null && ctor.Parameters.Length > 0)
+            { 
+                p = string.Join(",", ctor.Parameters.Select(i => "default"));
+            }
+            return $"new {typeName}({p})";
         }
 
         private static (string, string) GenerateReadTokens(ITypeSymbol type)

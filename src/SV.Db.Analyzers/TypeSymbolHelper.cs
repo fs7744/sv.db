@@ -109,7 +109,7 @@ namespace SV.Db.Analyzers
             {
                 foreach (var attrib in symbol.GetAttributes())
                 {
-                    if (attrib.AttributeClass!.Name == attributeName)
+                    if (attrib.AttributeClass!.ToFullName() == attributeName)
                     {
                         return attrib;
                     }
@@ -126,12 +126,12 @@ namespace SV.Db.Analyzers
 
         public static bool HasNotColumnAttribute(this ISymbol? symbol)
         {
-            return HasAttribute(symbol, "NotColumnAttribute");
+            return HasAttribute(symbol, "global::SV.Db.NotColumnAttribute");
         }
 
         public static ColumnAttributeData? GetColumnAttribute(this ISymbol? symbol)
         {
-            var r = GetAttribute(symbol, "ColumnAttribute");
+            var r = GetAttribute(symbol, "global::SV.Db.ColumnAttribute");
             if (r == null) return null;
 
             var result = new ColumnAttributeData();
@@ -280,6 +280,42 @@ namespace SV.Db.Analyzers
                 default:
                     return TypeCode.Object;
             }
+        }
+
+        internal static IMethodSymbol? ChooseConstructor(this ITypeSymbol symbol)
+        {
+            if (symbol is not INamedTypeSymbol named)
+            {
+                return null;
+            }
+
+            var ctors = named.Constructors;
+            if (ctors.IsDefaultOrEmpty)
+            {
+                return null;
+            }
+            IMethodSymbol r = ctors.FirstOrDefault();
+            foreach (var ctor in ctors)
+            {
+                switch (ctor.DeclaredAccessibility)
+                {
+                    case Accessibility.Private:
+                    case Accessibility.Protected:
+                    case Accessibility.Friend:
+                    case Accessibility.ProtectedAndInternal:
+                        continue;
+                }
+
+                if (ctor.HasAttribute("global::SV.Db.CtorAttribute"))
+                {
+                    return ctor;
+                }
+                if (r.Parameters.Length > ctor.Parameters.Length) 
+                {
+                    r = ctor;
+                }
+            }
+            return r;
         }
     }
 }
