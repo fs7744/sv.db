@@ -66,7 +66,7 @@ namespace SV.Db.Analyzers
 
         private static string GenerateMapping(ITypeSymbol type, Dictionary<string, GeneratedMapping> dict, SourceState source)
         {
-            var key = type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            var key = type.ToFullName();
             if (!dict.TryGetValue(key, out var r))
             {
                 r = GenerateMappingCode(type, key);
@@ -159,12 +159,12 @@ public class {r.ClassName} : RecordFactory<{typeName}>
             if (string.IsNullOrWhiteSpace(dbType.readerMethod))
             {
                 var x = ++i;
-                var tt = iType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                var tt = iType.GetUnderlyingType().ToFullName();
                 tokens.Append($@"case {StringHashing.HashOrdinalIgnoreCase(name)}: 
 tokens[i] = {x}; break;");
                 read.Append($@"
                     case {x}:
-                        d.{name} = DBUtils.As<{tt}>(reader.GetValue(j));
+                        d.{name} = reader.IsDBNull(j) ? default : DBUtils.As<{tt}>(reader.GetValue(j));
                         break;
 ");
             }
@@ -172,15 +172,15 @@ tokens[i] = {x}; break;");
             {
                 var x = ++i;
                 var y = ++i;
-                var tt = iType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                var tt = iType.GetUnderlyingType().ToFullName();
                 tokens.Append($@"case {StringHashing.HashOrdinalIgnoreCase(name)}: 
 tokens[i] = type == typeof({tt}) ? {x} : {y}; break;");
                 read.Append($@"
                     case {x}:
-                        d.{name} = reader.{dbType.readerMethod}(j);
+                        d.{name} = reader.IsDBNull(j) ? default : reader.{dbType.readerMethod}(j);
                         break;
                     case {y}:
-                        d.{name} = DBUtils.As<{tt}>(reader.GetValue(j));
+                        d.{name} = reader.IsDBNull(j) ? default : DBUtils.As<{tt}>(reader.GetValue(j));
                         break;
 ");
             }
@@ -201,19 +201,19 @@ tokens[i] = type == typeof({tt}) ? {x} : {y}; break;");
                 var dbType = GetDbType(item);
                 if (string.IsNullOrEmpty(dbType.dbType)) continue;
                 
-                GenerateSetParam(sb, dbType.dbType, item.Name, item.GetColumnAttribute());
+                GenerateSetParam(sb, dbType.dbType, item.Name, item.GetColumnAttribute(), item.Type);
             }
             return sb.ToString();
         }
 
-        private static void GenerateSetParam(StringBuilder sb, string dbType, string name, ColumnAttributeData columnAttributeData)
+        private static void GenerateSetParam(StringBuilder sb, string dbType, string name, ColumnAttributeData columnAttributeData, ITypeSymbol symbol)
         {
             sb.Append($@"
 p = cmd.CreateParameter();
 p.Direction = {(string.IsNullOrWhiteSpace(columnAttributeData?.Direction) ? "ParameterDirection.Input" : columnAttributeData.Direction)};
 p.ParameterName = {(string.IsNullOrWhiteSpace(columnAttributeData?.Name) ? $"\"{name}\"" : columnAttributeData.Name)};
 p.DbType = {(string.IsNullOrWhiteSpace(columnAttributeData?.Type) ? dbType : columnAttributeData.Type)};
-p.Value = {(string.IsNullOrWhiteSpace(columnAttributeData?.CustomConvertMethod) ? $"args.{name}" : $"{columnAttributeData.CustomConvertMethod.Substring(1, columnAttributeData.CustomConvertMethod.Length -2)}(args.{name})")};
+p.Value = {(string.IsNullOrWhiteSpace(columnAttributeData?.CustomConvertMethod) ? $"args.{name}{(symbol.IsNullable() ? ".GetValueOrDefault()": "")}" : $"{columnAttributeData.CustomConvertMethod.Substring(1, columnAttributeData.CustomConvertMethod.Length -2)}(args.{name})")};
 {(string.IsNullOrWhiteSpace(columnAttributeData?.Precision) ? "" : $"p.Precision = {columnAttributeData.Precision};" )}
 {(string.IsNullOrWhiteSpace(columnAttributeData?.Scale) ? "" : $"p.Scale = {columnAttributeData.Scale};" )}
 {(string.IsNullOrWhiteSpace(columnAttributeData?.Size) ? "" : $"p.Size = {columnAttributeData.Size};")}
@@ -228,21 +228,23 @@ ps.Add(p);
             {
                 var dbType = GetDbType(item);
                 if (string.IsNullOrEmpty(dbType.dbType)) continue;
-                GenerateSetParam(sb, dbType.dbType, item.Name, item.GetColumnAttribute());
+                GenerateSetParam(sb, dbType.dbType, item.Name, item.GetColumnAttribute(), item.Type);
             }
             return sb.ToString();
         }
 
         private static (string dbType, string readerMethod) GetDbType(IFieldSymbol item)
         {
-            if (DbTypeMapping.TryGetValue(item.Type.SpecialType, out var v))
+            var t = item.Type.GetUnderlyingType();
+            if (DbTypeMapping.TryGetValue(t.SpecialType, out var v))
                 return v;
             return (null, null);
         }
 
         private static (string dbType, string readerMethod) GetDbType(IPropertySymbol item)
         {
-            if (DbTypeMapping.TryGetValue(item.Type.SpecialType, out var v))
+            var t = item.Type.GetUnderlyingType();
+            if (DbTypeMapping.TryGetValue(t.SpecialType, out var v))
                 return v;
             return (null, null);
         }

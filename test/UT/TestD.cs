@@ -51,11 +51,11 @@ namespace UT.GeneratorTestCases
                 switch (tokens[j])
                 {
                     case 1:
-                        d.Int32 = reader.GetInt32(j);
+                        d.Int32 = reader.IsDBNull(j) ? default : reader.GetInt32(j);
                         break;
 
                     case 2:
-                        d.Int32 = DBUtils.As<int>(reader.GetValue(j));
+                        d.Int32 = reader.IsDBNull(j) ? default : DBUtils.As<int>(reader.GetValue(j));
                         break;
 
                     default:

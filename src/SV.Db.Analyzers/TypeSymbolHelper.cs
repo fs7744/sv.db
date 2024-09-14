@@ -165,6 +165,52 @@ namespace SV.Db.Analyzers
 
             return result;
         }
+
+        internal static bool IsNullable(this ITypeSymbol symbol)
+        {
+            return symbol is INamedTypeSymbol namedType
+                && namedType.IsValueType
+                && namedType.IsGenericType
+                && namedType.ConstructedFrom?.ToDisplayString() == "System.Nullable<T>";
+        }
+
+        internal static string ToFullName(this ITypeSymbol symbol)
+        {
+            return symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        }
+
+        internal static bool IsEnum(this ITypeSymbol symbol)
+        {
+            return symbol.TypeKind == TypeKind.Enum || (symbol.IsNullable() && symbol is INamedTypeSymbol namedType && namedType.TypeArguments[0].TypeKind == TypeKind.Enum);
+        }
+
+        internal static INamedTypeSymbol GetEnumUnderlyingType(this ITypeSymbol symbol)
+        {
+            if (symbol is INamedTypeSymbol namedType)
+            {
+                if (symbol.TypeKind == TypeKind.Enum)
+                    return namedType.EnumUnderlyingType;
+                else if (symbol.IsNullable() && namedType.TypeArguments[0].TypeKind == TypeKind.Enum && namedType.TypeArguments[0] is INamedTypeSymbol tn)
+                {
+                    return tn.EnumUnderlyingType;
+                }
+            }
+            return null;
+        }
+
+        internal static ITypeSymbol GetNullableUnderlyingType(this ITypeSymbol symbol)
+        {
+            return symbol is INamedTypeSymbol namedType ? namedType.TypeArguments[0] : null;
+        }
+
+        internal static ITypeSymbol GetUnderlyingType(this ITypeSymbol symbol)
+        {
+            var r = symbol;
+            if (symbol.IsEnum()) r = symbol.GetEnumUnderlyingType();
+            else if (symbol.IsNullable()) r = symbol.GetNullableUnderlyingType();
+            if (r == null) r = symbol;
+            return r;
+        }
     }
 
     public sealed class ColumnAttributeData
