@@ -22,6 +22,7 @@ namespace UT.GeneratorTestCases
             Assert.DoesNotContain("p.ParameterName = \"A32\";", generatedCode);
             Assert.Contains("p.ParameterName = \"AAA\";", generatedCode);
             Assert.Contains("p.DbType = System.Data.DbType.AnsiString;", generatedCode);
+            Assert.Contains("p.Direction = System.Data.ParameterDirection.InputOutput;", generatedCode);
             Assert.Contains("p.Value = UT.GeneratorTestCases.ColumnAttributeTestData.C(args.Col);", generatedCode);
             Assert.Contains("p.Precision = 3;", generatedCode);
             Assert.Contains("p.Scale = 5;", generatedCode);
@@ -39,7 +40,7 @@ namespace UT.GeneratorTestCases
     public class ColumnAttributeTestData
     {
         [Column(Name = "AAA", Type = DbType.AnsiString, Direction = ParameterDirection.InputOutput, Precision = 3, Scale = 5, Size = 6, CustomConvertToDbMethod = $"UT.GeneratorTestCases.ColumnAttributeTestData.C", CustomConvertFromDbMethod = $"UT.GeneratorTestCases.ColumnAttributeTestData.C2")]
-        public string? Col { get; set; }
+        public List<int>? Col { get; set; }
 
         [Column(Name = "AAAd")]
         public string? A;
@@ -55,9 +56,9 @@ namespace UT.GeneratorTestCases
             return c;
         }
 
-        public static string C2(object c)
+        public static List<int> C2(object c)
         {
-            return c?.ToString();
+            return null;
         }
     }
 }

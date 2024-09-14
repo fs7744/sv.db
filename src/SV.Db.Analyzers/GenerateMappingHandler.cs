@@ -24,14 +24,14 @@ namespace SV.Db.Analyzers
         {
             { SpecialType.System_Boolean, ("DbType.Boolean","GetBoolean")},
             {SpecialType.System_Char,("DbType.String","GetChar") },
-            {SpecialType.System_SByte,("DbType.SByte","") },
+            {SpecialType.System_SByte,("DbType.SByte","#") },
             {SpecialType.System_Byte,("DbType.Byte","GetByte") },
             {SpecialType.System_Int16,("DbType.Int16","GetInt16") },
             {SpecialType.System_Int32,("DbType.Int32","GetInt32") },
             {SpecialType.System_Int64,("DbType.Int64","GetInt64") },
-            {SpecialType.System_UInt16,("DbType.UInt16","") },
-            {SpecialType.System_UInt32,("DbType.UInt32","") },
-            {SpecialType.System_UInt64,("DbType.UInt64","") },
+            {SpecialType.System_UInt16,("DbType.UInt16","#") },
+            {SpecialType.System_UInt32,("DbType.UInt32","#") },
+            {SpecialType.System_UInt64,("DbType.UInt64","#") },
             {SpecialType.System_Decimal,("DbType.Decimal","GetDecimal") },
             {SpecialType.System_Single,("DbType.Single","GetFloat") },
             {SpecialType.System_Double,("DbType.Double","GetDouble") },
@@ -158,11 +158,12 @@ public class {r.ClassName} : RecordFactory<{typeName}>
         {
             var colName = columnAttributeData?.GetName(name) ?? name;
             var customConvertFromDbMethod = columnAttributeData?.GetCustomConvertFromDbMethod();
-            if (string.IsNullOrWhiteSpace(dbType.readerMethod) || !string.IsNullOrWhiteSpace(customConvertFromDbMethod))
+            if (dbType.readerMethod == "#" || !string.IsNullOrWhiteSpace(customConvertFromDbMethod))
             {
                 var x = ++i;
                 var tt = iType.GetUnderlyingType().ToFullName();
-                tokens.Append($@"// {colName}
+                tokens.Append($@"
+// {colName}
 case {StringHashing.HashOrdinalIgnoreCase(colName)}: 
 tokens[i] = {x}; break;");
                 read.Append($@"
@@ -171,7 +172,7 @@ tokens[i] = {x}; break;");
                         break;
 ");
             }
-            else
+            else if (!string.IsNullOrWhiteSpace(dbType.dbType))
             {
                 var x = ++i;
                 var y = ++i;
@@ -189,6 +190,10 @@ tokens[i] = type == typeof({tt}) ? {x} : {y}; break;");
                         break;
 ");
             }
+            else
+            {
+                tokens.Append($@"// ingore {iType.ToFullName()}");
+            }
 
             return i;
         }
@@ -204,8 +209,6 @@ tokens[i] = type == typeof({tt}) ? {x} : {y}; break;");
             foreach (var item in type.GetAllGettableProperties())
             {
                 var dbType = GetDbType(item);
-                if (string.IsNullOrEmpty(dbType.dbType)) continue;
-                
                 GenerateSetParam(sb, dbType.dbType, item.Name, item.GetColumnAttribute(), item.Type);
             }
             return sb.ToString();
@@ -214,6 +217,8 @@ tokens[i] = type == typeof({tt}) ? {x} : {y}; break;");
         private static void GenerateSetParam(StringBuilder sb, string dbType, string name, ColumnAttributeData columnAttributeData, ITypeSymbol symbol)
         {
             var customConvertToDbMethod = columnAttributeData?.GetCustomConvertToDbMethod();
+
+            if (string.IsNullOrWhiteSpace(dbType) && (string.IsNullOrWhiteSpace(customConvertToDbMethod) || string.IsNullOrWhiteSpace(columnAttributeData?.Type))) return;
             sb.Append($@"
 p = cmd.CreateParameter();
 p.Direction = {(string.IsNullOrWhiteSpace(columnAttributeData?.Direction) ? "ParameterDirection.Input" : columnAttributeData.Direction)};
@@ -233,7 +238,6 @@ ps.Add(p);
             foreach (var item in type.GetAllPublicFields())
             {
                 var dbType = GetDbType(item);
-                if (string.IsNullOrEmpty(dbType.dbType)) continue;
                 GenerateSetParam(sb, dbType.dbType, item.Name, item.GetColumnAttribute(), item.Type);
             }
             return sb.ToString();
@@ -241,17 +245,21 @@ ps.Add(p);
 
         private static (string dbType, string readerMethod) GetDbType(IFieldSymbol item)
         {
-            var t = item.Type.GetUnderlyingType();
-            if (DbTypeMapping.TryGetValue(t.SpecialType, out var v))
-                return v;
-            return (null, null);
+            return GetDbType(item.Type);
         }
 
         private static (string dbType, string readerMethod) GetDbType(IPropertySymbol item)
         {
-            var t = item.Type.GetUnderlyingType();
+            return GetDbType(item.Type);
+        }
+
+        private static (string dbType, string readerMethod) GetDbType(ITypeSymbol type)
+        {
+            var t = type.GetUnderlyingType();
             if (DbTypeMapping.TryGetValue(t.SpecialType, out var v))
                 return v;
+            if (t.ToFullName() == "global::System.Guid")
+                return ("DbType.Guid", "GetGuid");
             return (null, null);
         }
 
