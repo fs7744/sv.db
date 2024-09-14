@@ -13,7 +13,7 @@ namespace UT.GeneratorTestCases
 
         public void Check(string generatedCode)
         {
-            Assert.Contains("// total: 0", generatedCode);
+            Assert.Contains("internal static void InitFunc()", generatedCode);
         }
     }
 }

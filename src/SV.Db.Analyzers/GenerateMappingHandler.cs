@@ -118,7 +118,7 @@ public class {r.ClassName} : RecordFactory<{typeName}>
         }}
     }}
 
-    protected override {typeName}? Read(DbDataReader reader, ref ReadOnlySpan<int> tokens)
+    protected override {typeName} Read(DbDataReader reader, ref ReadOnlySpan<int> tokens)
     {{
         var d = new {typeName}();
         for (int j = 0; j < tokens.Length; j++)
