@@ -156,8 +156,9 @@ public class {r.ClassName} : RecordFactory<{typeName}>
 
         private static int GenerateReadTokens(int i, StringBuilder tokens, StringBuilder read, ITypeSymbol iType, string name, (string dbType, string readerMethod) dbType, ColumnAttributeData columnAttributeData)
         {
-            var colName = string.IsNullOrWhiteSpace(columnAttributeData?.Name) ? name : columnAttributeData.Name.Substring(1, columnAttributeData.Name.Length -2);
-            if (string.IsNullOrWhiteSpace(dbType.readerMethod))
+            var colName = columnAttributeData?.GetName(name) ?? name;
+            var customConvertFromDbMethod = columnAttributeData?.GetCustomConvertFromDbMethod();
+            if (string.IsNullOrWhiteSpace(dbType.readerMethod) || !string.IsNullOrWhiteSpace(customConvertFromDbMethod))
             {
                 var x = ++i;
                 var tt = iType.GetUnderlyingType().ToFullName();
@@ -166,7 +167,7 @@ case {StringHashing.HashOrdinalIgnoreCase(colName)}:
 tokens[i] = {x}; break;");
                 read.Append($@"
                     case {x}:
-                        d.{name} = reader.IsDBNull(j) ? default : DBUtils.As<{tt}>(reader.GetValue(j));
+                        d.{name} = reader.IsDBNull(j) ? default : {(string.IsNullOrWhiteSpace(customConvertFromDbMethod) ? $"DBUtils.As<{tt}>" : customConvertFromDbMethod)}(reader.GetValue(j));
                         break;
 ");
             }
@@ -212,12 +213,13 @@ tokens[i] = type == typeof({tt}) ? {x} : {y}; break;");
 
         private static void GenerateSetParam(StringBuilder sb, string dbType, string name, ColumnAttributeData columnAttributeData, ITypeSymbol symbol)
         {
+            var customConvertToDbMethod = columnAttributeData?.GetCustomConvertToDbMethod();
             sb.Append($@"
 p = cmd.CreateParameter();
 p.Direction = {(string.IsNullOrWhiteSpace(columnAttributeData?.Direction) ? "ParameterDirection.Input" : columnAttributeData.Direction)};
 p.ParameterName = {(string.IsNullOrWhiteSpace(columnAttributeData?.Name) ? $"\"{name}\"" : columnAttributeData.Name)};
 p.DbType = {(string.IsNullOrWhiteSpace(columnAttributeData?.Type) ? dbType : columnAttributeData.Type)};
-p.Value = {(string.IsNullOrWhiteSpace(columnAttributeData?.CustomConvertMethod) ? $"args.{name}{(symbol.IsNullable() ? ".GetValueOrDefault()": "")}" : $"{columnAttributeData.CustomConvertMethod.Substring(1, columnAttributeData.CustomConvertMethod.Length -2)}(args.{name})")};
+p.Value = {(string.IsNullOrWhiteSpace(customConvertToDbMethod) ? $"args.{name}{(symbol.IsNullable() ? ".GetValueOrDefault()": "")}" : $"{customConvertToDbMethod}(args.{name})")};
 {(string.IsNullOrWhiteSpace(columnAttributeData?.Precision) ? "" : $"p.Precision = {columnAttributeData.Precision};" )}
 {(string.IsNullOrWhiteSpace(columnAttributeData?.Scale) ? "" : $"p.Scale = {columnAttributeData.Scale};" )}
 {(string.IsNullOrWhiteSpace(columnAttributeData?.Size) ? "" : $"p.Size = {columnAttributeData.Size};")}

@@ -60,7 +60,7 @@ namespace SV.Db.Analyzers
             var result = typeSymbol
                 .GetMembers()
                 .Where(s => s.Kind == SymbolKind.Property).Cast<IPropertySymbol>()
-                .Where(p => p.SetMethod?.DeclaredAccessibility == Accessibility.Public)
+                .Where(p => p.SetMethod?.DeclaredAccessibility == Accessibility.Public && !p.HasNotColumnAttribute())
                 .Union(typeSymbol.BaseType == null ? new IPropertySymbol[0] : typeSymbol.BaseType.GetAllSettableProperties());
 
             return result;
@@ -71,7 +71,7 @@ namespace SV.Db.Analyzers
             var result = typeSymbol
                 .GetMembers()
                 .Where(s => s.Kind == SymbolKind.Property).Cast<IPropertySymbol>()
-                .Where(p => p.GetMethod?.DeclaredAccessibility == Accessibility.Public)
+                .Where(p => p.GetMethod?.DeclaredAccessibility == Accessibility.Public && !p.HasNotColumnAttribute())
                 .Union(typeSymbol.BaseType == null ? new IPropertySymbol[0] : typeSymbol.BaseType.GetAllGettableProperties());
 
             return result;
@@ -82,7 +82,7 @@ namespace SV.Db.Analyzers
             var result = typeSymbol
                 .GetMembers()
                 .Where(s => s.Kind == SymbolKind.Field).Cast<IFieldSymbol>()
-                .Where(p => p.DeclaredAccessibility == Accessibility.Public)
+                .Where(p => p.DeclaredAccessibility == Accessibility.Public && !p.HasNotColumnAttribute())
                 .Union(typeSymbol.BaseType == null ? new IFieldSymbol[0] : typeSymbol.BaseType.GetAllPublicFields());
 
             return result;
@@ -120,6 +120,16 @@ namespace SV.Db.Analyzers
             return null;
         }
 
+        public static bool HasAttribute(this ISymbol? symbol, string attributeName)
+        {
+            return GetAttribute(symbol, attributeName) != null;
+        }
+
+        public static bool HasNotColumnAttribute(this ISymbol? symbol)
+        {
+            return HasAttribute(symbol, "NotColumnAttribute");
+        }
+
         public static ColumnAttributeData? GetColumnAttribute(this ISymbol? symbol)
         {
             var r = GetAttribute(symbol, "ColumnAttribute");
@@ -154,8 +164,12 @@ namespace SV.Db.Analyzers
                         result.Size = t.Value.ToCSharpString();
                         break;
 
-                    case "CustomConvertMethod":
-                        result.CustomConvertMethod = t.Value.ToCSharpString();
+                    case "CustomConvertToDbMethod":
+                        result.CustomConvertToDbMethod = t.Value.ToCSharpString();
+                        break;
+
+                    case "CustomConvertFromDbMethod":
+                        result.CustomConvertFromDbMethod = t.Value.ToCSharpString();
                         break;
 
                     default:
@@ -210,22 +224,6 @@ namespace SV.Db.Analyzers
             else if (symbol.IsNullable()) r = symbol.GetNullableUnderlyingType();
             if (r == null) r = symbol;
             return r;
-        }
-    }
-
-    public sealed class ColumnAttributeData
-    {
-        public string? Name { get; set; }
-        public string? Type { get; set; }
-        public string? Direction { get; set; }
-        public string? Precision { get; set; }
-        public string? Scale { get; set; }
-        public string? Size { get; set; }
-        public string? CustomConvertMethod { get; set; }
-
-        public override string ToString()
-        {
-            return $"ColumnAttributeData: Name:{Name},Type:{Type},Direction:{Direction},Precision:{Precision},CustomConvertMethod:{CustomConvertMethod},Scale:{Scale},Size:{Size}";
         }
     }
 }
