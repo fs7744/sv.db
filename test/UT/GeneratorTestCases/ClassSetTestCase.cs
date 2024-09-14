@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using SV.Db;
 using System.Data.Common;
-using System.Linq;
-using System.Text;
-using SV.Db;
 
 namespace UT.GeneratorTestCases
 {

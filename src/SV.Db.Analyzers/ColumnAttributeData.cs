@@ -1,6 +1,4 @@
-﻿using System.Xml.Linq;
-
-namespace SV.Db.Analyzers
+﻿namespace SV.Db.Analyzers
 {
     public sealed class ColumnAttributeData
     {

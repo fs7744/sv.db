@@ -2,11 +2,9 @@
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Order;
 using Dapper;
-using System;
-using System.Collections.Generic;
+using SV.Db;
 using System.Data;
 using System.Dynamic;
-using SV.Db;
 
 namespace Benchmark
 {

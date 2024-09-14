@@ -1,21 +1,16 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System;
-using System.Collections.Generic;
+using SV.Db.Analyzers;
 using System.Collections.Immutable;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Data.Common;
-using System.Linq;
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Threading.Tasks;
-using SV.Db.Analyzers;
-using System.Globalization;
 using Xunit.Abstractions;
-using UT.GeneratorTestCases;
 
 namespace UT
 {
