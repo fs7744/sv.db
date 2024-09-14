@@ -179,7 +179,9 @@ namespace UT
             code = code.Substring(0, code.IndexOf("public void Check(")) + "}}";
             (var compilation, var result, var errorCount) = TestGenerate(code);
             var results = Assert.Single(result.Results);
-            string generatedCode = results.GeneratedSources.Any() ? results.GeneratedSources.Single().SourceText?.ToString() ?? "" : "";
+            var generatedCodeS = results.GeneratedSources.Any() ? results.GeneratedSources.Single().SourceText : null;
+            var generatedCode = generatedCodeS == null ? "" : generatedCodeS.ToString();
+            //CSharpSyntaxTree.ParseText(generatedCodeS).GetRoot().NormalizeWhitespace().SyntaxTree.GetText().ToString();
             output.WriteLine(generatedCode);
             Assert.Equal(0, errorCount);
             dynamic a = Activator.CreateInstance(this.GetType().Assembly.GetName().FullName, $"UT.GeneratorTestCases.{Path.GetFileName(path).Replace(".cs", "")}").Unwrap();

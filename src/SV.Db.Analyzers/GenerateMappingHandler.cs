@@ -1,4 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections;
 using System.Collections.Frozen;
@@ -143,16 +145,25 @@ public class {r.ClassName} : RecordFactory<{typeName}>
             {
                 var dbType = GetDbType(item);
                 if (string.IsNullOrEmpty(dbType)) continue;
-                sb.Append($@"
-        p = cmd.CreateParameter();
-        p.Direction = ParameterDirection.Input;
-        p.ParameterName = ""{item.Name}"";
-        p.DbType = {dbType};
-        p.Value = args.{item.Name};
-        ps.Add(p);
-");
+                
+                GenerateSetParam(sb, dbType, item.Name, item.GetColumnAttribute());
             }
             return sb.ToString();
+        }
+
+        private static void GenerateSetParam(StringBuilder sb, string dbType, string name, ColumnAttributeData columnAttributeData)
+        {
+            sb.Append($@"
+p = cmd.CreateParameter();
+p.Direction = {(string.IsNullOrWhiteSpace(columnAttributeData?.Direction) ? "ParameterDirection.Input" : columnAttributeData.Direction)};
+p.ParameterName = {(string.IsNullOrWhiteSpace(columnAttributeData?.Name) ? $"\"{name}\"" : columnAttributeData.Name)};
+p.DbType = {(string.IsNullOrWhiteSpace(columnAttributeData?.Type) ? dbType : columnAttributeData.Type)};
+p.Value = {(string.IsNullOrWhiteSpace(columnAttributeData?.CustomConvertMethod) ? $"args.{name}" : $"{columnAttributeData.CustomConvertMethod.Substring(1, columnAttributeData.CustomConvertMethod.Length -2)}(args.{name})")};
+{(string.IsNullOrWhiteSpace(columnAttributeData?.Precision) ? "" : $"p.Precision = {columnAttributeData.Precision};" )}
+{(string.IsNullOrWhiteSpace(columnAttributeData?.Scale) ? "" : $"p.Scale = {columnAttributeData.Scale};" )}
+{(string.IsNullOrWhiteSpace(columnAttributeData?.Size) ? "" : $"p.Size = {columnAttributeData.Size};")}
+ps.Add(p);
+");
         }
 
         private static string GenerateSetParamsFields(ITypeSymbol type)
@@ -162,14 +173,7 @@ public class {r.ClassName} : RecordFactory<{typeName}>
             {
                 var dbType = GetDbType(item);
                 if (string.IsNullOrEmpty(dbType)) continue;
-                sb.Append($@"
-        p = cmd.CreateParameter();
-        p.Direction = ParameterDirection.Input;
-        p.ParameterName = ""{item.Name}"";
-        p.DbType = {dbType};
-        p.Value = args.{item.Name};
-        ps.Add(p);
-");
+                GenerateSetParam(sb, dbType, item.Name, item.GetColumnAttribute());
             }
             return sb.ToString();
         }
@@ -215,8 +219,7 @@ namespace SV.Db
     }}
 }}
             ";
-
-            return src;
+            return CSharpSyntaxTree.ParseText(SourceText.From(src)).GetRoot().NormalizeWhitespace().SyntaxTree.GetText().ToString();
         }
     }
 }

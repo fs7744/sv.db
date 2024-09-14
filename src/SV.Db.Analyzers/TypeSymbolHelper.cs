@@ -1,8 +1,10 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace SV.Db.Analyzers
@@ -100,6 +102,84 @@ namespace SV.Db.Analyzers
                 default:
                     return "internal";
             }
+        }
+
+        public static AttributeData? GetAttribute(this ISymbol? symbol, string attributeName)
+        {
+            if (symbol is not null)
+            {
+                foreach (var attrib in symbol.GetAttributes())
+                {
+                    if (attrib.AttributeClass!.Name == attributeName)
+                    {
+                        return attrib;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public static ColumnAttributeData? GetColumnAttribute(this ISymbol? symbol)
+        {
+            var r = GetAttribute(symbol, "ColumnAttribute");
+            if (r == null) return null;
+
+            var result = new ColumnAttributeData();
+            foreach (var t in r.NamedArguments)
+            {
+                switch (t.Key)
+                {
+                    case "Name":
+                        result.Name = t.Value.ToCSharpString();
+                        break;
+
+                    case "Type":
+                        result.Type = t.Value.ToCSharpString();
+                        break;
+
+                    case "Direction":
+                        result.Direction = t.Value.ToCSharpString();
+                        break;
+
+                    case "Precision":
+                        result.Precision = t.Value.ToCSharpString();
+                        break;
+
+                    case "Scale":
+                        result.Scale = t.Value.ToCSharpString();
+                        break;
+
+                    case "Size":
+                        result.Size = t.Value.ToCSharpString();
+                        break;
+
+                    case "CustomConvertMethod":
+                        result.CustomConvertMethod = t.Value.ToCSharpString();
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+
+            return result;
+        }
+    }
+
+    public sealed class ColumnAttributeData
+    {
+        public string? Name { get; set; }
+        public string? Type { get; set; }
+        public string? Direction { get; set; }
+        public string? Precision { get; set; }
+        public string? Scale { get; set; }
+        public string? Size { get; set; }
+        public string? CustomConvertMethod { get; set; }
+
+        public override string ToString()
+        {
+            return $"ColumnAttributeData: Name:{Name},Type:{Type},Direction:{Direction},Precision:{Precision},CustomConvertMethod:{CustomConvertMethod},Scale:{Scale},Size:{Size}";
         }
     }
 }
