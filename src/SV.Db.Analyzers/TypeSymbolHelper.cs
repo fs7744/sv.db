@@ -10,7 +10,7 @@ namespace SV.Db.Analyzers
 {
     public static class TypeSymbolHelper
     {
-        public static ITypeSymbol? GetResultType(this IInvocationOperation invocation)
+        public static ITypeSymbol GetResultType(this IInvocationOperation invocation)
         {
             var typeArgs = invocation.TargetMethod.TypeArguments;
             if (typeArgs.Length == 1)
@@ -20,7 +20,7 @@ namespace SV.Db.Analyzers
             return null;
         }
 
-        internal static string GetInterceptorFilePath(this SyntaxTree? tree, Compilation compilation)
+        internal static string GetInterceptorFilePath(this SyntaxTree tree, Compilation compilation)
         {
             if (tree is null) return "";
             return compilation.Options.SourceReferenceResolver?.NormalizePath(tree.FilePath, baseFilePath: null) ?? tree.FilePath;
@@ -40,7 +40,7 @@ namespace SV.Db.Analyzers
                 if (outerNode is not null && outerNode is MemberAccessExpressionSyntax)
                 {
                     // if there is an identifier, we want the **last** one - think Foo.Bar.Blap(...)
-                    SyntaxNode? identifier = null;
+                    SyntaxNode identifier = null;
                     foreach (var inner in outerNode.ChildNodesAndTokens())
                     {
                         var innerNode = inner.AsNode();
@@ -103,7 +103,7 @@ namespace SV.Db.Analyzers
             }
         }
 
-        public static AttributeData? GetAttribute(this ISymbol? symbol, string attributeName)
+        public static AttributeData GetAttribute(this ISymbol symbol, string attributeName)
         {
             if (symbol is not null)
             {
@@ -119,17 +119,17 @@ namespace SV.Db.Analyzers
             return null;
         }
 
-        public static bool HasAttribute(this ISymbol? symbol, string attributeName)
+        public static bool HasAttribute(this ISymbol symbol, string attributeName)
         {
             return GetAttribute(symbol, attributeName) != null;
         }
 
-        public static bool HasNotColumnAttribute(this ISymbol? symbol)
+        public static bool HasNotColumnAttribute(this ISymbol symbol)
         {
             return HasAttribute(symbol, "global::SV.Db.NotColumnAttribute");
         }
 
-        public static ColumnAttributeData? GetColumnAttribute(this ISymbol? symbol)
+        public static ColumnAttributeData GetColumnAttribute(this ISymbol symbol)
         {
             var r = GetAttribute(symbol, "global::SV.Db.ColumnAttribute");
             if (r == null) return null;
@@ -282,7 +282,7 @@ namespace SV.Db.Analyzers
             }
         }
 
-        internal static IMethodSymbol? ChooseConstructor(this ITypeSymbol symbol)
+        internal static IMethodSymbol ChooseConstructor(this ITypeSymbol symbol)
         {
             if (symbol is not INamedTypeSymbol named)
             {

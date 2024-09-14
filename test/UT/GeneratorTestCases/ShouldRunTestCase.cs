@@ -8,7 +8,7 @@ namespace UT.GeneratorTestCases
         public void TestCase()
         {
             DbConnection connection = null;
-            connection.ExecuteNonQueryAsync("", "");
+            connection.ExecuteNonQueryAsync("", "").GetAwaiter().GetResult();
         }
 
         public void Check(string generatedCode)

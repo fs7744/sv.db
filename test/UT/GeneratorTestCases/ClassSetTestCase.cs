@@ -7,7 +7,7 @@ namespace UT.GeneratorTestCases
     {
         public void TestCase()
         {
-            DbConnection connection = null;
+            DbConnection? connection = default;
             connection.CreateCommand().SetParams<ClassTestData>(new ClassTestData());
         }
 
@@ -40,7 +40,7 @@ namespace UT.GeneratorTestCases
         public Double Double { get; set; }
         public DateTime DateTime { get; set; }
 
-        private DateTime Idff22;
+        private readonly DateTime Idff22;
         public int Idff;
         public Int16 Iddff;
         public Int64 Idd2ff;

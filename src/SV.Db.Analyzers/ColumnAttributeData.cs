@@ -2,14 +2,14 @@
 {
     public sealed class ColumnAttributeData
     {
-        public string? Name { get; set; }
-        public string? Type { get; set; }
-        public string? Direction { get; set; }
-        public string? Precision { get; set; }
-        public string? Scale { get; set; }
-        public string? Size { get; set; }
-        public string? CustomConvertToDbMethod { get; set; }
-        public string? CustomConvertFromDbMethod { get; set; }
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public string Direction { get; set; }
+        public string Precision { get; set; }
+        public string Scale { get; set; }
+        public string Size { get; set; }
+        public string CustomConvertToDbMethod { get; set; }
+        public string CustomConvertFromDbMethod { get; set; }
 
         public string GetName(string defaultValue)
         {

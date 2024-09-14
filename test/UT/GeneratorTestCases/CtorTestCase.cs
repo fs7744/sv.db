@@ -7,7 +7,7 @@ namespace UT.GeneratorTestCases
     {
         public void TestCase()
         {
-            DbConnection connection = null;
+            DbConnection? connection = null;
             connection.CreateCommand().SetParams(new CtorTestCaseData(default, default));
             connection.CreateCommand().SetParams(new CtorTestCaseData2(default, default));
             connection.CreateCommand().SetParams(new CtorTestCaseData3(default, default, default));

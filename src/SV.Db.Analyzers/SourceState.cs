@@ -15,7 +15,7 @@ namespace SV.Db.Analyzers
             SpecialType.System_UIntPtr,SpecialType.System_Nullable_T, SpecialType.System_DateTime
         }.ToFrozenSet();
 
-        public IOperation? Args { get; set; }
+        public IOperation Args { get; set; }
         public IInvocationOperation Invocation { get; set; }
         public bool IsAsync { get; set; }
         public ITypeSymbol ReturnType { get; set; }
