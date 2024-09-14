@@ -20,23 +20,23 @@ namespace SV.Db.Analyzers
 
     public static class GenerateMappingHandler
     {
-        internal static readonly FrozenDictionary<SpecialType, string> DbTypeMapping = new Dictionary<SpecialType, string>()
+        internal static readonly FrozenDictionary<SpecialType, (string dbType, string readerMethod)> DbTypeMapping = new Dictionary<SpecialType, (string dbType, string readerMethod)>()
         {
-            { SpecialType.System_Boolean, "DbType.Boolean"},
-            {SpecialType.System_Char,"DbType.String" },
-            {SpecialType.System_SByte,"DbType.SByte" },
-            {SpecialType.System_Byte,"DbType.Byte" },
-            {SpecialType.System_Int16,"DbType.Int16" },
-            {SpecialType.System_Int32,"DbType.Int32" },
-            {SpecialType.System_Int64,"DbType.Int64" },
-            {SpecialType.System_UInt16,"DbType.UInt16" },
-            {SpecialType.System_UInt32,"DbType.UInt32" },
-            {SpecialType.System_UInt64,"DbType.UInt64" },
-            {SpecialType.System_Decimal,"DbType.Decimal" },
-            {SpecialType.System_Single,"DbType.Single" },
-            {SpecialType.System_Double,"DbType.Double" },
-            {SpecialType.System_String,"DbType.String" },
-            {SpecialType.System_DateTime,"DbType.DateTime" },
+            { SpecialType.System_Boolean, ("DbType.Boolean","GetBoolean")},
+            {SpecialType.System_Char,("DbType.String","GetChar") },
+            {SpecialType.System_SByte,("DbType.SByte","") },
+            {SpecialType.System_Byte,("DbType.Byte","GetByte") },
+            {SpecialType.System_Int16,("DbType.Int16","GetInt16") },
+            {SpecialType.System_Int32,("DbType.Int32","GetInt32") },
+            {SpecialType.System_Int64,("DbType.Int64","GetInt64") },
+            {SpecialType.System_UInt16,("DbType.UInt16","") },
+            {SpecialType.System_UInt32,("DbType.UInt32","") },
+            {SpecialType.System_UInt64,("DbType.UInt64","") },
+            {SpecialType.System_Decimal,("DbType.Decimal","GetDecimal") },
+            {SpecialType.System_Single,("DbType.Single","GetFloat") },
+            {SpecialType.System_Double,("DbType.Double","GetDouble") },
+            {SpecialType.System_String,("DbType.String","GetString") },
+            {SpecialType.System_DateTime,("DbType.DateTime","GetDateTime") },
         }.ToFrozenDictionary();
 
         public static void GenerateMapping(this SourceState source, Dictionary<string, GeneratedMapping> map)
@@ -89,6 +89,7 @@ namespace SV.Db.Analyzers
             }
             else
             {
+                var (readTokens, read) = GenerateReadTokens(type);
                 r.Code = @$"
 public class {r.ClassName} : RecordFactory<{typeName}>
 {{
@@ -96,7 +97,6 @@ public class {r.ClassName} : RecordFactory<{typeName}>
     {{
         var ps = cmd.Parameters;
         DbParameter p;
-
         {GenerateSetParams(type)}
     }}
 
@@ -108,6 +108,7 @@ public class {r.ClassName} : RecordFactory<{typeName}>
             var type = reader.GetFieldType(i);
             switch (StringHashing.HashOrdinalIgnoreCase(name))
             {{
+                {readTokens}
                 default:
                     break;
             }}
@@ -121,6 +122,7 @@ public class {r.ClassName} : RecordFactory<{typeName}>
         {{
             switch (tokens[j])
             {{
+                {read}
                 default:
                     break;
             }}
@@ -131,6 +133,59 @@ public class {r.ClassName} : RecordFactory<{typeName}>
 ";
             }
             return r;
+        }
+
+        private static (string, string) GenerateReadTokens(ITypeSymbol type)
+        {
+            var i = 0;
+            var tokens = new StringBuilder();
+            var read = new StringBuilder();
+            foreach (var item in type.GetAllSettableProperties())
+            {
+                var dbType = GetDbType(item);
+                i = GenerateReadTokens(i, tokens, read, item.Type, item.Name, dbType);
+
+            }
+            foreach (var item in type.GetAllPublicFields())
+            {
+                var dbType = GetDbType(item);
+                i = GenerateReadTokens(i, tokens, read, item.Type, item.Name, dbType);
+            }
+            return (tokens.ToString(), read.ToString());
+        }
+
+        private static int GenerateReadTokens(int i, StringBuilder tokens, StringBuilder read, ITypeSymbol iType, string name, (string dbType, string readerMethod) dbType)
+        {
+            if (string.IsNullOrWhiteSpace(dbType.readerMethod))
+            {
+                var x = ++i;
+                var tt = iType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                tokens.Append($@"case {StringHashing.HashOrdinalIgnoreCase(name)}: 
+tokens[i] = {x}; break;");
+                read.Append($@"
+                    case {x}:
+                        d.{name} = DBUtils.As<{tt}>(reader.GetValue(j));
+                        break;
+");
+            }
+            else
+            {
+                var x = ++i;
+                var y = ++i;
+                var tt = iType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                tokens.Append($@"case {StringHashing.HashOrdinalIgnoreCase(name)}: 
+tokens[i] = type == typeof({tt}) ? {x} : {y}; break;");
+                read.Append($@"
+                    case {x}:
+                        d.{name} = reader.{dbType.readerMethod}(j);
+                        break;
+                    case {y}:
+                        d.{name} = DBUtils.As<{tt}>(reader.GetValue(j));
+                        break;
+");
+            }
+
+            return i;
         }
 
         private static string GenerateSetParams(ITypeSymbol type)
@@ -144,9 +199,9 @@ public class {r.ClassName} : RecordFactory<{typeName}>
             foreach (var item in type.GetAllGettableProperties())
             {
                 var dbType = GetDbType(item);
-                if (string.IsNullOrEmpty(dbType)) continue;
+                if (string.IsNullOrEmpty(dbType.dbType)) continue;
                 
-                GenerateSetParam(sb, dbType, item.Name, item.GetColumnAttribute());
+                GenerateSetParam(sb, dbType.dbType, item.Name, item.GetColumnAttribute());
             }
             return sb.ToString();
         }
@@ -172,24 +227,24 @@ ps.Add(p);
             foreach (var item in type.GetAllPublicFields())
             {
                 var dbType = GetDbType(item);
-                if (string.IsNullOrEmpty(dbType)) continue;
-                GenerateSetParam(sb, dbType, item.Name, item.GetColumnAttribute());
+                if (string.IsNullOrEmpty(dbType.dbType)) continue;
+                GenerateSetParam(sb, dbType.dbType, item.Name, item.GetColumnAttribute());
             }
             return sb.ToString();
         }
 
-        private static string GetDbType(IFieldSymbol item)
+        private static (string dbType, string readerMethod) GetDbType(IFieldSymbol item)
         {
             if (DbTypeMapping.TryGetValue(item.Type.SpecialType, out var v))
                 return v;
-            return null;
+            return (null, null);
         }
 
-        private static string GetDbType(IPropertySymbol item)
+        private static (string dbType, string readerMethod) GetDbType(IPropertySymbol item)
         {
             if (DbTypeMapping.TryGetValue(item.Type.SpecialType, out var v))
                 return v;
-            return null;
+            return (null, null);
         }
 
         public static string GenerateCode(this Dictionary<string, GeneratedMapping> map)
