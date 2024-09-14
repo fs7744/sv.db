@@ -294,7 +294,7 @@ namespace SV.Db.Analyzers
             {
                 return null;
             }
-            IMethodSymbol r = ctors.FirstOrDefault();
+            IMethodSymbol r = null;
             foreach (var ctor in ctors)
             {
                 switch (ctor.DeclaredAccessibility)
@@ -308,9 +308,35 @@ namespace SV.Db.Analyzers
 
                 if (ctor.HasAttribute("global::SV.Db.CtorAttribute"))
                 {
-                    return ctor;
+                    if (r == null)
+                    {
+                        r = ctor;
+                    }
+                    else if (r.Parameters.Length > ctor.Parameters.Length)
+                    {
+                        r = ctor;
+                    }
                 }
-                if (r.Parameters.Length > ctor.Parameters.Length) 
+                
+            }
+            if (r != null) return r;
+            r = null;
+            foreach (var ctor in ctors)
+            {
+                switch (ctor.DeclaredAccessibility)
+                {
+                    case Accessibility.Private:
+                    case Accessibility.Protected:
+                    case Accessibility.Friend:
+                    case Accessibility.ProtectedAndInternal:
+                        continue;
+                }
+
+                if (r == null)
+                {
+                    r = ctor;
+                }
+                else if (r.Parameters.Length > ctor.Parameters.Length)
                 {
                     r = ctor;
                 }

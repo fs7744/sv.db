@@ -5,8 +5,10 @@ using System;
 using System.Collections;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SV.Db.Analyzers
 {
@@ -144,7 +146,23 @@ public class {r.ClassName} : RecordFactory<{typeName}>
             string p = string.Empty;
             if (ctor != null && ctor.Parameters.Length > 0)
             { 
-                p = string.Join(",", ctor.Parameters.Select(i => "default"));
+                p = string.Join(",", ctor.Parameters.Select(i => 
+                {
+                    var col = i.GetColumnAttribute();
+                    var colName = col?.GetName(i.Name) ?? i.Name;
+                    var customConvertFromDbMethod = col?.GetCustomConvertFromDbMethod();
+                    if (!string.IsNullOrWhiteSpace(customConvertFromDbMethod))
+                    {
+                        return $"{customConvertFromDbMethod}(reader.GetValue(\"{colName}\"))";
+                    }
+                    var dbType = GetDbType(i.Type);
+                    if (!string.IsNullOrWhiteSpace(dbType.readerMethod) && dbType.readerMethod != "#")
+                    {
+                        return $"reader.IsDBNull(\"{colName}\") ? default : reader.{dbType.readerMethod}(\"{colName}\")";
+                    }
+                    var tt = i.Type.GetUnderlyingType().ToFullName();
+                    return $"reader.IsDBNull(\"{colName}\") ? default : DBUtils.As<{tt}>(reader.GetValue(\"{colName}\"))";
+                }));
             }
             return $"new {typeName}({p})";
         }

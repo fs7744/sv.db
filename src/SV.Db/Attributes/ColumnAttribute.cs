@@ -2,7 +2,7 @@
 
 namespace SV.Db
 {
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter, AllowMultiple = false)]
     public class ColumnAttribute : Attribute
     {
         public string? Name { get; set; }

@@ -22,7 +22,7 @@ namespace UT.GeneratorTestCases
             Assert.Contains("RecordFactory.RegisterRecordFactory<global::UT.GeneratorTestCases.CtorTestCaseData2>(new CtorTestCaseData2_", generatedCode);
             Assert.Contains("public class CtorTestCaseData3_", generatedCode);
             Assert.Contains("RecordFactory.RegisterRecordFactory<global::UT.GeneratorTestCases.CtorTestCaseData3>(new CtorTestCaseData3_", generatedCode);
-            Assert.Contains("new global::UT.GeneratorTestCases.CtorTestCaseData3(default, default, default);", generatedCode);
+            Assert.Contains("var d = new global::UT.GeneratorTestCases.CtorTestCaseData3(reader.IsDBNull(\"a\") ? default : DBUtils.As<global::UT.GeneratorTestCases.CtorTestCaseData>(reader.GetValue(\"a\")), reader.IsDBNull(\"d\") ? default : reader.GetInt32(\"d\"), UT.GeneratorTestCases.CtorTestCaseData3.C(reader.GetValue(\"aa3\")));", generatedCode);
         }
     }
 
@@ -48,8 +48,13 @@ namespace UT.GeneratorTestCases
         }
 
         [Ctor]
-        public CtorTestCaseData3(CtorTestCaseData a, int? d, int a3)
+        public CtorTestCaseData3(CtorTestCaseData a, int? d, [Column(Name = "aa3", CustomConvertFromDbMethod = "UT.GeneratorTestCases.CtorTestCaseData3.C")] int a3)
         {
+        }
+
+        public static int C(object c)
+        {
+            return 3;
         }
     }
 
