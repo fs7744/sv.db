@@ -362,5 +362,11 @@ namespace SV.Db
                     return Enums<T>.ToEnum(reader.GetValue(ordinal));
             }
         }
+
+        [MethodImpl(Optimization)]
+        public static T ToEnum<T>(object value) where T : struct, Enum
+        {
+            return Enums<T>.ToEnum(value);
+        }
     }
 }

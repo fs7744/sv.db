@@ -172,6 +172,20 @@ tokens[i] = {x}; break;");
                         break;
 ");
             }
+            else if (iType.IsEnum())
+            {
+                var x = ++i;
+                var tt = (iType.IsNullable() ? iType.GetNullableUnderlyingType() : iType).ToFullName();
+                tokens.Append($@"
+// {colName}
+case {StringHashing.HashOrdinalIgnoreCase(colName)}: 
+tokens[i] = {x}; break;");
+                read.Append($@"
+                    case {x}:
+                        d.{name} = reader.IsDBNull(j) ? default : DBUtils.ToEnum<{tt}>(reader.GetValue(j));
+                        break;
+");
+            }
             else if (!string.IsNullOrWhiteSpace(dbType.dbType))
             {
                 var x = ++i;

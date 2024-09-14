@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -222,6 +223,63 @@ namespace SV.Db.Analyzers
             else if (symbol.IsNullable()) r = symbol.GetNullableUnderlyingType();
             if (r == null) r = symbol;
             return r;
+        }
+
+        internal static TypeCode GetTypeCode(this ITypeSymbol symbol)
+        {
+            switch (symbol.SpecialType)
+            {
+                case SpecialType.System_Boolean:
+                    return TypeCode.Boolean;
+
+                case SpecialType.System_Char:
+                    return TypeCode.Char;
+
+                case SpecialType.System_SByte:
+                    return TypeCode.SByte;
+
+                case SpecialType.System_Byte:
+                    return TypeCode.Byte;
+
+                case SpecialType.System_Int16:
+                    return TypeCode.Int16;
+
+                case SpecialType.System_UInt16:
+                    return TypeCode.UInt16;
+
+                case SpecialType.System_Int32:
+                    return TypeCode.Int32;
+
+                case SpecialType.System_UInt32:
+                    return TypeCode.UInt32;
+
+                case SpecialType.System_Int64:
+                    return TypeCode.Int64;
+
+                case SpecialType.System_UInt64:
+                    return TypeCode.UInt64;
+
+                case SpecialType.System_Decimal:
+                    return TypeCode.Decimal;
+
+                case SpecialType.System_Single:
+                    return TypeCode.Single;
+
+                case SpecialType.System_Double:
+                    return TypeCode.Double;
+
+                case SpecialType.System_String:
+                    return TypeCode.String;
+
+                case SpecialType.System_DateTime:
+                    return TypeCode.DateTime;
+
+                case SpecialType.System_Object:
+                    return TypeCode.Object;
+
+                default:
+                    return TypeCode.Object;
+            }
         }
     }
 }
