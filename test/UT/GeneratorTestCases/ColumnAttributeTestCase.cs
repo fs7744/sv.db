@@ -1,4 +1,5 @@
-﻿using SV.Db;
+﻿using SV;
+using SV.Db;
 using System.Data;
 using System.Data.Common;
 
@@ -27,6 +28,8 @@ namespace UT.GeneratorTestCases
             Assert.Contains("p.ParameterName = \"AAAd\";", generatedCode);
             Assert.Contains("p.Value = args.A;", generatedCode);
             Assert.Contains("p.DbType = DbType.String;", generatedCode);
+            Assert.Contains($"case {StringHashing.HashOrdinalIgnoreCase("AAA")}:", generatedCode);
+            Assert.Contains($"case {StringHashing.HashOrdinalIgnoreCase("AAAd")}:", generatedCode);
         }
     }
 

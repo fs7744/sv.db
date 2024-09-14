@@ -143,24 +143,26 @@ public class {r.ClassName} : RecordFactory<{typeName}>
             foreach (var item in type.GetAllSettableProperties())
             {
                 var dbType = GetDbType(item);
-                i = GenerateReadTokens(i, tokens, read, item.Type, item.Name, dbType);
+                i = GenerateReadTokens(i, tokens, read, item.Type, item.Name, dbType, item.GetColumnAttribute());
 
             }
             foreach (var item in type.GetAllPublicFields())
             {
                 var dbType = GetDbType(item);
-                i = GenerateReadTokens(i, tokens, read, item.Type, item.Name, dbType);
+                i = GenerateReadTokens(i, tokens, read, item.Type, item.Name, dbType, item.GetColumnAttribute());
             }
             return (tokens.ToString(), read.ToString());
         }
 
-        private static int GenerateReadTokens(int i, StringBuilder tokens, StringBuilder read, ITypeSymbol iType, string name, (string dbType, string readerMethod) dbType)
+        private static int GenerateReadTokens(int i, StringBuilder tokens, StringBuilder read, ITypeSymbol iType, string name, (string dbType, string readerMethod) dbType, ColumnAttributeData columnAttributeData)
         {
+            var colName = string.IsNullOrWhiteSpace(columnAttributeData?.Name) ? name : columnAttributeData.Name.Substring(1, columnAttributeData.Name.Length -2);
             if (string.IsNullOrWhiteSpace(dbType.readerMethod))
             {
                 var x = ++i;
                 var tt = iType.GetUnderlyingType().ToFullName();
-                tokens.Append($@"case {StringHashing.HashOrdinalIgnoreCase(name)}: 
+                tokens.Append($@"// {colName}
+case {StringHashing.HashOrdinalIgnoreCase(colName)}: 
 tokens[i] = {x}; break;");
                 read.Append($@"
                     case {x}:
@@ -173,7 +175,9 @@ tokens[i] = {x}; break;");
                 var x = ++i;
                 var y = ++i;
                 var tt = iType.GetUnderlyingType().ToFullName();
-                tokens.Append($@"case {StringHashing.HashOrdinalIgnoreCase(name)}: 
+                tokens.Append($@"
+// {colName}
+case {StringHashing.HashOrdinalIgnoreCase(colName)}: 
 tokens[i] = type == typeof({tt}) ? {x} : {y}; break;");
                 read.Append($@"
                     case {x}:
