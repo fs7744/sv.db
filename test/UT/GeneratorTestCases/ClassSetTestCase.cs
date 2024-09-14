@@ -20,7 +20,7 @@ namespace UT.GeneratorTestCases
             Assert.Contains("RecordFactory.RegisterRecordFactory<global::UT.GeneratorTestCases.ClassTestData>(new ClassTestData_", generatedCode);
         }
     }
-
+    
     public class ClassTestData
     {
         private int Id2 { get; set; }

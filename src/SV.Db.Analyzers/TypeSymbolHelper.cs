@@ -59,7 +59,7 @@ namespace SV.Db.Analyzers
             var result = typeSymbol
                 .GetMembers()
                 .Where(s => s.Kind == SymbolKind.Property).Cast<IPropertySymbol>()
-                .Where(p => p.SetMethod?.DeclaredAccessibility == Accessibility.Public && !p.HasNotColumnAttribute())
+                .Where(p => !p.IsReadOnly && !p.IsStatic && p.SetMethod != null && p.SetMethod.DeclaredAccessibility == Accessibility.Public && p.SetMethod.IsInitOnly == false && !p.HasNotColumnAttribute())
                 .Union(typeSymbol.BaseType == null ? new IPropertySymbol[0] : typeSymbol.BaseType.GetAllSettableProperties());
 
             return result;
@@ -70,7 +70,7 @@ namespace SV.Db.Analyzers
             var result = typeSymbol
                 .GetMembers()
                 .Where(s => s.Kind == SymbolKind.Property).Cast<IPropertySymbol>()
-                .Where(p => p.GetMethod?.DeclaredAccessibility == Accessibility.Public && !p.HasNotColumnAttribute())
+                .Where(p => !p.IsStatic && p.GetMethod?.DeclaredAccessibility == Accessibility.Public && !p.HasNotColumnAttribute())
                 .Union(typeSymbol.BaseType == null ? new IPropertySymbol[0] : typeSymbol.BaseType.GetAllGettableProperties());
 
             return result;
