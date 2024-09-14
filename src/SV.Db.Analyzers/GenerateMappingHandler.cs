@@ -78,17 +78,20 @@ namespace SV.Db.Analyzers
 
         private static GeneratedMapping GenerateMappingCode(ITypeSymbol type, string typeName)
         {
-            var r = new GeneratedMapping() { ClassName = $"{type.Name}_{Guid.NewGuid().ToString("N")}" };
+            var r = new GeneratedMapping();
             if (type.IsAnonymousType)
             {
+                r.ClassName = $"Anonymous_{Guid.NewGuid():N}";
                 // todo
             }
             if (type.IsTupleType)
             {
+                r.ClassName = $"Tuple_{Guid.NewGuid():N}";
                 // todo
             }
             else
             {
+                r.ClassName = $"{type.Name}_{Guid.NewGuid():N}";
                 var (readTokens, read) = GenerateReadTokens(type);
                 r.Code = @$"
 public class {r.ClassName} : RecordFactory<{typeName}>
