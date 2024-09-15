@@ -79,7 +79,7 @@ namespace Benchmark
 
         protected override DbParameter CreateDbParameter()
         {
-            throw new NotImplementedException();
+            return new TestDataParameter();
         }
 
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
@@ -96,7 +96,7 @@ namespace Benchmark
 
         public override int Add(object value)
         {
-            throw new NotImplementedException();
+            return 0;
         }
 
         public override void AddRange(Array values)

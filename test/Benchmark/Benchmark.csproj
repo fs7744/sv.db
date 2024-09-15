@@ -7,7 +7,8 @@
     <Nullable>enable</Nullable>
 	  <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 	  <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
-	  <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Dapper.AOT</InterceptorsPreviewNamespaces>
+	  <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Dapper.AOT;SV.Db</InterceptorsPreviewNamespaces>
+
   </PropertyGroup>
 
 	<ItemGroup>

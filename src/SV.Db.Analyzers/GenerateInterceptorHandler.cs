@@ -65,7 +65,17 @@ namespace System.Runtime.CompilerServices
             sb.Append(op.TargetMethod.Name);
             sb.Append("_");
             sb.Append(Guid.NewGuid().ToString("N"));
+            //if (op.TargetMethod.IsGenericMethod)
+            //{
+            //    sb.Append("<");
+            //    sb.Append(string.Join(",", op.TargetMethod.TypeParameters.Select(i => i.Name)));
+            //    sb.Append(">");
+            //}
             sb.Append("(");
+            if (op.TargetMethod.IsExtensionMethod)
+            {
+                sb.Append(" this ");
+            }
             sb.Append(string.Join(",", op.TargetMethod.Parameters.Select(i => @$"{(i.Type.IsAnonymousType ? "object" : i.Type.ToFullName())} {i.Name}")));
             sb.AppendLine(")");
             sb.AppendLine("{");

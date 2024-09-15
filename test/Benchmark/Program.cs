@@ -9,12 +9,12 @@ using BenchmarkDotNet.Running;
 //var d4 = a.ExecuteQueryFirstOrDefault();
 //var summary = BenchmarkRunner.Run<ScalarOneTest>();
 
-var a = new QueryDynamicBenchmarks() { RowCount = 12 };
-var d0 = a.DynamicExpandoObject();
-var d1 = a.ExecuteQuery();
-var d2 = a.ExecuteQueryRowCount();
-var d3 = a.DapperDynamic();
-var d4 = a.DapperAotDynamic();
+var a = new SetParamsBenchmarks() { RowCount = 12 };
+a.SetParams();
+a.SetParamsClass();
+a.SetParamsStruct();
+a.SetParamsTuple();
+//a.SetParamsAnonymous();
 
 var summary = BenchmarkRunner.Run<QueryDynamicBenchmarks>();
 
