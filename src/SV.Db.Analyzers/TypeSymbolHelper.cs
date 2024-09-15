@@ -343,5 +343,15 @@ namespace SV.Db.Analyzers
             }
             return r;
         }
+
+        internal static IParameterSymbol GetThisParameter(this IInvocationOperation invocation)
+        {
+            return invocation.TargetMethod.Parameters.FirstOrDefault();
+        }
+
+        internal static bool IsDbConnection(this IInvocationOperation invocation)
+        { 
+            return invocation.GetThisParameter()?.Type.ToFullName() == "global::System.Data.Common.DbConnection";
+        }
     }
 }

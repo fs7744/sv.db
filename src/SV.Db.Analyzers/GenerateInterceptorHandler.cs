@@ -20,7 +20,7 @@ namespace SV.Db
 {{
     file static class GeneratedInterceptors_{Guid.NewGuid():N}
     {{
-        {string.Join("", kvs.SelectMany(i => i.Value.Sources.Select(j => (j, i))).GroupBy(i => (i.j.GeneratedArgs, i.j.GeneratedReturn)).Select(i => GenerateCode(i, map, compilation)))}
+        {string.Join("", kvs.SelectMany(i => i.Value.Sources.Select(j => (j, i))).GroupBy(i => (i.j.GeneratedArgs, i.j.GeneratedReturn, MethodName: i.j.Invocation.TargetMethod.ToDisplayString())).Select(i => GenerateCode(i, map, compilation)))}
     }}
 }}
 
@@ -45,7 +45,7 @@ namespace System.Runtime.CompilerServices
 ";
         }
 
-        private static string GenerateCode(IGrouping<(string GeneratedArgs, string GeneratedReturn), (SourceState state, KeyValuePair<string, GeneratedMapping> kv)> v, Dictionary<string, GeneratedMapping> map, Compilation compilation)
+        private static string GenerateCode(IGrouping<(string GeneratedArgs, string GeneratedReturn, string MethodName), (SourceState state, KeyValuePair<string, GeneratedMapping> kv)> v, Dictionary<string, GeneratedMapping> map, Compilation compilation)
         {
             var sb = new StringBuilder();
 
@@ -85,11 +85,31 @@ namespace System.Runtime.CompilerServices
                 case "SetParams":
                     GenerateSetParamsMethod(sb, vv.kv.Value);
                     break;
+
+                case "ExecuteReader":
+                case "ExecuteReaderAsync":
+                    GenerateExecuteReaderMethod(sb, vv.kv.Value, op, vv.state.IsAsync);
+                    break;
                 default:
                     break;
             }
             sb.AppendLine("}");
             return sb.ToString();
+        }
+
+        private static void GenerateExecuteReaderMethod(StringBuilder sb, GeneratedMapping value, IInvocationOperation op, bool isAsync)
+        {
+            var isDbConnection = op.IsDbConnection();
+            if (isDbConnection) 
+            {
+                sb.AppendLine("var cmd = connection.CreateCommand();");
+                sb.AppendLine("cmd.CommandText = sql;");
+                sb.AppendLine("cmd.CommandType = commandType;");
+            }
+            sb.AppendLine($"{value.ClassName}.Instance.SetParams(cmd, args);");
+            sb.AppendLine(isAsync 
+                ? "return cmd.ExecuteReaderAsync(behavior, cancellationToken);"
+                : "return cmd.ExecuteReader(behavior);");
         }
 
         private static void GenerateSetParamsMethod(StringBuilder sb,GeneratedMapping value)
