@@ -90,11 +90,33 @@ namespace System.Runtime.CompilerServices
                 case "ExecuteReaderAsync":
                     GenerateExecuteReaderMethod(sb, vv.kv.Value, op, vv.state.IsAsync);
                     break;
+                case "QueryFirstOrDefault":
+                case "QueryFirstOrDefaultAsync":
+                    GenerateQueryFirstOrDefaultMethod(sb, vv.kv.Value, vv.state.IsAsync);
+                    break;
+                case "Query":
+                case "QueryAsync":
+                    GenerateQueryMethod(sb, vv.kv.Value, vv.state.IsAsync);
+                    break;
                 default:
                     break;
             }
             sb.AppendLine("}");
             return sb.ToString();
+        }
+
+        private static void GenerateQueryFirstOrDefaultMethod(StringBuilder sb, GeneratedMapping value, bool isAsync)
+        {
+            sb.AppendLine(isAsync 
+                ? $"return {value.ClassName}.Instance.DbDataReaderQueryFirstOrDefaultAsync(reader, cancellationToken);"
+                : $"return {value.ClassName}.Instance.DbDataReaderQueryFirstOrDefault(reader);");
+        }
+
+        private static void GenerateQueryMethod(StringBuilder sb, GeneratedMapping value, bool isAsync)
+        {
+            sb.AppendLine(isAsync
+                ? $"return {value.ClassName}.Instance.DbDataReaderQueryAsync(reader, cancellationToken);"
+                : $"return {value.ClassName}.Instance.DbDataReaderQuery(reader);");
         }
 
         private static void GenerateExecuteReaderMethod(StringBuilder sb, GeneratedMapping value, IInvocationOperation op, bool isAsync)
