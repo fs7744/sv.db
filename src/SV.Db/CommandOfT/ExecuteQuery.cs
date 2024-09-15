@@ -88,9 +88,16 @@ namespace SV.Db
             return DbCommandExecuteQuery(factory, cmd, behavior, estimateRow);
         }
 
-        public static T? ExecuteQueryFirstOrDefault<T>(this DbCommand command, object? args = null, CommandBehavior behavior = CommandBehavior.SingleRow)
+        public static T? ExecuteQueryFirstOrDefault<T>(this DbCommand cmd, object? args = null, CommandBehavior behavior = CommandBehavior.SingleRow)
         {
-            command.SetParams(args);
+            cmd.SetParams(args);
+            var factory = RecordFactory.GetRecordFactory<T>();
+            return DbCommandExecuteQueryFirstOrDefault(factory, cmd, behavior);
+        }
+
+        [MethodImpl(DBUtils.Optimization)]
+        public static T? DbCommandExecuteQueryFirstOrDefault<T>(this IRecordFactory<T> factory, DbCommand command, CommandBehavior behavior = CommandBehavior.SingleRow)
+        {
             var connection = command.Connection;
             try
             {
@@ -100,7 +107,7 @@ namespace SV.Db
                 }
                 using (var reader = command.ExecuteReader(behavior))
                 {
-                    var r = reader.ReadEnumerable<T>(0, false).FirstOrDefault();
+                    var r = factory.ReadUnBuffed(reader).FirstOrDefault();
                     while (reader.NextResult()) { }
                     return r;
                 }
@@ -117,12 +124,30 @@ namespace SV.Db
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
             cmd.SetParams(args);
-            return ExecuteQueryFirstOrDefault<T>(cmd, args, behavior);
+            var factory = RecordFactory.GetRecordFactory<T>();
+            return DbCommandExecuteQueryFirstOrDefault(factory, cmd, behavior);
         }
 
-        public static async Task<T?> ExecuteQueryFirstOrDefaultAsync<T>(this DbCommand command, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.SingleRow)
+        public static Task<T?> ExecuteQueryFirstOrDefaultAsync<T>(this DbCommand cmd, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.SingleRow)
         {
-            command.SetParams(args);
+            cmd.SetParams(args);
+            var factory = RecordFactory.GetRecordFactory<T>();
+            return DbCommandExecuteQueryFirstOrDefaultAsync<T>(factory, cmd, cancellationToken, behavior);
+        }
+
+        public static Task<T?> ExecuteQueryFirstOrDefaultAsync<T>(this DbConnection connection, string sql, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.SingleRow, CommandType commandType = CommandType.Text)
+        {
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = sql;
+            cmd.CommandType = commandType;
+            cmd.SetParams(args);
+            var factory = RecordFactory.GetRecordFactory<T>();
+            return DbCommandExecuteQueryFirstOrDefaultAsync<T>(factory, cmd, cancellationToken, behavior);
+        }
+
+        [MethodImpl(DBUtils.Optimization)]
+        public static async Task<T?> DbCommandExecuteQueryFirstOrDefaultAsync<T>(this IRecordFactory<T> factory, DbCommand command, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.SingleRow)
+        {
             var connection = command.Connection;
             try
             {
@@ -132,7 +157,7 @@ namespace SV.Db
                 }
                 using (var reader = await command.ExecuteReaderAsync(behavior, cancellationToken))
                 {
-                    var rr = reader.ReadEnumerableAsync<T>(cancellationToken).GetAsyncEnumerator(cancellationToken);
+                    var rr = factory.ReadUnBuffedAsync(reader, cancellationToken).GetAsyncEnumerator(cancellationToken);
                     var r = await rr.MoveNextAsync() ? rr.Current : default;
                     while (await reader.NextResultAsync(cancellationToken)) { }
                     await rr.DisposeAsync();
@@ -143,15 +168,6 @@ namespace SV.Db
             {
                 await connection.CloseAsync();
             }
-        }
-
-        public static Task<T?> ExecuteQueryFirstOrDefaultAsync<T>(this DbConnection connection, string sql, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.SingleRow, CommandType commandType = CommandType.Text)
-        {
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = sql;
-            cmd.CommandType = commandType;
-            cmd.SetParams(args);
-            return ExecuteQueryFirstOrDefaultAsync<T>(cmd, args, cancellationToken, behavior);
         }
     }
 }
