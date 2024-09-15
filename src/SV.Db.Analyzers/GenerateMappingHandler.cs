@@ -16,6 +16,7 @@ namespace SV.Db.Analyzers
         public string Code { get; set; }
         public string ClassName { get; set; }
         public bool IsModuleInitializer { get; set; }
+        public bool NeedInterceptor { get; set; }
     }
 
     public static class GenerateMappingHandler
@@ -81,6 +82,7 @@ namespace SV.Db.Analyzers
             var r = new GeneratedMapping();
             if (type.IsAnonymousType)
             {
+                r.NeedInterceptor = true;
                 r.ClassName = $"Anonymous_{Guid.NewGuid():N}";
                 r.Code = @$"
 public class {r.ClassName} : RecordFactory<dynamic>
@@ -104,11 +106,11 @@ public class {r.ClassName} : RecordFactory<dynamic>
     }}
 }}
 ";
-                // todo
             }
             else
             {
-                r.IsModuleInitializer = !type.IsTupleType ;
+                r.NeedInterceptor = type.IsTupleType;
+                r.IsModuleInitializer = !type.IsTupleType;
                 r.ClassName = $"{type.Name}_{Guid.NewGuid():N}";
                 var (readTokens, read) = GenerateReadTokens(type);
                 r.Code = @$"
@@ -373,6 +375,7 @@ namespace SV.Db
         }}
     }}
 }}
+{GenerateInterceptorHandler.GenerateCode(map)}
             ";
             return CSharpSyntaxTree.ParseText(SourceText.From(src)).GetRoot().NormalizeWhitespace().SyntaxTree.GetText().ToString();
         }
