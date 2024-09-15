@@ -18,6 +18,6 @@ a.SetParamsAnonymous();
 a.SetParamsRecordStruct();
 a.SetParamsRecordClass();
 
-var summary = BenchmarkRunner.Run<QueryDynamicBenchmarks>();
+var summary = BenchmarkRunner.Run<SetParamsBenchmarks>();
 
 //var summary = BenchmarkRunner.Run(typeof(Program).Assembly);

@@ -67,14 +67,28 @@ namespace SV.Db.Analyzers
 
         private static string GenerateMapping(ITypeSymbol type, Dictionary<string, GeneratedMapping> dict, SourceState source)
         {
+            var added = false;
             var key = type.ToFullName();
             if (!dict.TryGetValue(key, out var r))
             {
                 r = GenerateMappingCode(type, key);
-                dict.Add(key, r);
+                if (r != null)
+                {
+                    dict[key] = r;
+                    added = true;
+                }
             }
-            r.Sources.Add(source);
-            return key;
+            else
+            { 
+                added = true;
+            }
+            if (added)
+            {
+                r.Sources.Add(source);
+                return key;
+            }
+
+            return null;
         }
 
         private static GeneratedMapping GenerateMappingCode(ITypeSymbol type, string typeName)
@@ -82,6 +96,8 @@ namespace SV.Db.Analyzers
             var r = new GeneratedMapping();
             if (type.IsAnonymousType)
             {
+                var s = GenerateSetParams(type);
+                if (string.IsNullOrWhiteSpace(s)) return null;
                 r.NeedInterceptor = true;
                 r.ClassName = $"Anonymous_{Guid.NewGuid():N}";
                 r.Code = @$"

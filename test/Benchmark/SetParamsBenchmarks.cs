@@ -2,30 +2,25 @@
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Order;
 using SV.Db;
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Data.Common;
 
 namespace Benchmark
 {
-    [ShortRunJob, MemoryDiagnoser, Orderer(summaryOrderPolicy: SummaryOrderPolicy.FastestToSlowest), GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory), CategoriesColumn]
+    [MemoryDiagnoser, Orderer(summaryOrderPolicy: SummaryOrderPolicy.FastestToSlowest), GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory), CategoriesColumn]
     public class SetParamsBenchmarks
     {
         public int RowCount { get; set; } = 1;
 
         private TestData data = new TestData(("a", "oo"));
 
-        private ClassTestData classTestData = new ClassTestData() { Decimal =3, Decimal2 = 4, Id =5, Id2 = 6, Single = 8, Single2 =77 };
+        private ClassTestData classTestData = new ClassTestData() { Decimal = 3, Decimal2 = 4, Id = 5, Id2 = 6, Single = 8, Single2 = 77 };
         private RecordTestData recordTestData = new RecordTestData() { Decimal = 3, Decimal2 = 4, Id = 5, Id2 = 6, Single = 8, Single2 = 77 };
 
-        private StructTestData2 structTestData2 = new StructTestData2() { Decimal = 3, Decimal2 = 4, Id = 5, Id2 = 6, Single = 8, Single2 = 77 }; 
-        private StructTestData3 structTestData3 = new StructTestData3() { Decimal = 3, Decimal2 = 4, Id = 5, Id2 = 6, Single = 8, Single2 = 77 }; 
+        private StructTestData2 structTestData2 = new StructTestData2() { Decimal = 3, Decimal2 = 4, Id = 5, Id2 = 6, Single = 8, Single2 = 77 };
+        private StructTestData3 structTestData3 = new StructTestData3() { Decimal = 3, Decimal2 = 4, Id = 5, Id2 = 6, Single = 8, Single2 = 77 };
 
-        private (Decimal Decimal, Decimal Decimal2, int Id, int Id2, Single Single, Single Single2) tuple = ( Decimal : 3, Decimal2 : 4, Id : 5, Id2 : 6, Single : 8, Single2 : 77 );
+        private (Decimal Decimal, Decimal Decimal2, int Id, int Id2, Single Single, Single Single2) tuple = (Decimal: 3, Decimal2: 4, Id: 5, Id2: 6, Single: 8, Single2: 77);
 
         [Benchmark(Baseline = true)]
         public void SetParams()
