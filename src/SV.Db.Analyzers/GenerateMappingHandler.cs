@@ -219,7 +219,6 @@ public class {r.ClassName} : RecordFactory<{typeName}>
             var read = new StringBuilder();
             foreach (var item in type.GetAllSettableProperties())
             {
-                tokens.AppendLine($"// {item.IsStatic} {item.SetMethod.Kind} {item.SetMethod.DeclaredAccessibility} {string.Join("," ,item.SetMethod.GetAttributes().Select(i => i.AttributeClass.ToFullName()))}");
                 var dbType = GetDbType(item);
                 i = GenerateReadTokens(i, tokens, read, item.Type, item.Name, dbType, item.GetColumnAttribute());
 

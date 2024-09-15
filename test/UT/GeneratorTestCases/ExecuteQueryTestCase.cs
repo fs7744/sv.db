@@ -39,12 +39,12 @@ namespace UT.GeneratorTestCases
         {
             Assert.NotEmpty(generatedCode);
             Assert.Contains("[global::System.Runtime.CompilerServices.InterceptsLocationAttribute(", generatedCode);
-            Assert.DoesNotContain("RecordFactory.RegisterRecordFactory", generatedCode);
+            Assert.Contains("RecordFactory.RegisterRecordFactory", generatedCode);
             Assert.Contains("var cmd = connection.CreateCommand();", generatedCode);
             Assert.Contains("Anonymous_", generatedCode);
             Assert.Contains("ValueTuple_", generatedCode);
-            Assert.Contains("return CommandExtensions.DbCommandExecuteNonQuery", generatedCode);
-            Assert.Contains("return CommandExtensions.DbCommandExecuteNonQueryAsync", generatedCode);
+            Assert.Contains("return CommandExtensions.DbCommandExecuteQuery", generatedCode);
+            Assert.Contains("return CommandExtensions.DbCommandExecuteQueryAsync", generatedCode);
         }
     }
 }

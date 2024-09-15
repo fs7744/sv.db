@@ -115,11 +115,43 @@ namespace System.Runtime.CompilerServices
                     GenerateExecuteNonQuerysMethod(sb, vv.kv.Value, op, vv.state.IsAsync);
                     break;
 
+
+                case "ExecuteQuery":
+                case "ExecuteQueryAsync":
+                    GenerateExecuteQueryMethod(sb, op, vv.state.IsAsync, map, v.Key.GeneratedArgs, v.Key.GeneratedReturn);
+                    break;
+
                 default:
                     break;
             }
             sb.AppendLine("}");
             return sb.ToString();
+        }
+
+        private static void GenerateExecuteQueryMethod(StringBuilder sb, IInvocationOperation op, bool isAsync, Dictionary<string, GeneratedMapping> map, string generatedArgs, string generatedReturn)
+        {
+            var isDbConnection = op.IsDbConnection();
+            if (isDbConnection)
+            {
+                sb.AppendLine("var cmd = connection.CreateCommand();");
+                sb.AppendLine("cmd.CommandText = sql;");
+                sb.AppendLine("cmd.CommandType = commandType;");
+            }
+            if (!string.IsNullOrWhiteSpace(generatedArgs) && map.TryGetValue(generatedArgs, out var argsV) && !string.IsNullOrWhiteSpace(argsV.ClassName))
+            {
+                sb.AppendLine(argsV.NeedInterceptor ? $"{argsV.ClassName}.Instance.SetParams(cmd, args);" : "cmd.SetParams(args);");
+            }
+            if (!string.IsNullOrWhiteSpace(generatedReturn) && map.TryGetValue(generatedReturn, out var rV) && !string.IsNullOrWhiteSpace(rV.ClassName) && rV.NeedInterceptor)
+            {
+                sb.AppendLine($"var factory = {rV.ClassName}.Instance;");
+            }
+            else
+            {
+                sb.AppendLine($"var factory = RecordFactory.GetRecordFactory<{op.GetResultType().ToFullName()}>();");
+            }
+            sb.AppendLine(isAsync
+                ? "return CommandExtensions.DbCommandExecuteQueryAsync(factory, cmd, cancellationToken, behavior);"
+                : "return CommandExtensions.DbCommandExecuteQuery(factory, cmd, behavior, estimateRow);");
         }
 
         private static void GenerateExecuteNonQuerysMethod(StringBuilder sb, GeneratedMapping value, IInvocationOperation op, bool isAsync)
