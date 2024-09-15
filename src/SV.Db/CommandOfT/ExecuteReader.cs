@@ -46,6 +46,8 @@ namespace SV.Db
             }
             return default;
         }
+
+        [MethodImpl(DBUtils.Optimization)]
         public static T? DbDataReaderQueryFirstOrDefault<T>(this IRecordFactory<T> factory, DbDataReader reader)
         {
             if (reader.HasRows)
@@ -68,6 +70,7 @@ namespace SV.Db
             return default;
         }
 
+        [MethodImpl(DBUtils.Optimization)]
         public static async Task<T?> DbDataReaderQueryFirstOrDefaultAsync<T>(this IRecordFactory<T> factory, DbDataReader reader, CancellationToken cancellationToken = default)
         {
             if (reader.HasRows)
@@ -79,24 +82,23 @@ namespace SV.Db
             return default;
         }
 
-        public static IEnumerable<T?> Query<T>(this DbDataReader reader, int estimateRow = 0, bool useBuffer = true)
+        public static IEnumerable<T?> Query<T>(this DbDataReader reader, int estimateRow = 0)
         {
             if (reader.HasRows)
             {
-                var r = reader.ReadEnumerable<T>(estimateRow, useBuffer);
+                var r = reader.ReadEnumerable<T>(estimateRow, true);
                 reader.NextResult();
                 return r;
             }
             return Enumerable.Empty<T>();
         }
 
-        public static IEnumerable<T?> DbDataReaderQuery<T>(this IRecordFactory<T> factory, DbDataReader reader, int estimateRow = 0, bool useBuffer = true)
+        [MethodImpl(DBUtils.Optimization)]
+        public static IEnumerable<T?> DbDataReaderQuery<T>(this IRecordFactory<T> factory, DbDataReader reader, int estimateRow = 0)
         {
             if (reader.HasRows)
             {
-                var r = useBuffer
-                    ? factory.ReadBuffed(reader, estimateRow)
-                    : factory.ReadUnBuffed(reader);
+                var r = factory.ReadBuffed(reader, estimateRow);
                 reader.NextResult();
                 return r;
             }
@@ -115,6 +117,7 @@ namespace SV.Db
             }
         }
 
+        [MethodImpl(DBUtils.Optimization)]
         public static async IAsyncEnumerable<T?> DbDataReaderQueryAsync<T>(this IRecordFactory<T> factory, DbDataReader reader, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             if (reader.HasRows)

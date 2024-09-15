@@ -123,7 +123,7 @@ namespace SV.Db
         }
 
         [MethodImpl(DBUtils.Optimization)]
-        private static IRecordFactory<T> GetRecordFactory<T>()
+        internal static IRecordFactory<T> GetRecordFactory<T>()
         {
             var t = RecordFactoryCache<T>.Cache;
             if (t == null)

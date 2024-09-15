@@ -6,19 +6,26 @@ namespace SV.Db
 {
     public static partial class CommandExtensions
     {
-        public static IEnumerable<T?> ExecuteQuery<T>(this DbCommand command, object? args = null, CommandBehavior behavior = CommandBehavior.Default, int estimateRow = 0)
+        public static IEnumerable<T?> ExecuteQuery<T>(this DbCommand cmd, object? args = null, CommandBehavior behavior = CommandBehavior.Default, int estimateRow = 0)
         {
-            command.SetParams(args);
-            var connection = command.Connection;
+            cmd.SetParams(args);
+            var factory = RecordFactory.GetRecordFactory<T>();
+            return DbCommandExecuteQuery(factory, cmd, behavior, estimateRow);
+        }
+
+        [MethodImpl(DBUtils.Optimization)]
+        public static IEnumerable<T?> DbCommandExecuteQuery<T>(this IRecordFactory<T> factory, DbCommand cmd, CommandBehavior behavior = CommandBehavior.Default, int estimateRow = 0)
+        {
+            var connection = cmd.Connection;
             try
             {
                 if (connection.State != ConnectionState.Open)
                 {
                     connection.Open();
                 }
-                using (var reader = command.ExecuteReader(behavior))
+                using (var reader = cmd.ExecuteReader(behavior))
                 {
-                    var r = reader.ReadEnumerable<T>(estimateRow, true);
+                    var r = factory.ReadBuffed(reader, estimateRow);
                     while (reader.NextResult()) { }
                     return r;
                 }
@@ -29,9 +36,16 @@ namespace SV.Db
             }
         }
 
-        public static async IAsyncEnumerable<T?> ExecuteQueryAsync<T>(this DbCommand command, object? args = null, [EnumeratorCancellation] CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default)
+        public static IAsyncEnumerable<T?> ExecuteQueryAsync<T>(this DbCommand cmd, object? args = null, [EnumeratorCancellation] CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default)
         {
-            command.SetParams(args);
+            cmd.SetParams(args);
+            var factory = RecordFactory.GetRecordFactory<T>();
+            return DbCommandExecuteQueryAsync(factory, cmd, cancellationToken, behavior);
+        }
+
+        [MethodImpl(DBUtils.Optimization)]
+        public static async IAsyncEnumerable<T?> DbCommandExecuteQueryAsync<T>(this IRecordFactory<T> factory, DbCommand command, [EnumeratorCancellation] CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default)
+        {
             var connection = command.Connection;
             try
             {
@@ -41,7 +55,7 @@ namespace SV.Db
                 }
                 using (var reader = await command.ExecuteReaderAsync(behavior, cancellationToken))
                 {
-                    await foreach (var item in reader.ReadEnumerableAsync<T>(cancellationToken).WithCancellation(cancellationToken))
+                    await foreach (var item in factory.ReadUnBuffedAsync(reader, cancellationToken).WithCancellation(cancellationToken))
                     {
                         yield return item;
                     }
@@ -60,7 +74,8 @@ namespace SV.Db
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
             cmd.SetParams(args);
-            return ExecuteQueryAsync<T>(cmd, args, cancellationToken, behavior);
+            var factory = RecordFactory.GetRecordFactory<T>();
+            return DbCommandExecuteQueryAsync(factory, cmd, cancellationToken, behavior);
         }
 
         public static IEnumerable<T?> ExecuteQuery<T>(this DbConnection connection, string sql, object? args = null, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text, int estimateRow = 0)
@@ -69,7 +84,8 @@ namespace SV.Db
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
             cmd.SetParams(args);
-            return ExecuteQuery<T>(cmd, args, behavior, estimateRow);
+            var factory = RecordFactory.GetRecordFactory<T>();
+            return DbCommandExecuteQuery(factory, cmd, behavior, estimateRow);
         }
 
         public static T? ExecuteQueryFirstOrDefault<T>(this DbCommand command, object? args = null, CommandBehavior behavior = CommandBehavior.SingleRow)

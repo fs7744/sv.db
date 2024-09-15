@@ -76,7 +76,8 @@ namespace System.Runtime.CompilerServices
             {
                 sb.Append(" this ");
             }
-            sb.Append(string.Join(",", op.TargetMethod.Parameters.Select(i => @$"{(i.Type.IsAnonymousType ? "dynamic" : i.Type.ToFullName())} {i.Name}")));
+            var isExecuteNonQuerys = op.TargetMethod.Name == "ExecuteNonQuerys" || op.TargetMethod.Name == "ExecuteNonQuerysAsync";
+            sb.Append(string.Join(",", op.TargetMethod.Parameters.Select(i => @$"{(i.Type.IsAnonymousType || (isExecuteNonQuerys && i.Name == "args" && vv.state.ReturnType.IsAnonymousType) ? "dynamic" : i.Type.ToFullName())} {i.Name}")));
             sb.AppendLine(")");
             sb.AppendLine("{");
 
@@ -109,11 +110,24 @@ namespace System.Runtime.CompilerServices
                     GenerateExecuteNonQueryMethod(sb, vv.kv.Value, op, vv.state.IsAsync);
                     break;
 
+                case "ExecuteNonQuerys":
+                case "ExecuteNonQuerysAsync":
+                    GenerateExecuteNonQuerysMethod(sb, vv.kv.Value, op, vv.state.IsAsync);
+                    break;
+
                 default:
                     break;
             }
             sb.AppendLine("}");
             return sb.ToString();
+        }
+
+        private static void GenerateExecuteNonQuerysMethod(StringBuilder sb, GeneratedMapping value, IInvocationOperation op, bool isAsync)
+        {
+            sb.AppendLine($"var factory = {value.ClassName}.Instance;");
+            sb.AppendLine(isAsync
+                ? "return CommandExtensions.DbConnectionExecuteNonQuerysAsync(factory, connection, sql, args, batchSize, cancellationToken, commandType);"
+                : "return CommandExtensions.DbConnectionExecuteNonQuerys(factory, connection, sql, args, batchSize, commandType);");
         }
 
         private static void GenerateExecuteNonQueryMethod(StringBuilder sb, GeneratedMapping value, IInvocationOperation op, bool isAsync)
@@ -162,7 +176,7 @@ namespace System.Runtime.CompilerServices
         {
             sb.AppendLine(isAsync
                 ? $"return {value.ClassName}.Instance.DbDataReaderQueryAsync(reader, cancellationToken);"
-                : $"return {value.ClassName}.Instance.DbDataReaderQuery(reader);");
+                : $"return {value.ClassName}.Instance.DbDataReaderQuery(reader, estimateRow);");
         }
 
         private static void GenerateExecuteReaderMethod(StringBuilder sb, GeneratedMapping value, IInvocationOperation op, bool isAsync)

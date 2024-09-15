@@ -84,8 +84,6 @@ namespace SV.Db.Analyzers
                 {
                     case "ExecuteNonQuery":
                     case "ExecuteNonQueryAsync":
-                    case "ExecuteNonQuerys":
-                    case "ExecuteNonQuerysAsync":
                     case "SetParams":
                     case "ExecuteReader":
                     case "ExecuteReaderAsync":
@@ -102,6 +100,8 @@ namespace SV.Db.Analyzers
                         hasResultType = true;
                         break;
 
+                    case "ExecuteNonQuerys":
+                    case "ExecuteNonQuerysAsync":
                     case "QueryFirstOrDefault":
                     case "QueryFirstOrDefaultAsync":
                     case "Query":
