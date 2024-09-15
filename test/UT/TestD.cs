@@ -1,6 +1,7 @@
 ﻿using SV.Db;
 using System.Data.Common;
 using System.Data;
+using System.Runtime.CompilerServices;
 
 namespace UT.GeneratorTestCases
 {
@@ -9,18 +10,18 @@ namespace UT.GeneratorTestCases
         public int Int32 { get; set; }
     }
 
-    public class Te : RecordFactory<dynamic>
+    public class Te : RecordFactory<(dynamic f, int)>
     {
-        public static readonly RecordFactory<dynamic> Instance = new Te();
+        public static readonly RecordFactory<(dynamic f, int)> Instance = new Te();
 
-        public override void SetParams(IDbCmd cmd, dynamic args)
+        public override void SetParams(IDbCmd cmd, (dynamic f, int) args)
         {
             var ps = cmd.Parameters;
             DbParameter p;
 
             p = cmd.CreateParameter();
             p.ParameterName = "Int32";
-            p.Value = args.Int32;
+            p.Value = args.f;
             p.DbType = DbType.Int32;
             ps.Add(p);
         }
@@ -29,9 +30,9 @@ namespace UT.GeneratorTestCases
         {
         }
 
-        protected override dynamic? Read(DbDataReader reader, ref ReadOnlySpan<int> tokens)
+        protected override (dynamic f, int) Read(DbDataReader reader, ref ReadOnlySpan<int> tokens)
         {
-            return null;
+            return (default, default);
         }
     }
 }

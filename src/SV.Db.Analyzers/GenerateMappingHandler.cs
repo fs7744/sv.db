@@ -106,19 +106,16 @@ public class {r.ClassName} : RecordFactory<dynamic>
 ";
                 // todo
             }
-            else if (type.IsTupleType)
-            {
-                r.ClassName = $"Tuple_{Guid.NewGuid():N}";
-                // todo
-            }
             else
             {
-                r.IsModuleInitializer = true ;
+                r.IsModuleInitializer = !type.IsTupleType ;
                 r.ClassName = $"{type.Name}_{Guid.NewGuid():N}";
                 var (readTokens, read) = GenerateReadTokens(type);
                 r.Code = @$"
 public class {r.ClassName} : RecordFactory<{typeName}>
 {{
+    {(type.IsTupleType ? $"public static readonly RecordFactory<{typeName}> Instance = new {r.ClassName}();" : string.Empty)}
+
     public override void SetParams(IDbCmd cmd, {typeName} args)
     {{
         var ps = cmd.Parameters;
@@ -143,7 +140,7 @@ public class {r.ClassName} : RecordFactory<{typeName}>
 
     protected override {typeName} Read(DbDataReader reader, ref ReadOnlySpan<int> tokens)
     {{
-        var d = {GenerateCtor(type, typeName)};
+        var d = {( type.IsTupleType ? GenerateTupleCtor(type): GenerateCtor(type, typeName))};
         for (int j = 0; j < tokens.Length; j++)
         {{
             switch (tokens[j])
@@ -159,6 +156,15 @@ public class {r.ClassName} : RecordFactory<{typeName}>
 ";
             }
             return r;
+        }
+
+        private static string GenerateTupleCtor(ITypeSymbol type)
+        {
+            if (type is INamedTypeSymbol named && named.IsTupleType)
+            {
+                return $"({string.Join(",", named.TupleElements.Select(i => $"{i.Name}:default({i.Type.ToFullName()})"))})";
+            }
+            return string.Empty;
         }
 
         private static string GenerateCtor(ITypeSymbol type, string typeName)
@@ -268,6 +274,16 @@ tokens[i] = type == typeof({tt}) ? {x} : {y}; break;");
 
         private static string GenerateSetParams(ITypeSymbol type)
         {
+            if (type is INamedTypeSymbol named && named.IsTupleType )
+            {
+                var sb = new StringBuilder();
+                foreach (var item in named.TupleElements)
+                {
+                    var dbType = GetDbType(item);
+                    GenerateSetParam(sb, dbType.dbType, item.Name, item.GetColumnAttribute(), item.Type);
+                }
+                return sb.ToString();
+            }
             return GenerateSetParamsProperties(type) + GenerateSetParamsFields(type);
         }
 
