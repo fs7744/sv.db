@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Data.Common;
+using System.Runtime.CompilerServices;
 
 namespace SV.Db
 {
@@ -45,12 +46,33 @@ namespace SV.Db
             }
             return default;
         }
+        public static T? DbDataReaderQueryFirstOrDefault<T>(this IRecordFactory<T> factory, DbDataReader reader)
+        {
+            if (reader.HasRows)
+            {
+                var r = factory.Read(reader);
+                reader.NextResult();
+                return r;
+            }
+            return default;
+        }
 
         public static async Task<T?> QueryFirstOrDefaultAsync<T>(this DbDataReader reader, CancellationToken cancellationToken = default)
         {
             if (reader.HasRows)
             {
                 var r = reader.Read<T>();
+                await reader.NextResultAsync(cancellationToken);
+                return r;
+            }
+            return default;
+        }
+
+        public static async Task<T?> DbDataReaderQueryFirstOrDefaultAsync<T>(this IRecordFactory<T> factory, DbDataReader reader, CancellationToken cancellationToken = default)
+        {
+            if (reader.HasRows)
+            {
+                var r = factory.Read(reader);
                 await reader.NextResultAsync(cancellationToken);
                 return r;
             }
@@ -68,15 +90,42 @@ namespace SV.Db
             return Enumerable.Empty<T>();
         }
 
-        public static async Task<IAsyncEnumerable<T?>> QueryAsync<T>(this DbDataReader reader, CancellationToken cancellationToken = default)
+        public static IEnumerable<T?> DbDataReaderQuery<T>(this IRecordFactory<T> factory, DbDataReader reader, int estimateRow = 0, bool useBuffer = true)
         {
             if (reader.HasRows)
             {
-                var r = reader.ReadEnumerableAsync<T>(cancellationToken);
-                await reader.NextResultAsync(cancellationToken);
+                var r = useBuffer
+                    ? factory.ReadBuffed(reader, estimateRow)
+                    : factory.ReadUnBuffed(reader);
+                reader.NextResult();
                 return r;
             }
-            return EnumerableExtensions.AsyncEmpty<T>();
+            return Enumerable.Empty<T>();
+        }
+
+        public static async IAsyncEnumerable<T?> QueryAsync<T>(this DbDataReader reader, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            if (reader.HasRows)
+            {
+                await foreach (var item in reader.ReadEnumerableAsync<T>(cancellationToken).WithCancellation(cancellationToken))
+                {
+                    yield return item;
+                }
+                await reader.NextResultAsync(cancellationToken);
+            }
+        }
+
+        public static async IAsyncEnumerable<T?> DbDataReaderQueryAsync<T>(this IRecordFactory<T> factory, DbDataReader reader, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            if (reader.HasRows)
+            {
+                await foreach (var item in factory.ReadUnBuffedAsync(reader, cancellationToken).WithCancellation(cancellationToken))
+                {
+                    yield return item;
+                }
+                
+                await reader.NextResultAsync(cancellationToken);
+            }
         }
     }
 }

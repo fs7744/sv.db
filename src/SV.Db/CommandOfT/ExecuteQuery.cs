@@ -5,7 +5,7 @@ namespace SV.Db
 {
     public static partial class CommandExtensions
     {
-        public static IEnumerable<T?> ExecuteQuery<T>(this DbCommand command, object? args = null, CommandBehavior behavior = CommandBehavior.Default, int estimateRow = 0, bool useBuffer = true)
+        public static IEnumerable<T?> ExecuteQuery<T>(this DbCommand command, object? args = null, CommandBehavior behavior = CommandBehavior.Default, int estimateRow = 0)
         {
             command.SetParams(args);
             var connection = command.Connection;
@@ -17,7 +17,7 @@ namespace SV.Db
                 }
                 using (var reader = command.ExecuteReader(behavior))
                 {
-                    var r = reader.ReadEnumerable<T>(estimateRow, useBuffer);
+                    var r = reader.ReadEnumerable<T>(estimateRow, true);
                     while (reader.NextResult()) { }
                     return r;
                 }
@@ -28,7 +28,7 @@ namespace SV.Db
             }
         }
 
-        public static async Task<IAsyncEnumerable<T?>> ExecuteQueryAsync<T>(this DbCommand command, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default)
+        public static async IAsyncEnumerable<T?> ExecuteQueryAsync<T>(this DbCommand command, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default)
         {
             command.SetParams(args);
             var connection = command.Connection;
@@ -40,9 +40,11 @@ namespace SV.Db
                 }
                 using (var reader = await command.ExecuteReaderAsync(behavior, cancellationToken))
                 {
-                    var r = reader.ReadEnumerableAsync<T>(cancellationToken);
+                    await foreach (var item in reader.ReadEnumerableAsync<T>(cancellationToken).WithCancellation(cancellationToken))
+                    {
+                        yield return item;
+                    }
                     while (await reader.NextResultAsync(cancellationToken)) { }
-                    return r;
                 }
             }
             finally
@@ -51,7 +53,7 @@ namespace SV.Db
             }
         }
 
-        public static Task<IAsyncEnumerable<T?>> ExecuteQueryAsync<T>(this DbConnection connection, string sql, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text)
+        public static IAsyncEnumerable<T?> ExecuteQueryAsync<T>(this DbConnection connection, string sql, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
@@ -60,13 +62,13 @@ namespace SV.Db
             return ExecuteQueryAsync<T>(cmd, args, cancellationToken, behavior);
         }
 
-        public static IEnumerable<T?> ExecuteQuery<T>(this DbConnection connection, string sql, object? args = null, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text, int estimateRow = 0, bool useBuffer = true)
+        public static IEnumerable<T?> ExecuteQuery<T>(this DbConnection connection, string sql, object? args = null, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text, int estimateRow = 0)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
             cmd.SetParams(args);
-            return ExecuteQuery<T>(cmd, args, behavior, estimateRow, useBuffer);
+            return ExecuteQuery<T>(cmd, args, behavior, estimateRow);
         }
 
         public static T? ExecuteQueryFirstOrDefault<T>(this DbCommand command, object? args = null, CommandBehavior behavior = CommandBehavior.SingleRow)
