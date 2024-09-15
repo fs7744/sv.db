@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Data.Common;
+using System.Runtime.CompilerServices;
 
 namespace SV.Db
 {
@@ -28,7 +29,7 @@ namespace SV.Db
             }
         }
 
-        public static async IAsyncEnumerable<T?> ExecuteQueryAsync<T>(this DbCommand command, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default)
+        public static async IAsyncEnumerable<T?> ExecuteQueryAsync<T>(this DbCommand command, object? args = null, [EnumeratorCancellation] CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default)
         {
             command.SetParams(args);
             var connection = command.Connection;

@@ -104,11 +104,31 @@ namespace System.Runtime.CompilerServices
                     GenerateExecuteScalarMethod(sb, vv.kv.Value, op, vv.state.IsAsync);
                     break;
 
+                case "ExecuteNonQuery":
+                case "ExecuteNonQueryAsync":
+                    GenerateExecuteNonQueryMethod(sb, vv.kv.Value, op, vv.state.IsAsync);
+                    break;
+
                 default:
                     break;
             }
             sb.AppendLine("}");
             return sb.ToString();
+        }
+
+        private static void GenerateExecuteNonQueryMethod(StringBuilder sb, GeneratedMapping value, IInvocationOperation op, bool isAsync)
+        {
+            var isDbConnection = op.IsDbConnection();
+            if (isDbConnection)
+            {
+                sb.AppendLine("var cmd = connection.CreateCommand();");
+                sb.AppendLine("cmd.CommandText = sql;");
+                sb.AppendLine("cmd.CommandType = commandType;");
+            }
+            sb.AppendLine($"{value.ClassName}.Instance.SetParams(cmd, args);");
+            sb.AppendLine(isAsync
+                ? "return CommandExtensions.DbCommandExecuteNonQueryAsync(cmd, cancellationToken);"
+                : "return CommandExtensions.DbCommandExecuteNonQuery(cmd);");
         }
 
         private static void GenerateExecuteScalarMethod(StringBuilder sb, GeneratedMapping value, IInvocationOperation op, bool isAsync)

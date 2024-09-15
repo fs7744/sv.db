@@ -8,15 +8,23 @@ namespace UT.GeneratorTestCases
         public void TestCase()
         {
             DbConnection? connection = default;
+            connection.ExecuteScalar("");
             connection.ExecuteScalar("", new { a = 3 });
+            connection.ExecuteScalarAsync("");
             connection.ExecuteScalarAsync("", (3, 4));
+            connection.ExecuteScalar<int>("");
             connection.ExecuteScalar<int>("", new { a = 3 });
+            connection.ExecuteScalarAsync<DateTime>("");
             connection.ExecuteScalarAsync<DateTime>("", (3, 4));
             var cmd = connection.CreateCommand();
             cmd.ExecuteScalar(new { a = 3 });
             cmd.ExecuteScalarAsync((3, 4));
             cmd.ExecuteScalar<int>( new { a = 3 });
             cmd.ExecuteScalarAsync<DateTime>( (3, 4));
+            cmd.ExecuteScalar();
+            cmd.ExecuteScalarAsync();
+            cmd.ExecuteScalar<int>();
+            cmd.ExecuteScalarAsync<DateTime>();
         }
 
         public void Check(string generatedCode)
