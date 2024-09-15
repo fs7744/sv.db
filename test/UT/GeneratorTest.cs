@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.DependencyModel;
 using SV.Db.Analyzers;
 using System.Collections.Immutable;
 using System.ComponentModel;
@@ -46,7 +47,9 @@ namespace UT
         public static Compilation CreateCompilation(string source)
            => CSharpCompilation.Create("compilation",
                syntaxTrees: new[] { CSharpSyntaxTree.ParseText(source, ParseOptionsLatestLangVer) },
-               references: new[] {
+               references: DependencyContext.Default.CompileLibraries
+                    .SelectMany(cl => cl.ResolveReferencePaths())
+                    .Select(asm => MetadataReference.CreateFromFile(asm)).Union( new[] {
                    MetadataReference.CreateFromFile(typeof(Binder).Assembly.Location),
 #if !NET48
                    MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
@@ -70,22 +73,23 @@ namespace UT
                    MetadataReference.CreateFromFile(typeof(DynamicAttribute).Assembly.Location),
                    MetadataReference.CreateFromFile(typeof(IValidatableObject).Assembly.Location),
                    MetadataReference.CreateFromFile(typeof(TestData).Assembly.Location),
-                   MetadataReference.CreateFromFile(typeof(Assert).Assembly.Location),
+                   MetadataReference.CreateFromFile(typeof(DateTime).Assembly.Location),
+                   MetadataReference.CreateFromFile(typeof(System.Runtime.GCSettings).Assembly.Location),
                    MetadataReference.CreateFromFile(typeof(System.Collections.Concurrent.ConcurrentDictionary<,>).Assembly.Location),
                    MetadataReference.CreateFromFile(typeof(System.Collections.ObjectModel.ReadOnlyDictionary<,>).Assembly.Location),
-               },
+               }),
                options: new CSharpCompilationOptions(OutputKind.ConsoleApplication, allowUnsafe: true));
-
+        
         public static (Compilation? Compilation, GeneratorDriverRunResult Result, ImmutableArray<Diagnostic> Diagnostics, int errorCount, string diagnosticsTo) Run<T>(string code) where T : class, IIncrementalGenerator, new()
         {
-            Compilation inputCompilation = CreateCompilation(code);
+            Compilation inputCompilation = CreateCompilation("global using global::System;\r\n"+code);
             StringBuilder diagnosticsTo = new StringBuilder();
-            var ierr = ShowDiagnostics("Input code", inputCompilation, diagnosticsTo, "CS8795", "CS1701", "CS1702", "CS8019");
+            var ierr = ShowDiagnostics("Input code", inputCompilation, diagnosticsTo, "CS8795", "CS1701", "CS1702", "CS8019", "CS8632");
             var generator = new T();
             GeneratorDriver driver = CSharpGeneratorDriver.Create(new[] { generator.AsSourceGenerator() }, parseOptions: ParseOptionsLatestLangVer);
             driver = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out var outputCompilation, out var diagnostics);
             GeneratorDriverRunResult runResult = driver.GetRunResult();
-            var errorCount = ShowDiagnostics("Output code", outputCompilation, diagnosticsTo, "CS1701", "CS1702", "CS8019");
+            var errorCount = ShowDiagnostics("Output code", outputCompilation, diagnosticsTo, "CS1701", "CS1702", "CS8019", "CS8632", "CS8933", "CS0168");
             return (outputCompilation, runResult, diagnostics, errorCount, diagnosticsTo.ToString());
         }
 

@@ -98,11 +98,37 @@ namespace System.Runtime.CompilerServices
                 case "QueryAsync":
                     GenerateQueryMethod(sb, vv.kv.Value, vv.state.IsAsync);
                     break;
+
+                case "ExecuteScalar":
+                case "ExecuteScalarAsync":
+                    GenerateExecuteScalarMethod(sb, vv.kv.Value, op, vv.state.IsAsync);
+                    break;
+
                 default:
                     break;
             }
             sb.AppendLine("}");
             return sb.ToString();
+        }
+
+        private static void GenerateExecuteScalarMethod(StringBuilder sb, GeneratedMapping value, IInvocationOperation op, bool isAsync)
+        {
+            var isDbConnection = op.IsDbConnection();
+            if (isDbConnection)
+            {
+                sb.AppendLine("var cmd = connection.CreateCommand();");
+                sb.AppendLine("cmd.CommandText = sql;");
+                sb.AppendLine("cmd.CommandType = commandType;");
+            }
+            sb.AppendLine($"{value.ClassName}.Instance.SetParams(cmd, args);");
+            if (op.TargetMethod.IsGenericMethod)
+            {
+                sb.AppendLine($"return CommandExtensions.DbCommandExecuteScalar{(isAsync ? $"Async<{op.GetResultType().ToFullName()}>(cmd, cancellationToken)" : $"<{op.GetResultType().ToFullName()}>(cmd)")};");
+            }
+            else
+            {
+                sb.AppendLine($"return CommandExtensions.DbCommandExecuteScalarObject{(isAsync ? "Async(cmd, cancellationToken)" : "(cmd)")};");
+            }
         }
 
         private static void GenerateQueryFirstOrDefaultMethod(StringBuilder sb, GeneratedMapping value, bool isAsync)

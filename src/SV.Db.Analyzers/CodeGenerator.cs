@@ -89,6 +89,8 @@ namespace SV.Db.Analyzers
                     case "SetParams":
                     case "ExecuteReader":
                     case "ExecuteReaderAsync":
+                    case "ExecuteScalar":
+                    case "ExecuteScalarAsync":
                         hasArgs = true;
                         break;
 
@@ -96,8 +98,6 @@ namespace SV.Db.Analyzers
                     case "ExecuteQueryAsync":
                     case "ExecuteQueryFirstOrDefault":
                     case "ExecuteQueryFirstOrDefaultAsync":
-                    case "ExecuteScalar":
-                    case "ExecuteScalarAsync":
                         hasArgs = true;
                         hasResultType = true;
                         break;
