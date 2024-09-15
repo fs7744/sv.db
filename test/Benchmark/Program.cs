@@ -14,7 +14,9 @@ a.SetParams();
 a.SetParamsClass();
 a.SetParamsStruct();
 a.SetParamsTuple();
-//a.SetParamsAnonymous();
+a.SetParamsAnonymous();
+a.SetParamsRecordStruct();
+a.SetParamsRecordClass();
 
 var summary = BenchmarkRunner.Run<QueryDynamicBenchmarks>();
 

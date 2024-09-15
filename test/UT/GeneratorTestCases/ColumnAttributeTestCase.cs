@@ -10,7 +10,7 @@ namespace UT.GeneratorTestCases
         public void TestCase()
         {
             DbConnection connection = null;
-            connection.CreateCommand().SetParams<ColumnAttributeTestData>(new ColumnAttributeTestData());
+            connection.CreateCommand().SetParams(new ColumnAttributeTestData());
         }
 
         public void Check(string generatedCode)

@@ -8,7 +8,7 @@ namespace UT.GeneratorTestCases
         public void TestCase()
         {
             DbConnection connection = null;
-            connection.CreateCommand().SetParams<EmptyClassTestData>(new EmptyClassTestData());
+            connection.CreateCommand().SetParams(new EmptyClassTestData());
         }
 
         public void Check(string generatedCode)

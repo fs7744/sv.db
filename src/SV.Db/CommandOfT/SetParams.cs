@@ -22,7 +22,12 @@ namespace SV.Db
             }
         }
 
-        public static void SetParams<T>(this DbCommand cmd, T args)
+        internal static void InternalSetParams<T>(this DbCommand cmd, T args)
+        {
+            RecordFactory.GetParamsSetter<T>().SetParams(cmd, args);
+        }
+
+        public static void SetParams<T>(this DbCommand cmd, T args) where T : struct
         {
             RecordFactory.GetParamsSetter<T>().SetParams(cmd, args);
         }
@@ -40,7 +45,12 @@ namespace SV.Db
             }
         }
 
-        public static void SetParams<T>(this DbBatchCommand cmd, T args)
+        public static void SetParams<T>(this DbBatchCommand cmd, T args) where T : struct
+        {
+            RecordFactory.GetParamsSetter<T>().SetParams(cmd, args);
+        }
+
+        internal static void InternalSetParams<T>(this DbBatchCommand cmd, T args)
         {
             RecordFactory.GetParamsSetter<T>().SetParams(cmd, args);
         }

@@ -20,8 +20,10 @@ namespace Benchmark
         private TestData data = new TestData(("a", "oo"));
 
         private ClassTestData classTestData = new ClassTestData() { Decimal =3, Decimal2 = 4, Id =5, Id2 = 6, Single = 8, Single2 =77 };
+        private RecordTestData recordTestData = new RecordTestData() { Decimal = 3, Decimal2 = 4, Id = 5, Id2 = 6, Single = 8, Single2 = 77 };
 
-        private StructTestData2 structTestData2 = new StructTestData2() { Decimal = 3, Decimal2 = 4, Id = 5, Id2 = 6, Single = 8, Single2 = 77 };
+        private StructTestData2 structTestData2 = new StructTestData2() { Decimal = 3, Decimal2 = 4, Id = 5, Id2 = 6, Single = 8, Single2 = 77 }; 
+        private StructTestData3 structTestData3 = new StructTestData3() { Decimal = 3, Decimal2 = 4, Id = 5, Id2 = 6, Single = 8, Single2 = 77 }; 
 
         private (Decimal Decimal, Decimal Decimal2, int Id, int Id2, Single Single, Single Single2) tuple = ( Decimal : 3, Decimal2 : 4, Id : 5, Id2 : 6, Single : 8, Single2 : 77 );
 
@@ -79,6 +81,20 @@ namespace Benchmark
         }
 
         [Benchmark]
+        public void SetParamsRecordClass()
+        {
+            var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
+            connection.CreateCommand().SetParams(recordTestData);
+        }
+
+        [Benchmark]
+        public void SetParamsRecordStruct()
+        {
+            var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
+            connection.CreateCommand().SetParams(structTestData3);
+        }
+
+        [Benchmark]
         public void SetParamsStruct()
         {
             var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
@@ -92,12 +108,12 @@ namespace Benchmark
             connection.CreateCommand().SetParams(tuple);
         }
 
-        //[Benchmark]
-        //public void SetParamsAnonymous()
-        //{
-        //    var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
-        //    connection.CreateCommand().SetParams(new  { Decimal = 3, Decimal2 = 4, Id = 5, Id2 = 6, Single = 8, Single2 = 77 });
-        //}
+        [Benchmark]
+        public void SetParamsAnonymous()
+        {
+            var connection = new TestDbConnection() { RowCount = RowCount, Data = data };
+            connection.CreateCommand().SetParams(new { Decimal = 3, Decimal2 = 4, Id = 5, Id2 = 6, Single = 8, Single2 = 77 });
+        }
     }
 
     public class ClassTestData
@@ -111,7 +127,29 @@ namespace Benchmark
         public Single Single2;
     }
 
+    public record RecordTestData
+    {
+        public int Id { get; set; }
+        public Decimal Decimal { get; set; }
+        public Single Single { get; set; }
+
+        public int Id2;
+        public Decimal Decimal2;
+        public Single Single2;
+    }
+
     public struct StructTestData2
+    {
+        public int Id { get; set; }
+        public Decimal Decimal { get; set; }
+        public Single Single { get; set; }
+
+        public int Id2;
+        public Decimal Decimal2;
+        public Single Single2;
+    }
+
+    public record struct StructTestData3
     {
         public int Id { get; set; }
         public Decimal Decimal { get; set; }

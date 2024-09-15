@@ -76,7 +76,7 @@ namespace System.Runtime.CompilerServices
             {
                 sb.Append(" this ");
             }
-            sb.Append(string.Join(",", op.TargetMethod.Parameters.Select(i => @$"{(i.Type.IsAnonymousType ? "object" : i.Type.ToFullName())} {i.Name}")));
+            sb.Append(string.Join(",", op.TargetMethod.Parameters.Select(i => @$"{(i.Type.IsAnonymousType ? "dynamic" : i.Type.ToFullName())} {i.Name}")));
             sb.AppendLine(")");
             sb.AppendLine("{");
 

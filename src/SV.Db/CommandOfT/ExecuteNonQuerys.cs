@@ -36,7 +36,7 @@ namespace SV.Db
                         var cmd = batch.CreateBatchCommand();
                         cmd.CommandText = sql;
                         cmd.CommandType = commandType;
-                        cmd.SetParams<T>(i);
+                        cmd.InternalSetParams<T>(i);
                         batch.BatchCommands.Add(cmd);
                     }
                     total += batch.ExecuteNonQuery();
@@ -80,7 +80,7 @@ namespace SV.Db
                         var cmd = batch.CreateBatchCommand();
                         cmd.CommandText = sql;
                         cmd.CommandType = commandType;
-                        cmd.SetParams<T>(i);
+                        cmd.InternalSetParams<T>(i);
                         batch.BatchCommands.Add(cmd);
                     }
                     total += await batch.ExecuteNonQueryAsync(cancellationToken);

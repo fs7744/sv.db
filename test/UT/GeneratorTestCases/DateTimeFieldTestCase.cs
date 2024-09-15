@@ -8,7 +8,7 @@ namespace UT.GeneratorTestCases
         public void TestCase()
         {
             DbConnection connection = null;
-            connection.CreateCommand().SetParams<DateTimeFieldTestCaseData>(new DateTimeFieldTestCaseData());
+            connection.CreateCommand().SetParams(new DateTimeFieldTestCaseData());
         }
 
         public void Check(string generatedCode)

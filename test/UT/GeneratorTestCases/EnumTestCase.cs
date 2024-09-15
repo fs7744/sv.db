@@ -8,7 +8,7 @@ namespace UT.GeneratorTestCases
         public void TestCase()
         {
             DbConnection connection = null;
-            connection.CreateCommand().SetParams<EnumTestCaseData>(new EnumTestCaseData());
+            connection.CreateCommand().SetParams(new EnumTestCaseData());
         }
 
         public void Check(string generatedCode)
