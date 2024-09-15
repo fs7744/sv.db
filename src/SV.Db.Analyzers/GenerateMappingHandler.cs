@@ -2,13 +2,10 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using System;
-using System.Collections;
 using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Text;
-using System.Xml.Linq;
 
 namespace SV.Db.Analyzers
 {
@@ -18,6 +15,7 @@ namespace SV.Db.Analyzers
 
         public string Code { get; set; }
         public string ClassName { get; set; }
+        public bool IsModuleInitializer { get; set; }
     }
 
     public static class GenerateMappingHandler
@@ -84,15 +82,38 @@ namespace SV.Db.Analyzers
             if (type.IsAnonymousType)
             {
                 r.ClassName = $"Anonymous_{Guid.NewGuid():N}";
+                r.Code = @$"
+public class {r.ClassName} : RecordFactory<dynamic>
+{{
+    public static readonly RecordFactory<dynamic> Instance = new {r.ClassName}();
+
+    public override void SetParams(IDbCmd cmd, dynamic args)
+    {{
+        var ps = cmd.Parameters;
+        DbParameter p;
+        {GenerateSetParams(type)}
+    }}
+
+    protected override void GenerateReadTokens(DbDataReader reader, Span<int> tokens)
+    {{
+    }}
+
+    protected override dynamic Read(DbDataReader reader, ref ReadOnlySpan<int> tokens)
+    {{
+        return null;
+    }}
+}}
+";
                 // todo
             }
-            if (type.IsTupleType)
+            else if (type.IsTupleType)
             {
                 r.ClassName = $"Tuple_{Guid.NewGuid():N}";
                 // todo
             }
             else
             {
+                r.IsModuleInitializer = true ;
                 r.ClassName = $"{type.Name}_{Guid.NewGuid():N}";
                 var (readTokens, read) = GenerateReadTokens(type);
                 r.Code = @$"
@@ -332,7 +353,7 @@ namespace SV.Db
         [ModuleInitializer]
         internal static void InitFunc()
         {{
-            {string.Join("", map.Select(i => $"RecordFactory.RegisterRecordFactory<{i.Key}>(new {i.Value.ClassName}());"))}
+            {string.Join("", map.Where(i => i.Value.IsModuleInitializer).Select(i => $"RecordFactory.RegisterRecordFactory<{i.Key}>(new {i.Value.ClassName}());"))}
         }}
     }}
 }}

@@ -1,8 +1,6 @@
 ﻿using SV.Db;
 using System.Data.Common;
 using System.Data;
-using SV;
-using System.Runtime.CompilerServices;
 
 namespace UT.GeneratorTestCases
 {
@@ -11,9 +9,11 @@ namespace UT.GeneratorTestCases
         public int Int32 { get; set; }
     }
 
-    public class Te : RecordFactory<TestDd>
+    public class Te : RecordFactory<dynamic>
     {
-        public override void SetParams(IDbCmd cmd, TestDd args)
+        public static readonly RecordFactory<dynamic> Instance = new Te();
+
+        public override void SetParams(IDbCmd cmd, dynamic args)
         {
             var ps = cmd.Parameters;
             DbParameter p;
@@ -27,42 +27,11 @@ namespace UT.GeneratorTestCases
 
         protected override void GenerateReadTokens(DbDataReader reader, Span<int> tokens)
         {
-            for (int i = 0; i < reader.FieldCount; i++)
-            {
-                var name = reader.GetName(i);
-                var type = reader.GetFieldType(i);
-                switch (StringHashing.HashOrdinalIgnoreCase(name))
-                {
-                    case 1369956181:
-                        tokens[i] = type == typeof(int) ? 1 : 2;
-                        break;
-
-                    default:
-                        break;
-                }
-            }
         }
 
-        protected override TestDd? Read(DbDataReader reader, ref ReadOnlySpan<int> tokens)
+        protected override dynamic? Read(DbDataReader reader, ref ReadOnlySpan<int> tokens)
         {
-            var d = new TestDd();
-            for (int j = 0; j < tokens.Length; j++)
-            {
-                switch (tokens[j])
-                {
-                    case 1:
-                        d.Int32 = reader.IsDBNull(j) ? default : reader.GetInt32(j);
-                        break;
-
-                    case 2:
-                        d.Int32 = reader.IsDBNull(j) ? default : DBUtils.As<int>(reader.GetValue(j));
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-            return d;
+            return null;
         }
     }
 }
