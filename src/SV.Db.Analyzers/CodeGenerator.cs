@@ -27,7 +27,7 @@ namespace SV.Db.Analyzers
         {
             try
             {
-                var code = GenerateCode(state.Sources);
+                var code = GenerateCode(state.Sources, state.Compilation);
                 context.AddSource((state.Compilation.AssemblyName ?? "package") + ".generated.cs", code);
             }
             catch (Exception ex)
@@ -36,7 +36,7 @@ namespace SV.Db.Analyzers
             }
         }
 
-        private string GenerateCode(ImmutableArray<SourceState> sources)
+        private string GenerateCode(ImmutableArray<SourceState> sources, Compilation compilation)
         {
             var omap = new Dictionary<string, GeneratedMapping>();
             foreach (var item in sources)
@@ -48,7 +48,7 @@ namespace SV.Db.Analyzers
 #if DEBUG
             sb.Append($"// total: {omap.Count} \r\n\r\n" + string.Join("", omap.Select(i => $"// {i.Key}: {i.Value.Sources.Count} \r\n{string.Join("", i.Value.Sources.Select(i => i.ToString()))}\r\n\r\n")));
 #endif
-            sb.Append(omap.GenerateCode());
+            sb.Append(omap.GenerateCode(compilation));
             return sb.ToString();
         }
 

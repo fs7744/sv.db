@@ -9,7 +9,9 @@ namespace UT.GeneratorTestCases
         {
             DbConnection? connection = default;
             connection.CreateCommand().SetParams((3, 56));
-            connection.CreateCommand().SetParams((F: 3, u: 3));
+            var d = (F: 3, u: 3);
+            connection.CreateCommand().SetParams(d);
+            connection.CreateCommand().SetParams(d);
         }
 
         public void Check(string generatedCode)
