@@ -88,8 +88,6 @@ namespace SV.Db.Sloth
                 case ExpressionType.LessThanOrEqual:
                     return new OperaterStatement() { Operater = "<=", Left = ConvertValueStatement(bExpr.Left), Right = ConvertValueStatement(bExpr.Right) };
 
-                case ExpressionType.Not:
-                    return new UnaryOperaterStatement() { Operater = "not", Right = null };// todo
                 case ExpressionType.NotEqual:
                     return new OperaterStatement() { Operater = "!=", Left = ConvertValueStatement(bExpr.Left), Right = ConvertValueStatement(bExpr.Right) };
 
