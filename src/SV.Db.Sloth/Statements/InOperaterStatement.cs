@@ -1,16 +1,18 @@
 ﻿namespace SV.Db.Sloth.Statements
 {
-    public class InOperaterStatement : OperaterStatement
+    public class InOperaterStatement : ConditionStatement
     {
-        public override string Operater => "in";
-        public List<ValueStatement> Value { get; set; }
+        public ValueStatement Left { get; set; }
+        public string Operater => "in";
+        public List<ValueStatement> Right { get; set; }
 
         public override void Visit(Action<Statement> visitor)
         {
             visitor(this);
-            if (Value != null)
+            Left?.Visit(visitor);
+            if (Right != null)
             {
-                foreach (var item in Value)
+                foreach (var item in Right)
                 {
                     visitor(item);
                 }

@@ -1,7 +1,16 @@
 ﻿namespace SV.Db.Sloth.Statements
 {
-    public abstract class OperaterStatement : Statement
+    public class OperaterStatement : ConditionStatement
     {
-        public abstract string Operater { get; }
+        public ValueStatement Left { get; set; }
+        public string Operater { get; set; }
+        public ValueStatement Right { get; set; }
+
+        public override void Visit(Action<Statement> visitor)
+        {
+            visitor(this);
+            Left?.Visit(visitor);
+            Right?.Visit(visitor);
+        }
     }
 }

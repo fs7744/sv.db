@@ -2,13 +2,15 @@
 {
     public class LikeOperaterStatement : OperaterStatement
     {
-        public override string Operater => "like";
-        public StringValueStatement Value { get; set; }
+        public ValueStatement Left { get; set; }
+        public string Operater => "like";
+        public StringValueStatement Right { get; set; }
 
         public override void Visit(Action<Statement> visitor)
         {
             visitor(this);
-            Value?.Visit(visitor);
+            Left?.Visit(visitor);
+            Right?.Visit(visitor);
         }
     }
 }

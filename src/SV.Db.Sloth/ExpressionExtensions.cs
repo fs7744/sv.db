@@ -2,7 +2,7 @@
 
 namespace SV.Db
 {
-    public static class Expression
+    public static class ExpressionExtensions
     {
         public static string GetMemberName<T>(this Expression<T> expression) => expression.Body switch
         {
