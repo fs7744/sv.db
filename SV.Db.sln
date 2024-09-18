@@ -15,6 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UT", "test\UT\UT.csproj", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BC9418AB-933E-4995-96DD-C94C6F932570}"
 	ProjectSection(SolutionItems) = preProject
+		ProjectCommon.targets = ProjectCommon.targets
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -24,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "brainstorming", "brainstorm
 	ProjectSection(SolutionItems) = preProject
 		brainstorming\dynamic select restful.md = brainstorming\dynamic select restful.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SV.Db.Sloth", "src\SV.Db.Sloth\SV.Db.Sloth.csproj", "{8E8DD0DF-76E5-4ADC-917C-FA1FBD0B4304}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +50,10 @@ Global
 		{64AABB83-0EE5-422E-BBAF-C395B0CDB025}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{64AABB83-0EE5-422E-BBAF-C395B0CDB025}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{64AABB83-0EE5-422E-BBAF-C395B0CDB025}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E8DD0DF-76E5-4ADC-917C-FA1FBD0B4304}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E8DD0DF-76E5-4ADC-917C-FA1FBD0B4304}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E8DD0DF-76E5-4ADC-917C-FA1FBD0B4304}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E8DD0DF-76E5-4ADC-917C-FA1FBD0B4304}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -57,6 +64,7 @@ Global
 		{28B29A8B-34A3-4B37-9C53-80812FC0CE6E} = {CEEEF32E-7F6A-4A8E-AD93-4E428122D961}
 		{64AABB83-0EE5-422E-BBAF-C395B0CDB025} = {CEEEF32E-7F6A-4A8E-AD93-4E428122D961}
 		{4324E5A0-60BE-47AD-ADD3-9733B72E7A36} = {BC9418AB-933E-4995-96DD-C94C6F932570}
+		{8E8DD0DF-76E5-4ADC-917C-FA1FBD0B4304} = {4A49D1A1-6998-47B3-B2FF-008D5DAE9E2F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2D979697-6C7C-42EF-BB08-F5BF01C6746E}

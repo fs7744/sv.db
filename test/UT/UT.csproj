@@ -33,6 +33,7 @@
   </ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\..\src\SV.Db.Analyzers\SV.Db.Analyzers.csproj" />
+	  <ProjectReference Include="..\..\src\SV.Db.Sloth\SV.Db.Sloth.csproj" />
 	  <ProjectReference Include="..\..\src\SV.Db\SV.Db.csproj" />
 	</ItemGroup>
 
