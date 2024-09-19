@@ -1,5 +1,6 @@
 ﻿using SV.Db.Sloth.Statements;
 using System.Linq.Expressions;
+using System.Reflection.Metadata;
 
 namespace SV.Db.Sloth
 {
@@ -101,27 +102,44 @@ namespace SV.Db.Sloth
             if (v != null)
             {
                 if (v.NodeType == ExpressionType.Convert) return ConvertValueStatement((v as UnaryExpression).Operand);
-                if (v is MemberExpression m)
+                if (v is MemberExpression m && m.Expression != null)
                 {
-                    return new FieldValueStatement() { Field = m.Member.Name };
+                    if (m.Expression.NodeType == ExpressionType.Parameter)
+                    {
+                        return new FieldValueStatement() { Field = m.Member.Name };
+                    }
+                    else if (m.Expression.NodeType == ExpressionType.Constant || m.Expression.NodeType == ExpressionType.MemberAccess)
+                    {
+                        var o = Expression.Lambda(m).Compile().DynamicInvoke();
+                        return ConvertConstantStatement(o);
+                    }
                 }
                 else if (v is ConstantExpression constant)
                 {
-                    if (constant.Value is string s)
-                    {
-                        return new StringValueStatement() { Value = s };
-                    }
-                    else if (constant.Value is bool b)
-                    {
-                        return new BooleanValueStatement() { Value = b };
-                    }
-                    else
-                    {
-                        return new NumberValueStatement() { Value = Convert.ToDecimal(constant.Value) };
-                    }
+                    return ConvertConstantStatement(constant.Value);
                 }
             }
             throw new NotSupportedException(v.ToString());
+        }
+
+        private static ValueStatement ConvertConstantStatement(object v)
+        {
+            if (v == null)
+            {
+                return new NullValueStatement();
+            }
+            else if (v is string s)
+            {
+                return new StringValueStatement() { Value = s };
+            }
+            else if (v is bool b)
+            {
+                return new BooleanValueStatement() { Value = b };
+            }
+            else
+            {
+                return new NumberValueStatement() { Value = Convert.ToDecimal(v) };
+            }
         }
     }
 }

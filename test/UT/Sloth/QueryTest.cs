@@ -139,7 +139,77 @@ namespace UT.Sloth
                 var v2 = Assert.IsType<BooleanValueStatement>(o3.Right);
                 Assert.True(v2.Value);
             });
+            AssertWhere<QueryTest, ConditionsStatement>(i => i.Ts == "s" && !i.T, oo =>
+            {
+                Assert.Equal(Condition.And, oo.Condition);
+                var o = Assert.IsType<OperaterStatement>(oo.Left);
+                Assert.Equal("=", o.Operater);
+                var f = Assert.IsType<FieldValueStatement>(o.Left);
+                Assert.Equal("Ts", f.Field);
+                var v = Assert.IsType<StringValueStatement>(o.Right);
+                Assert.Equal("s", v.Value);
 
+                var o2 = Assert.IsType<UnaryOperaterStatement>(oo.Right);
+                Assert.Equal("not", o2.Operater);
+                var o3 = Assert.IsType<OperaterStatement>(o2.Right);
+                Assert.Equal("=", o.Operater);
+                var f2 = Assert.IsType<FieldValueStatement>(o3.Left);
+                Assert.Equal("T", f2.Field);
+                var v2 = Assert.IsType<BooleanValueStatement>(o3.Right);
+                Assert.True(v2.Value);
+            });
+            AssertWhere<QueryTest, ConditionsStatement>(i => i.Ts == "s" || !i.T, oo =>
+            {
+                Assert.Equal(Condition.Or, oo.Condition);
+                var o = Assert.IsType<OperaterStatement>(oo.Left);
+                Assert.Equal("=", o.Operater);
+                var f = Assert.IsType<FieldValueStatement>(o.Left);
+                Assert.Equal("Ts", f.Field);
+                var v = Assert.IsType<StringValueStatement>(o.Right);
+                Assert.Equal("s", v.Value);
+
+                var o2 = Assert.IsType<UnaryOperaterStatement>(oo.Right);
+                Assert.Equal("not", o2.Operater);
+                var o3 = Assert.IsType<OperaterStatement>(o2.Right);
+                Assert.Equal("=", o.Operater);
+                var f2 = Assert.IsType<FieldValueStatement>(o3.Left);
+                Assert.Equal("T", f2.Field);
+                var v2 = Assert.IsType<BooleanValueStatement>(o3.Right);
+                Assert.True(v2.Value);
+            });
+            AssertWhere<QueryTest, ConditionsStatement>(i => i.Ts == "s" | !i.T, oo =>
+            {
+                Assert.Equal(Condition.Or, oo.Condition);
+                var o = Assert.IsType<OperaterStatement>(oo.Left);
+                Assert.Equal("=", o.Operater);
+                var f = Assert.IsType<FieldValueStatement>(o.Left);
+                Assert.Equal("Ts", f.Field);
+                var v = Assert.IsType<StringValueStatement>(o.Right);
+                Assert.Equal("s", v.Value);
+
+                var o2 = Assert.IsType<UnaryOperaterStatement>(oo.Right);
+                Assert.Equal("not", o2.Operater);
+                var o3 = Assert.IsType<OperaterStatement>(o2.Right);
+                Assert.Equal("=", o.Operater);
+                var f2 = Assert.IsType<FieldValueStatement>(o3.Left);
+                Assert.Equal("T", f2.Field);
+                var v2 = Assert.IsType<BooleanValueStatement>(o3.Right);
+                Assert.True(v2.Value);
+            });
+            AssertWhere<QueryTest, ConditionsStatement>(i => i.Ts == "s" && i.Ts == "s1" && (!i.T || i.T || i.T) && (!i.T || i.T || i.T), oo =>
+            {
+                Assert.Equal(Condition.And, oo.Condition);
+            });
+            var d = 4;
+            var dd = new QueryTest();
+            AssertWhere<QueryTest, ConditionsStatement>(i => i.Ts == "s" | i.A == d | i.B != dd.B | i.Ts == dd.Ts, oo =>
+            {
+                Assert.Equal(Condition.Or, oo.Condition);
+
+                var o2 = Assert.IsType<OperaterStatement>(oo.Right);
+                Assert.Equal("=", o2.Operater);
+                var o3 = Assert.IsType<NullValueStatement>(o2.Right);
+            });
             Assert.Throws<NotSupportedException>(() => AssertWhere<QueryTest, UnaryOperaterStatement>(i => i.T2.GetValueOrDefault(), o => { }));
         }
 
