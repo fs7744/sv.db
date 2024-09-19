@@ -7,4 +7,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Primitives" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SV.Db\SV.Db.csproj" />
+  </ItemGroup>
+
 </Project>

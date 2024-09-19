@@ -1,18 +1,20 @@
 ﻿using SV.Db.Sloth.Statements;
 using System.Linq.Expressions;
-using System.Reflection.Metadata;
 
 namespace SV.Db.Sloth
 {
-    public static class From
+    public static partial class From
     {
         public static SelectStatementBuilder<T> Of<T>()
         {
-            return new SelectStatementBuilder<T>();
+            var r = new SelectStatementBuilder<T>();
+            r.statement.Fields = new SelectFieldsStatement { Fields = new List<FieldStatement> { new FieldStatement { Name = "*" } } };
+            return r;
         }
 
         public static SelectStatementBuilder<T> Select<T>(this SelectStatementBuilder<T> select, params string[] fields)
         {
+            select.statement.Fields = new SelectFieldsStatement() { Fields = fields.Select(i => new FieldStatement() { Name = i }).ToList() };
             return select;
         }
 
@@ -27,6 +29,25 @@ namespace SV.Db.Sloth
             if (r == null) throw new NotSupportedException(expr.ToString());
             select.statement.Where = new WhereStatement() { Condition = r };
             return select;
+        }
+
+        public static SelectStatementBuilder<T> Limit<T>(this SelectStatementBuilder<T> select, int rows, int? offset = null)
+        {
+            var l = select.statement.Limit;
+            l.Offset = offset;
+            l.Rows = rows;
+            return select;
+        }
+
+        public static SelectStatementBuilder<T> OrderBy<T>(this SelectStatementBuilder<T> select, params (string, OrderByDirection)[] fields)
+        {
+            select.statement.OrderBy = new OrderByStatement() { Fields = fields.Select(i => new OrderByFieldStatement() { Name = i.Item1, Direction = i.Item2 }).ToList() };
+            return select;
+        }
+
+        public static SelectStatementBuilder<T> OrderBy<T>(this SelectStatementBuilder<T> select, params (Expression<Func<T, object>>, OrderByDirection)[] fields)
+        {
+            return select.OrderBy<T>(fields.Select(i => (i.Item1.GetMemberName(), i.Item2)).ToArray());
         }
 
         private static ConditionStatement ConvertConditionStatement(Expression expr)

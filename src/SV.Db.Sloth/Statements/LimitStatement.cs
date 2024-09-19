@@ -2,7 +2,7 @@
 {
     public class LimitStatement : Statement
     {
-        public int Rows { get; private set; }
-        public int? Offset { get; private set; }
+        public int Rows { get; set; }
+        public int? Offset { get; set; }
     }
 }

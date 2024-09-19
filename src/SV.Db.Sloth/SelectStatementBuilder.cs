@@ -4,7 +4,7 @@ namespace SV.Db.Sloth
 {
     public class SelectStatementBuilder<T>
     {
-        internal readonly SelectStatement statement = new SelectStatement();
+        internal readonly SelectStatement statement = new SelectStatement() { Limit = new LimitStatement() { Rows = 10 } };
 
         public SelectStatement Build() => statement;
     }
