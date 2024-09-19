@@ -50,13 +50,15 @@ namespace SV.Db.Sloth
             { "{{le}}", (k, v) => new OperaterStatement() { Operater = "<", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },
             { "{{gr}}", (k, v) => new OperaterStatement() { Operater = ">", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },
             { "{{gt}}", (k, v) => new OperaterStatement() { Operater = ">=", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },
-            { "{{nl}}", (k, v) => new OperaterStatement() { Operater = "=", Left = new FieldValueStatement() { Field = k }, Right = new NullValueStatement() } },
+            { "{{nq}}", (k, v) => new OperaterStatement() { Operater = "!=", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },
             { "{{no}}", (k, v) => new UnaryOperaterStatement(){ Operater = "not", Right = ParseOperaterStatement(k,v) }}
         }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
         private static ValueStatement ConvertValueStatement(string v)
         {
-            if (decimal.TryParse(v, out var value))
+            if (v.Equals("null", StringComparison.OrdinalIgnoreCase))
+                return new NullValueStatement();
+            else if (decimal.TryParse(v, out var value))
                 return new NumberValueStatement() { Value = value };
             else if (bool.TryParse(v, out var b))
                 return new BooleanValueStatement() { Value = b };
