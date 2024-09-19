@@ -210,6 +210,24 @@ namespace UT.Sloth
                 Assert.Equal("=", o2.Operater);
                 var o3 = Assert.IsType<NullValueStatement>(o2.Right);
             });
+            AssertWhere<QueryTest, ConditionsStatement>(i => i.Ts == "s" | i.A == d | i.B != dd.B | i.T == dd.T2.GetValueOrDefault(), oo =>
+            {
+                Assert.Equal(Condition.Or, oo.Condition);
+
+                var o2 = Assert.IsType<OperaterStatement>(oo.Right);
+                Assert.Equal("=", o2.Operater);
+                var o3 = Assert.IsType<BooleanValueStatement>(o2.Right);
+                Assert.False(o3.Value);
+            });
+            AssertWhere<QueryTest, ConditionsStatement>(i => i.Ts == "s" | i.A == d | i.B != dd.B | i.T == (3 == 4), oo =>
+            {
+                Assert.Equal(Condition.Or, oo.Condition);
+
+                var o2 = Assert.IsType<OperaterStatement>(oo.Right);
+                Assert.Equal("=", o2.Operater);
+                var o3 = Assert.IsType<BooleanValueStatement>(o2.Right);
+                Assert.False(o3.Value);
+            });
             Assert.Throws<NotSupportedException>(() => AssertWhere<QueryTest, UnaryOperaterStatement>(i => i.T2.GetValueOrDefault(), o => { }));
         }
 

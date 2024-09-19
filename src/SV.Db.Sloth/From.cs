@@ -108,7 +108,7 @@ namespace SV.Db.Sloth
                     {
                         return new FieldValueStatement() { Field = m.Member.Name };
                     }
-                    else if (m.Expression.NodeType == ExpressionType.Constant || m.Expression.NodeType == ExpressionType.MemberAccess)
+                    else
                     {
                         var o = Expression.Lambda(m).Compile().DynamicInvoke();
                         return ConvertConstantStatement(o);
@@ -117,6 +117,11 @@ namespace SV.Db.Sloth
                 else if (v is ConstantExpression constant)
                 {
                     return ConvertConstantStatement(constant.Value);
+                }
+                else if (v.NodeType == ExpressionType.Call)
+                {
+                    var o = Expression.Lambda(v).Compile().DynamicInvoke();
+                    return ConvertConstantStatement(o);
                 }
             }
             throw new NotSupportedException(v.ToString());
