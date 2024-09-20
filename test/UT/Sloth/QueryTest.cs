@@ -1,4 +1,5 @@
-﻿using SV.Db.Sloth;
+﻿using SV.Db;
+using SV.Db.Sloth;
 using SV.Db.Sloth.Attributes;
 using SV.Db.Sloth.Statements;
 using System.Linq.Expressions;
@@ -227,6 +228,48 @@ namespace UT.Sloth
                 Assert.Equal("=", o2.Operater);
                 var o3 = Assert.IsType<BooleanValueStatement>(o2.Right);
                 Assert.False(o3.Value);
+            });
+            AssertWhere<QueryTest, OperaterStatement>(i => i.Ts.PrefixLike("s"), oo =>
+            {
+                Assert.Equal("PrefixLike", oo.Operater);
+
+                var o2 = Assert.IsType<StringValueStatement>(oo.Right);
+                Assert.Equal("s", o2.Value);
+            });
+            AssertWhere<QueryTest, OperaterStatement>(i => i.Ts.SuffixLike("s" + "sd"), oo =>
+            {
+                Assert.Equal("SuffixLike", oo.Operater);
+
+                var o2 = Assert.IsType<StringValueStatement>(oo.Right);
+                Assert.Equal("ssd", o2.Value);
+            });
+            AssertWhere<QueryTest, OperaterStatement>(i => i.Ts.Like(true.ToString()), oo =>
+            {
+                Assert.Equal("Like", oo.Operater);
+
+                var o2 = Assert.IsType<StringValueStatement>(oo.Right);
+                Assert.Equal("True", o2.Value);
+            });
+            AssertWhere<QueryTest, InOperaterStatement>(i => i.Ts.In(true.ToString()), oo =>
+            {
+                Assert.Equal("in", oo.Operater);
+                var o2 = Assert.IsType<StringArrayValueStatement>(oo.Right);
+                Assert.Equal(1, o2.Value.Count);
+                Assert.Equal("True", o2.Value.First());
+            });
+            AssertWhere<QueryTest, InOperaterStatement>(i => i.Ts.In(1 == 3), oo =>
+            {
+                Assert.Equal("in", oo.Operater);
+                var o2 = Assert.IsType<BooleanArrayValueStatement>(oo.Right);
+                Assert.Equal(1, o2.Value.Count);
+                Assert.False(o2.Value.First());
+            });
+            AssertWhere<QueryTest, InOperaterStatement>(i => i.Ts.In(12), oo =>
+            {
+                Assert.Equal("in", oo.Operater);
+                var o2 = Assert.IsType<NumberArrayValueStatement>(oo.Right);
+                Assert.Equal(1, o2.Value.Count);
+                Assert.Equal(12, o2.Value.First());
             });
             Assert.Throws<NotSupportedException>(() => AssertWhere<QueryTest, UnaryOperaterStatement>(i => i.T2.GetValueOrDefault(), o => { }));
         }

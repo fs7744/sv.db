@@ -1,4 +1,5 @@
 ﻿using SV.Db.Sloth.Statements;
+using System.Collections;
 using System.Linq.Expressions;
 
 namespace SV.Db.Sloth
@@ -84,11 +85,77 @@ namespace SV.Db.Sloth
                     }
                 }
             }
+            else if (expr.NodeType == ExpressionType.Call)
+            {
+                r = ConvertFuncOperaterStatement(expr);
+            }
             else
             {
                 r = null;
             }
             return r;
+        }
+
+        private static ConditionStatement? ConvertFuncOperaterStatement(Expression expr)
+        {
+            if (expr is MethodCallExpression m)
+            {
+                if (m.Arguments.Count != 2)
+                {
+                    return null;
+                }
+                FieldValueStatement f = null;
+                if (m.Arguments[0] is MemberExpression me && me.Expression != null)
+                {
+                    if (me.Expression.NodeType == ExpressionType.Parameter)
+                    {
+                        f = new FieldValueStatement() { Field = me.Member.Name };
+                    }
+                }
+
+                if (f == null)
+                    return null;
+
+                var o = Expression.Lambda(m.Arguments[1]).Compile().DynamicInvoke();
+
+                if (o == null)
+                    return null;
+
+                switch (m.Method.Name)
+                {
+                    case "Like":
+                        return new OperaterStatement() { Operater = "Like", Left = f, Right = new StringValueStatement { Value = o.ToString() } };
+
+                    case "PrefixLike":
+                        return new OperaterStatement() { Operater = "PrefixLike", Left = f, Right = new StringValueStatement { Value = o.ToString() } };
+
+                    case "SuffixLike":
+                        return new OperaterStatement() { Operater = "SuffixLike", Left = f, Right = new StringValueStatement { Value = o.ToString() } };
+
+                    case "In":
+                        if (o is IEnumerable<string> s)
+                            return new InOperaterStatement() { Left = f, Right = new StringArrayValueStatement() { Value = s.AsList() } };
+                        else if (o is IEnumerable<bool> b)
+                            return new InOperaterStatement() { Left = f, Right = new BooleanArrayValueStatement() { Value = b.AsList() } };
+                        else if (o is IEnumerable<decimal> d)
+                            return new InOperaterStatement() { Left = f, Right = new NumberArrayValueStatement() { Value = d.AsList() } };
+                        else if (o is IEnumerable dd)
+                        {
+                            var list = new List<decimal>();
+                            foreach (var item in dd)
+                            {
+                                list.Add(Convert.ToDecimal(item));
+                            }
+                            return new InOperaterStatement() { Left = f, Right = new NumberArrayValueStatement() { Value = list } };
+                        }
+                        else
+                            return null;
+
+                    default:
+                        return null;
+                }
+            }
+            return null;
         }
 
         private static ConditionStatement ConvertOperaterStatement(BinaryExpression bExpr)

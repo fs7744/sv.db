@@ -26,7 +26,7 @@ namespace SV.Db
             throw new NotImplementedException();
         }
 
-        public static bool In<R>(this object o, IEnumerable<R> source)
+        public static bool In<R>(this object o, params R[] source)
         {
             throw new NotImplementedException();
         }
