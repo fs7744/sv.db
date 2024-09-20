@@ -4,8 +4,4 @@
     {
         public decimal Value { get; set; }
     }
-
-    public class NullValueStatement : ValueStatement
-    {
-    }
 }
