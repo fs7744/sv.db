@@ -231,21 +231,21 @@ namespace UT.Sloth
             });
             AssertWhere<QueryTest, OperaterStatement>(i => i.Ts.PrefixLike("s"), oo =>
             {
-                Assert.Equal("PrefixLike", oo.Operater);
+                Assert.Equal("prefix-like", oo.Operater);
 
                 var o2 = Assert.IsType<StringValueStatement>(oo.Right);
                 Assert.Equal("s", o2.Value);
             });
             AssertWhere<QueryTest, OperaterStatement>(i => i.Ts.SuffixLike("s" + "sd"), oo =>
             {
-                Assert.Equal("SuffixLike", oo.Operater);
+                Assert.Equal("suffix-like", oo.Operater);
 
                 var o2 = Assert.IsType<StringValueStatement>(oo.Right);
                 Assert.Equal("ssd", o2.Value);
             });
             AssertWhere<QueryTest, OperaterStatement>(i => i.Ts.Like(true.ToString()), oo =>
             {
-                Assert.Equal("Like", oo.Operater);
+                Assert.Equal("like", oo.Operater);
 
                 var o2 = Assert.IsType<StringValueStatement>(oo.Right);
                 Assert.Equal("True", o2.Value);

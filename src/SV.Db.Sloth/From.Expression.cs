@@ -124,13 +124,13 @@ namespace SV.Db.Sloth
                 switch (m.Method.Name)
                 {
                     case "Like":
-                        return new OperaterStatement() { Operater = "Like", Left = f, Right = new StringValueStatement { Value = o.ToString() } };
+                        return new OperaterStatement() { Operater = "like", Left = f, Right = new StringValueStatement { Value = o.ToString() } };
 
                     case "PrefixLike":
-                        return new OperaterStatement() { Operater = "PrefixLike", Left = f, Right = new StringValueStatement { Value = o.ToString() } };
+                        return new OperaterStatement() { Operater = "prefix-like", Left = f, Right = new StringValueStatement { Value = o.ToString() } };
 
                     case "SuffixLike":
-                        return new OperaterStatement() { Operater = "SuffixLike", Left = f, Right = new StringValueStatement { Value = o.ToString() } };
+                        return new OperaterStatement() { Operater = "suffix-like", Left = f, Right = new StringValueStatement { Value = o.ToString() } };
 
                     case "In":
                         if (o is IEnumerable<string> s)

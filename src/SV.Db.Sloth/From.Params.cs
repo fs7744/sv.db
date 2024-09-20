@@ -53,9 +53,9 @@ namespace SV.Db.Sloth
             { "{{gt}}", (k, v) => new OperaterStatement() { Operater = ">=", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },
             { "{{nq}}", (k, v) => new OperaterStatement() { Operater = "!=", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },
             { "{{in}}", (k, v) => new InOperaterStatement() { Left = new FieldValueStatement() { Field = k }, Right = ConvertArrayStatement(v) } },
-            { "{{lk}}", (k, v) => new OperaterStatement() { Operater = "PrefixLike", Left = new FieldValueStatement() { Field = k }, Right = new StringValueStatement() { Value = v } } },
-            { "{{kk}}", (k, v) => new OperaterStatement() { Operater = "Like", Left = new FieldValueStatement() { Field = k }, Right = new StringValueStatement() { Value = v } } },
-            { "{{rk}}", (k, v) => new OperaterStatement() { Operater = "SuffixLike", Left = new FieldValueStatement() { Field = k }, Right = new StringValueStatement() { Value = v } } },
+            { "{{lk}}", (k, v) => new OperaterStatement() { Operater = "prefix-like", Left = new FieldValueStatement() { Field = k }, Right = new StringValueStatement() { Value = v } } },
+            { "{{kk}}", (k, v) => new OperaterStatement() { Operater = "like", Left = new FieldValueStatement() { Field = k }, Right = new StringValueStatement() { Value = v } } },
+            { "{{rk}}", (k, v) => new OperaterStatement() { Operater = "suffix-like", Left = new FieldValueStatement() { Field = k }, Right = new StringValueStatement() { Value = v } } },
             { "{{no}}", (k, v) => new UnaryOperaterStatement(){ Operater = "not", Right = ParseOperaterStatement(k,v) }}
         }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
