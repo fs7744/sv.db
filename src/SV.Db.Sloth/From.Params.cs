@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Primitives;
 using SV.Db.Sloth.Statements;
 using System.Collections.Frozen;
+using System.Text.Json;
 
 namespace SV.Db.Sloth
 {
@@ -51,6 +52,10 @@ namespace SV.Db.Sloth
             { "{{gr}}", (k, v) => new OperaterStatement() { Operater = ">", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },
             { "{{gt}}", (k, v) => new OperaterStatement() { Operater = ">=", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },
             { "{{nq}}", (k, v) => new OperaterStatement() { Operater = "!=", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },
+            { "{{in}}", (k, v) => new InOperaterStatement() { Left = new FieldValueStatement() { Field = k }, Right = ConvertArrayStatement(v) } },
+            { "{{lk}}", (k, v) => new OperaterStatement() { Operater = "PrefixLike", Left = new FieldValueStatement() { Field = k }, Right = new StringValueStatement() { Value = v } } },
+            { "{{kk}}", (k, v) => new OperaterStatement() { Operater = "Like", Left = new FieldValueStatement() { Field = k }, Right = new StringValueStatement() { Value = v } } },
+            { "{{rk}}", (k, v) => new OperaterStatement() { Operater = "SuffixLike", Left = new FieldValueStatement() { Field = k }, Right = new StringValueStatement() { Value = v } } },
             { "{{no}}", (k, v) => new UnaryOperaterStatement(){ Operater = "not", Right = ParseOperaterStatement(k,v) }}
         }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
@@ -64,6 +69,27 @@ namespace SV.Db.Sloth
                 return new BooleanValueStatement() { Value = b };
             else
                 return new StringValueStatement() { Value = v };
+        }
+
+        private static ArrayValueStatement ConvertArrayStatement(string v)
+        {
+            try
+            {
+                return new BooleanArrayValueStatement() { Value = JsonSerializer.Deserialize<List<bool>>(v) };
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                return new NumberArrayValueStatement() { Value = JsonSerializer.Deserialize<List<decimal>>(v) };
+            }
+            catch
+            {
+            }
+
+            return new StringArrayValueStatement() { Value = JsonSerializer.Deserialize<List<string>>(v) };
         }
 
         private static ConditionStatement ParseOperaterStatement(string key, string v)

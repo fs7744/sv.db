@@ -25,5 +25,10 @@ namespace SV.Db
         {
             throw new NotImplementedException();
         }
+
+        public static bool In<R>(this object o, IEnumerable<R> source)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
