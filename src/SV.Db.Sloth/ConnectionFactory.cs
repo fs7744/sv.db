@@ -17,6 +17,13 @@ namespace SV.Db
             return connectionProviders.ContainsKey(type);
         }
 
+        public static IConnectionProvider GetProvider(string type)
+        {
+            if (!connectionProviders.TryGetValue(type, out var conn))
+                throw new KeyNotFoundException(type);
+            return conn;
+        }
+
         public static DbConnection Get(string type, string connectionString)
         {
             if (!connectionProviders.TryGetValue(type, out var conn))

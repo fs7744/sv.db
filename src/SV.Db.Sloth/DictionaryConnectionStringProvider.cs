@@ -2,15 +2,15 @@
 
 namespace SV.Db
 {
-    public class DictoryConnectionStringProvider : ConnectionStringProvider
+    public class DictionaryConnectionStringProvider : ConnectionStringProvider
     {
-        public static readonly DictoryConnectionStringProvider Instance = new DictoryConnectionStringProvider();
+        public static readonly DictionaryConnectionStringProvider Instance = new DictionaryConnectionStringProvider();
 
-        public readonly ConcurrentDictionary<string, (string dbType, string connectionString)> Cache = new ConcurrentDictionary<string, (string dbType, string connectionString)>();
+        public readonly ConcurrentDictionary<string, (string dbType, string connectionString)> Cache = new ConcurrentDictionary<string, (string dbType, string connectionString)>(StringComparer.OrdinalIgnoreCase);
 
         public override (string dbType, string connectionString) Get(string key)
         {
-            if (Cache.TryGetValue(key, out var value))
+            if (!Cache.TryGetValue(key, out var value))
                 throw new KeyNotFoundException(key);
             return value;
         }
