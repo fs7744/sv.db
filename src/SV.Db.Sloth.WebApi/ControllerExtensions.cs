@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc
             return factory.ExecuteQuery<dynamic>(key, statement);
         }
 
-        public static async Task<object> QueryByParamsAsync<T>(this ControllerBase controller)
+        public static async Task<object> QueryByParamsAsync<T>(this ControllerBase controller, CancellationToken cancellationToken = default)
         {
             var factory = controller.HttpContext.RequestServices.GetRequiredService<IConnectionFactory>();
             var ps = controller.GetQueryParams();
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc
                 });
             }
 
-            return await factory.ExecuteQueryAsync<dynamic>(key, statement);
+            return await factory.ExecuteQueryAsync<dynamic>(key, statement, cancellationToken);
         }
     }
 }

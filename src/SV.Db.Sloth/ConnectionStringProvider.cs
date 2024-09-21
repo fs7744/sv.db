@@ -20,11 +20,11 @@ namespace SV.Db
             return p.ExecuteQuery<T>(connectionString, statement);
         }
 
-        public Task<PageResult<T>> ExecuteQueryAsync<T>(string key, SelectStatement statement)
+        public Task<PageResult<T>> ExecuteQueryAsync<T>(string key, SelectStatement statement, CancellationToken cancellationToken = default)
         {
             (string dbType, string connectionString) = Get(key);
             var p = ConnectionFactory.GetProvider(dbType);
-            return p.ExecuteQueryAsync<T>(connectionString, statement);
+            return p.ExecuteQueryAsync<T>(connectionString, statement, cancellationToken);
         }
 
         public abstract (string dbType, string connectionString) Get(string key);

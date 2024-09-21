@@ -10,6 +10,6 @@ namespace SV.Db
 
         PageResult<T> ExecuteQuery<T>(string connectionString, SelectStatement statement);
 
-        Task<PageResult<T>> ExecuteQueryAsync<T>(string connectionString, SelectStatement statement);
+        Task<PageResult<T>> ExecuteQueryAsync<T>(string connectionString, SelectStatement statement, CancellationToken cancellationToken = default);
     }
 }

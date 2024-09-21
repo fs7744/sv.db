@@ -16,7 +16,7 @@ namespace SV.Db.Sloth.SQLite
             throw new NotImplementedException();
         }
 
-        public Task<PageResult<T>> ExecuteQueryAsync<T>(string connectionString, SelectStatement statement)
+        public Task<PageResult<T>> ExecuteQueryAsync<T>(string connectionString, SelectStatement statement, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
