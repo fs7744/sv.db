@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Primitives;
 using SV.Db;
 using SV.Db.Sloth;
+using SV.Db.Sloth.Statements;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -12,20 +13,45 @@ namespace Microsoft.AspNetCore.Mvc
             return controller.HttpContext.Request.Query.ToDictionary(StringComparer.OrdinalIgnoreCase);
         }
 
-        public static PageResult<dynamic> QueryByParams<T>(this ControllerBase controller)
+        public static object QueryByParams<T>(this ControllerBase controller)
         {
             var factory = controller.HttpContext.RequestServices.GetRequiredService<IConnectionFactory>();
             var ps = controller.GetQueryParams();
-            (var key, var statement) = From.ParseByParams<T>(ps).Build();
+            string key;
+            SelectStatement statement;
+            try
+            {
+                (key, statement) = From.ParseByParams<T>(ps).Build();
+            }
+            catch (Exception ex)
+            {
+                return controller.BadRequest(new
+                {
+                    error = ex.Message
+                });
+            }
             return factory.ExecuteQuery<dynamic>(key, statement);
         }
 
-        public static Task<PageResult<dynamic>> QueryByParamsAsync<T>(this ControllerBase controller)
+        public static async Task<object> QueryByParamsAsync<T>(this ControllerBase controller)
         {
             var factory = controller.HttpContext.RequestServices.GetRequiredService<IConnectionFactory>();
             var ps = controller.GetQueryParams();
-            (var key, var statement) = From.ParseByParams<T>(ps).Build();
-            return factory.ExecuteQueryAsync<dynamic>(key, statement);
+            string key;
+            SelectStatement statement;
+            try
+            {
+                (key, statement) = From.ParseByParams<T>(ps).Build();
+            }
+            catch (Exception ex)
+            {
+                return controller.BadRequest(new
+                {
+                    error = ex.Message
+                });
+            }
+
+            return await factory.ExecuteQueryAsync<dynamic>(key, statement);
         }
     }
 }

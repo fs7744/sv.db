@@ -73,39 +73,41 @@ namespace SV.Db.Sloth
 
         private static ArrayValueStatement ConvertArrayStatement(string v)
         {
-            try
+            var array = JsonSerializer.Deserialize<List<object>>(v);
+            if (array.IsNullOrEmpty()) throw new NotSupportedException($"Array can not be empty");
+            var f = (JsonElement)array.First();
+            switch (f.ValueKind)
             {
-                return new BooleanArrayValueStatement() { Value = JsonSerializer.Deserialize<List<bool>>(v) };
-            }
-            catch
-            {
-            }
+                case JsonValueKind.String:
+                    return new StringArrayValueStatement() { Value = array.Select(i => ((JsonElement)i).GetString()).ToList() };
 
-            try
-            {
-                return new NumberArrayValueStatement() { Value = JsonSerializer.Deserialize<List<decimal>>(v) };
-            }
-            catch
-            {
-            }
+                case JsonValueKind.Number:
+                    return new NumberArrayValueStatement() { Value = array.Select(i => ((JsonElement)i).GetDecimal()).ToList() };
 
-            return new StringArrayValueStatement() { Value = JsonSerializer.Deserialize<List<string>>(v) };
+                case JsonValueKind.True:
+                case JsonValueKind.False:
+                    return new BooleanArrayValueStatement() { Value = array.Select(i => ((JsonElement)i).GetBoolean()).ToList() };
+
+                default:
+                    throw new NotSupportedException(v);
+            }
         }
 
         private static ConditionStatement ParseOperaterStatement(string key, string v)
         {
             if (string.IsNullOrWhiteSpace(v))
                 throw new NotSupportedException($"Field {key} can not be empty");
-            var op = v.Length < OperatorLength ? string.Empty : v[0..OperatorLength];
-            if (!op.StartsWith("{{") || op.EndsWith("}}"))
+            var op = v.Length < OperatorLength ? "{{eq}}" : v[0..OperatorLength];
+            var vv = v;
+            if (op.StartsWith("{{"))
             {
-                op = "{{eq}}";
+                vv = v[OperatorLength..];
             }
             if (!operators.TryGetValue(op, out var opr))
             {
                 throw new NotSupportedException($"Field operators no support {op}");
             }
-            return opr(key, v);
+            return opr(key, vv);
         }
 
         private static void ParsePage<T>(IDictionary<string, StringValues> ps, SelectStatementBuilder<T> builder)

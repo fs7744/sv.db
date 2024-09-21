@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\SV.Db.Analyzers\SV.Db.Analyzers.csproj" />
     <ProjectReference Include="..\..\src\SV.Db.Sloth.SQLite\SV.Db.Sloth.SQLite.csproj" />
     <ProjectReference Include="..\..\src\SV.Db.Sloth.WebApi\SV.Db.Sloth.WebApi.csproj" />
   </ItemGroup>

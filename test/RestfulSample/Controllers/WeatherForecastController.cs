@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SV.Db;
 using SV.Db.Sloth.Attributes;
+using System.ComponentModel.DataAnnotations;
 
 namespace RestfulSample.Controllers
 {
@@ -16,7 +17,7 @@ namespace RestfulSample.Controllers
         private readonly IConnectionFactory factory;
 
         [HttpGet] //todo [QueryByParamsSwagger(typeof(Weather))]
-        public async Task<object> Selects()
+        public async Task<object> Selects([FromQuery, Required] string value)
         {
             return await this.QueryByParamsAsync<Weather>();
         }
