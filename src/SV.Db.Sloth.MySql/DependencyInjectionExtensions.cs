@@ -7,7 +7,8 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static void InitSQLite()
         {
-            ConnectionFactory.RegisterConnectionProvider("MySql", new MySqlConnectionProvider());
+            if (!ConnectionFactory.HasType(ConnectionStringProvider.MySql))
+                ConnectionFactory.RegisterConnectionProvider(ConnectionStringProvider.MySql, new MySqlConnectionProvider());
         }
 
         public static IServiceCollection AddSQLite(this IServiceCollection services)

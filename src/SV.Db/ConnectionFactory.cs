@@ -12,6 +12,11 @@ namespace SV.Db
             connectionProviders[type] = connectionProvider;
         }
 
+        public static bool HasType(string type)
+        {
+            return connectionProviders.ContainsKey(type);
+        }
+
         public static DbConnection Get(string type, string connectionString)
         {
             if (!connectionProviders.TryGetValue(type, out var conn))

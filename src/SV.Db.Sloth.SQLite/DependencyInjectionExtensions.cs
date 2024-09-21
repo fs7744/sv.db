@@ -7,7 +7,8 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static void InitSQLite()
         {
-            ConnectionFactory.RegisterConnectionProvider("SQLite", new SQLiteConnectionProvider());
+            if (!ConnectionFactory.HasType(ConnectionStringProvider.SQLite))
+                ConnectionFactory.RegisterConnectionProvider(ConnectionStringProvider.SQLite, new SQLiteConnectionProvider());
         }
 
         public static IServiceCollection AddSQLite(this IServiceCollection services)

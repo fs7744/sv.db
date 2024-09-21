@@ -7,7 +7,8 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static void InitSQLite()
         {
-            ConnectionFactory.RegisterConnectionProvider("PostgreSQL", new PostgreSQLConnectionProvider());
+            if (!ConnectionFactory.HasType(ConnectionStringProvider.PostgreSQL))
+                ConnectionFactory.RegisterConnectionProvider(ConnectionStringProvider.PostgreSQL, new PostgreSQLConnectionProvider());
         }
 
         public static IServiceCollection AddSQLite(this IServiceCollection services)
