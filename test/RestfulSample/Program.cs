@@ -19,12 +19,14 @@ o.Open();
 var a = f.GetConnection(StaticInfo.Demo);
 a.ExecuteNonQuery("""
     CREATE TABLE Weather (
-        value TEXT
+        name TEXT,
+        value text
     )
     """);
 a.ExecuteNonQuery("""
     INSERT INTO Weather
-    VALUES ('Hello, memory!')
+    (name, value)
+    VALUES ('Hello', 'memory!')
     """);
 var dd = a.ExecuteQuery<string>("""
     SELECT *

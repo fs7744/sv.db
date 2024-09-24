@@ -47,5 +47,13 @@ namespace RestfulSample.Controllers
     [Table(nameof(Weather))]
     public class Weather
     {
+        [Select]
+        public string Name { get; set; }
+
+        [Select(Field = "Value")]
+        public string V { get; set; }
+
+        [Select(NotAllow = true)]
+        public string Test { get; set; }
     }
 }

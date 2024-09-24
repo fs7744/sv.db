@@ -41,10 +41,24 @@ namespace SV.Db
                 c = new DbEntityInfo();
                 var t = typeof(T);
                 c.DbKey = t.GetCustomAttribute<DbAttribute>()?.Key;
-                c.Fields = t.GetMembers().Where(i => i.MemberType == MemberTypes.Property || i.MemberType == MemberTypes.Field)
-                    .Select(DbEntityInfo.ConvertMember)
-                    .Where(i => i != null)
-                    .ToFrozenDictionary(i => i.Name, i => i, StringComparer.OrdinalIgnoreCase);
+                if (string.IsNullOrWhiteSpace(c.DbKey))
+                    throw new KeyNotFoundException("DbAttribute");
+                c.Table = t.GetCustomAttribute<TableAttribute>()?.Table;
+                if (string.IsNullOrWhiteSpace(c.Table))
+                    throw new KeyNotFoundException("TableAttribute");
+                var fields = t.GetMembers(BindingFlags.Public | BindingFlags.Instance).Where(i => i.MemberType == MemberTypes.Property || i.MemberType == MemberTypes.Field).ToList();
+                c.SelectFields = fields.Select(DbEntityInfo.ConvertSelectMember)
+                    .Where(i => i.HasValue)
+                    .Select(i => i.Value)
+                    .ToFrozenDictionary(i => i.Name, i => i.Field, StringComparer.OrdinalIgnoreCase);
+                c.WhereFields = fields.Select(DbEntityInfo.ConvertWhereMember)
+                    .Where(i => i.HasValue)
+                    .Select(i => i.Value)
+                    .ToFrozenDictionary(i => i.Name, i => i.Field, StringComparer.OrdinalIgnoreCase);
+                c.OrderByFields = fields.Select(DbEntityInfo.ConvertOrderByMember)
+                    .Where(i => i.HasValue)
+                    .Select(i => i.Value)
+                    .ToFrozenDictionary(i => i.Name, i => i.Field, StringComparer.OrdinalIgnoreCase);
                 DbEntityInfo<T>.Cache = c;
             }
 
