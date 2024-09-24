@@ -291,21 +291,21 @@ namespace SV.Db.Sloth.SQLite
                     sb.Append(os.Operater);
                     sb.Append(' ');
                     var rf = os.Right as StringValueStatement;
-                    rf.Value = $"%{rf.Value}%";
+                    rf.Value = $"'%{ReplaceLikeValue(rf.Value)}%'";
                     BuildValueStatement(os.Right, sb, cmd, info, os.Right as FieldValueStatement, context);
                     break;
                 case "prefix-like":
                     sb.Append(os.Operater);
                     sb.Append(' ');
                     var lrf = os.Right as StringValueStatement;
-                    lrf.Value = $"{lrf.Value}%";
+                    lrf.Value = $"'{ReplaceLikeValue(lrf.Value)}%'";
                     BuildValueStatement(os.Right, sb, cmd, info, os.Right as FieldValueStatement, context);
                     break;
                 case "suffix-like":
                     sb.Append(os.Operater);
                     sb.Append(' ');
                     var srf = os.Right as StringValueStatement;
-                    srf.Value = $"%{srf.Value}";
+                    srf.Value = $"'%{ReplaceLikeValue(srf.Value)}'";
                     BuildValueStatement(os.Right, sb, cmd, info, os.Right as FieldValueStatement, context);
                     break;
                 default:
