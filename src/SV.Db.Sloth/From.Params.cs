@@ -99,7 +99,7 @@ namespace SV.Db.Sloth
                 throw new NotSupportedException($"Field {key} can not be empty");
             var op = v.Length < OperatorLength ? "{{eq}}" : v[0..OperatorLength];
             var vv = v;
-            if (op.StartsWith("{{"))
+            if (op.StartsWith("{{") && v.Length >= OperatorLength)
             {
                 vv = v[OperatorLength..];
             }
@@ -160,7 +160,7 @@ namespace SV.Db.Sloth
             ps.Remove("TotalCount");
             if (hasTotalCount)
             {
-                fields.Fields.Add(new FieldStatement() { Name = "count()" });
+                fields.Fields.Add(new FuncCallerStatement() { Name = "count()" });
             }
             var noRows = ps.TryGetValue("NoRows", out var nr) && bool.TryParse(nr, out var nnr) && nnr;
             ps.Remove("NoRows");

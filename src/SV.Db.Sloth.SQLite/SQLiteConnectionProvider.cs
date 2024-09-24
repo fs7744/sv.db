@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 using SV.Db.Sloth.Statements;
+using System.Data;
 using System.Data.Common;
 using System.Text;
 
@@ -14,31 +15,69 @@ namespace SV.Db.Sloth.SQLite
 
         public PageResult<T> ExecuteQuery<T>(string connectionString, DbEntityInfo info, SelectStatement statement)
         {
-            throw new NotImplementedException();
+            using var connection = Create(connectionString);
+            var cmd = connection.CreateCommand();
+            BuildSelectStatement(cmd, info, statement, out var hasTotal, out var hasRows);
+            if (connection.State != ConnectionState.Open)
+            {
+                connection.Open();
+            }
+            using var reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            var result = new PageResult<T>();
+            if (hasTotal)
+            {
+                result.TotalCount = reader.QueryFirstOrDefault<int>();
+            }
+            if (hasRows)
+            {
+                result.Rows = reader.Query<T>().AsList();
+            }
+            return result;
         }
 
         public async Task<PageResult<T>> ExecuteQueryAsync<T>(string connectionString, DbEntityInfo info, SelectStatement statement, CancellationToken cancellationToken = default)
         {
             using var connection = Create(connectionString);
             var cmd = connection.CreateCommand();
-            var hasTotal = BuildSelectStatement(cmd, info, statement);
+            BuildSelectStatement(cmd, info, statement, out var hasTotal, out var hasRows);
             using var reader = await CommandExtensions.DbDataReaderAsync(cmd, System.Data.CommandBehavior.CloseConnection, cancellationToken);
             var result = new PageResult<T>();
             if (hasTotal)
             {
                 result.TotalCount = await reader.QueryFirstOrDefaultAsync<int>();
             }
-            result.Rows = await reader.QueryAsync<T>(cancellationToken).ToListAsync(cancellationToken);
+            if (hasRows)
+            {
+                result.Rows = await reader.QueryAsync<T>(cancellationToken).ToListAsync(cancellationToken);
+            }
             return result;
         }
 
-        private bool BuildSelectStatement(DbCommand cmd, DbEntityInfo info, SelectStatement statement)
+        private void BuildSelectStatement(DbCommand cmd, DbEntityInfo info, SelectStatement statement, out bool hasTotalCount, out bool hasRows)
         {
-            var sql = new StringBuilder("SELECT {{Fields}} FROM {{Table}} ");
-            var hasTotal = statement.Fields.Fields.Any(i => i is FuncCallerStatement f && f.Name.Equals("count()", StringComparison.OrdinalIgnoreCase));
-            if (hasTotal)
+            var fs = statement.Fields?.Fields;
+            var sql = new StringBuilder();
+
+            var hasTotal = fs?.FirstOrDefault(i => i is FuncCallerStatement f && f.Name.Equals("count()", StringComparison.OrdinalIgnoreCase));
+            if (hasTotal != null)
             {
-                sql.Insert(0, "SELECT count(*) FROM {{TableTotal}} ; ");
+                fs.Remove(hasTotal);
+                sql.Append("SELECT count(*) FROM {{TableTotal}} ; ");
+                hasTotalCount = true;
+            }
+            else
+            {
+                hasTotalCount = false;
+            }
+
+            if (fs.IsNotNullOrEmpty())
+            {
+                hasRows = true;
+                sql.Append("SELECT {{Fields}} FROM {{Table}} ");
+            }
+            else
+            {
+                hasRows = false;
             }
 
             var table = info.Table;
@@ -55,22 +94,28 @@ namespace SV.Db.Sloth.SQLite
             {
                 table = table.Replace("{{OrderBy}}", "{{OrderBy}}", StringComparison.OrdinalIgnoreCase);
                 sql = sql.Replace("{{TableTotal}}", table.Replace("{{OrderBy}}", string.Empty));
-                sql = sql.Replace("{{Table}}", table);
+                if (hasRows)
+                {
+                    sql = sql.Replace("{{Table}}", table);
+                }
             }
             else
             {
                 sql = sql.Replace("{{TableTotal}}", table);
-                sql = sql.Replace("{{Table}}", table);
-                sql = sql.Append(" {{OrderBy}}");
+                if (hasRows)
+                {
+                    sql = sql.Replace("{{Table}}", table);
+                    sql = sql.Append(" {{OrderBy}}");
+                }
             }
 
-            if (statement.Fields.Fields.Any(i => i is FieldStatement f && f.Name.Equals("*", StringComparison.OrdinalIgnoreCase)))
+            if (fs?.Any(i => i is FieldStatement f && f.Name.Equals("*", StringComparison.OrdinalIgnoreCase)) == true)
             {
                 sql = sql.Replace("{{Fields}}", string.Join(",", info.SelectFields.Select(i => i.Value)));
             }
-            else
+            else if (hasRows)
             {
-                sql = sql.Replace("{{Fields}}", string.Join(",", statement.Fields.Fields.Select(i => info.SelectFields.TryGetValue(i.Name, out var v) ? v : null).Where(i => !string.IsNullOrWhiteSpace(i))));
+                sql = sql.Replace("{{Fields}}", string.Join(",", fs.Select(i => info.SelectFields.TryGetValue(i.Name, out var v) ? v : null).Where(i => !string.IsNullOrWhiteSpace(i))));
             }
 
             if (statement.Where == null || statement.Where.Condition == null)
@@ -103,7 +148,6 @@ namespace SV.Db.Sloth.SQLite
             sql = sql.Replace("{{Limit}}", $"Limit {statement.Limit.Offset},{statement.Limit.Rows} ");
 
             cmd.CommandText = sql.ToString();
-            return hasTotal;
         }
     }
 }
