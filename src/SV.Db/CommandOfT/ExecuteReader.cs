@@ -83,7 +83,10 @@ namespace SV.Db
             if (reader.HasRows)
             {
                 var r = factory.Read(reader);
-                reader.NextResult();
+                if (reader.HasRows && !reader.IsClosed)
+                {
+                    reader.NextResult();
+                }
                 return r;
             }
             return default;
@@ -94,7 +97,10 @@ namespace SV.Db
             if (reader.HasRows)
             {
                 var r = reader.Read<T>();
-                await reader.NextResultAsync(cancellationToken);
+                if (reader.HasRows && !reader.IsClosed)
+                {
+                    await reader.NextResultAsync(cancellationToken);
+                }
                 return r;
             }
             return default;
@@ -106,7 +112,10 @@ namespace SV.Db
             if (reader.HasRows)
             {
                 var r = factory.Read(reader);
-                await reader.NextResultAsync(cancellationToken);
+                if (reader.HasRows && !reader.IsClosed)
+                {
+                    await reader.NextResultAsync(cancellationToken);
+                }
                 return r;
             }
             return default;
@@ -117,7 +126,10 @@ namespace SV.Db
             if (reader.HasRows)
             {
                 var r = reader.ReadEnumerable<T>(estimateRow, true);
-                reader.NextResult();
+                if (reader.HasRows && !reader.IsClosed)
+                {
+                    reader.NextResult();
+                }
                 return r;
             }
             return Enumerable.Empty<T>();
@@ -129,13 +141,16 @@ namespace SV.Db
             if (reader.HasRows)
             {
                 var r = factory.ReadBuffed(reader, estimateRow);
-                reader.NextResult();
+                if (reader.HasRows && !reader.IsClosed)
+                {
+                    reader.NextResult();
+                }
                 return r;
             }
             return Enumerable.Empty<T>();
         }
 
-        public static async IAsyncEnumerable<T?> QueryAsync<T>(this DbDataReader reader, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public static async IAsyncEnumerable<T> QueryAsync<T>(this DbDataReader reader, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             if (reader.HasRows)
             {
@@ -143,12 +158,15 @@ namespace SV.Db
                 {
                     yield return item;
                 }
-                await reader.NextResultAsync(cancellationToken);
+                if (reader.HasRows && !reader.IsClosed)
+                {
+                    await reader.NextResultAsync(cancellationToken);
+                }
             }
         }
 
         [MethodImpl(DBUtils.Optimization)]
-        public static async IAsyncEnumerable<T?> DbDataReaderQueryAsync<T>(this IRecordFactory<T> factory, DbDataReader reader, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public static async IAsyncEnumerable<T> DbDataReaderQueryAsync<T>(this IRecordFactory<T> factory, DbDataReader reader, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             if (reader.HasRows)
             {
@@ -156,8 +174,10 @@ namespace SV.Db
                 {
                     yield return item;
                 }
-
-                await reader.NextResultAsync(cancellationToken);
+                if (reader.HasRows && !reader.IsClosed)
+                {
+                    await reader.NextResultAsync(cancellationToken);
+                }
             }
         }
     }

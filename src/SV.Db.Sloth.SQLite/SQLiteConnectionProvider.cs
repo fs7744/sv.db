@@ -16,9 +16,31 @@ namespace SV.Db.Sloth.SQLite
             throw new NotImplementedException();
         }
 
-        public Task<PageResult<T>> ExecuteQueryAsync<T>(string connectionString, SelectStatement statement, CancellationToken cancellationToken = default)
+        public async Task<PageResult<T>> ExecuteQueryAsync<T>(string connectionString, SelectStatement statement, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            using var connection = Create(connectionString);
+            var cmd = connection.CreateCommand();
+            var hasTotal = BuildSelectStatement(cmd, statement);
+            using var reader = await CommandExtensions.DbDataReaderAsync(cmd, System.Data.CommandBehavior.CloseConnection, cancellationToken);
+            var result = new PageResult<T>();
+            if (hasTotal)
+            {
+                result.TotalCount = await reader.QueryFirstOrDefaultAsync<int>();
+            }
+            result.Rows = await reader.QueryAsync<T>(cancellationToken).ToListAsync(cancellationToken);
+            return result;
+        }
+
+        private bool BuildSelectStatement(DbCommand cmd, SelectStatement statement)
+        {
+            // todo
+            cmd.CommandText = """
+    SELECT count(1)
+    FROM Weather;
+    SELECT *
+    FROM Weather;
+    """;
+            return true;
         }
     }
 }

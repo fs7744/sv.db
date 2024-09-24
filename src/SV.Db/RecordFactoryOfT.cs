@@ -23,11 +23,11 @@ namespace SV.Db
     {
         T? Read(DbDataReader reader);
 
-        List<T?> ReadBuffed(DbDataReader reader, int estimateRow = 0);
+        List<T> ReadBuffed(DbDataReader reader, int estimateRow = 0);
 
-        IEnumerable<T?> ReadUnBuffed(DbDataReader reader);
+        IEnumerable<T> ReadUnBuffed(DbDataReader reader);
 
-        IAsyncEnumerable<T?> ReadUnBuffedAsync(DbDataReader reader, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<T> ReadUnBuffedAsync(DbDataReader reader, CancellationToken cancellationToken = default);
     }
 
     public interface IDbCmd
@@ -121,7 +121,7 @@ namespace SV.Db
             return Read(reader, ref readOnlyTokens);
         }
 
-        public virtual List<T?> ReadBuffed(DbDataReader reader, int estimateRow = 0)
+        public virtual List<T> ReadBuffed(DbDataReader reader, int estimateRow = 0)
         {
             List<T?> results = new(estimateRow);
             if (reader.Read())
