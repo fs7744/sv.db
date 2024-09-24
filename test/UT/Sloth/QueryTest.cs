@@ -208,7 +208,7 @@ namespace UT.Sloth
                 Assert.Equal(Condition.Or, oo.Condition);
 
                 var o2 = Assert.IsType<OperaterStatement>(oo.Right);
-                Assert.Equal("=", o2.Operater);
+                Assert.Equal("is-null", o2.Operater);
                 var o3 = Assert.IsType<NullValueStatement>(o2.Right);
             });
             AssertWhere<QueryTest, ConditionsStatement>(i => i.Ts == "s" | i.A == d | i.B != dd.B | i.T == dd.T2.GetValueOrDefault(), oo =>
