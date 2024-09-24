@@ -130,7 +130,7 @@ namespace SV.Db.Sloth
             {
                 ps.Remove("OrderBy");
                 var orderBy = new OrderByStatement() { Fields = new List<OrderByFieldStatement>() };
-                foreach (var item in ob.Where(i => !string.IsNullOrWhiteSpace(i)))
+                foreach (var item in ob.ToString().Split(",", StringSplitOptions.RemoveEmptyEntries))
                 {
                     var f = new OrderByFieldStatement();
                     if (!item.Contains(":"))
@@ -169,7 +169,7 @@ namespace SV.Db.Sloth
                 if (ps.TryGetValue("Fields", out var fs))
                 {
                     ps.Remove("Fields");
-                    foreach (var item in fs.Where(i => !string.IsNullOrWhiteSpace(i)))
+                    foreach (var item in fs.ToString().Split(",", StringSplitOptions.RemoveEmptyEntries))
                     {
                         var f = new FieldStatement();
                         if (item.Contains(":"))

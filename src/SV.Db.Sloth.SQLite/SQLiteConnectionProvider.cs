@@ -40,7 +40,7 @@ namespace SV.Db.Sloth.SQLite
             using var connection = Create(connectionString);
             var cmd = connection.CreateCommand();
             BuildSelectStatement(cmd, info, statement, out var hasTotal, out var hasRows);
-            using var reader = await CommandExtensions.DbDataReaderAsync(cmd, System.Data.CommandBehavior.CloseConnection, cancellationToken);
+            using var reader = await CommandExtensions.DbDataReaderAsync(cmd, CommandBehavior.CloseConnection, cancellationToken);
             var result = new PageResult<T>();
             if (hasTotal)
             {

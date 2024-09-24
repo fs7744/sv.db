@@ -50,7 +50,7 @@ namespace RestfulSample.Controllers
         [Select]
         public string Name { get; set; }
 
-        [Select(Field = "Value")]
+        [Select(Field = "Value as v")]
         public string V { get; set; }
 
         [Select(NotAllow = true)]
