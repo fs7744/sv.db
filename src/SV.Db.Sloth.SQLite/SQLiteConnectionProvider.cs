@@ -288,25 +288,19 @@ namespace SV.Db.Sloth.SQLite
                     sb.Append("IS NULL");
                     break;
                 case "like":
-                    sb.Append(os.Operater);
-                    sb.Append(' ');
+                    sb.Append("like ");
                     var rf = os.Right as StringValueStatement;
-                    rf.Value = $"'%{ReplaceLikeValue(rf.Value)}%'";
-                    BuildValueStatement(os.Right, sb, cmd, info, os.Right as FieldValueStatement, context);
+                    sb.Append($"'%{ReplaceLikeValue(rf.Value)}%'");
                     break;
                 case "prefix-like":
-                    sb.Append(os.Operater);
-                    sb.Append(' ');
+                    sb.Append("like ");
                     var lrf = os.Right as StringValueStatement;
-                    lrf.Value = $"'{ReplaceLikeValue(lrf.Value)}%'";
-                    BuildValueStatement(os.Right, sb, cmd, info, os.Right as FieldValueStatement, context);
+                    sb.Append($"'{ReplaceLikeValue(lrf.Value)}%'");
                     break;
                 case "suffix-like":
-                    sb.Append(os.Operater);
-                    sb.Append(' ');
+                    sb.Append("like ");
                     var srf = os.Right as StringValueStatement;
-                    srf.Value = $"'%{ReplaceLikeValue(srf.Value)}'";
-                    BuildValueStatement(os.Right, sb, cmd, info, os.Right as FieldValueStatement, context);
+                    sb.Append($"'%{ReplaceLikeValue(srf.Value)}'");
                     break;
                 default:
                     sb.Append(os.Operater);
