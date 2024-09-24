@@ -171,6 +171,110 @@ namespace SV.Db.Sloth.SQLite
             {
                 BuildOperaterStatement(sb, os, cmd, info, context);
             }
+            else if (condition is UnaryOperaterStatement uo)
+            {
+                BuildUnaryOperaterStatement(sb, uo, cmd, info, context);
+            }
+            else if (condition is InOperaterStatement io)
+            {
+                BuildInOperaterStatement(sb, io, cmd, info, context);
+            }
+            else if (condition is ConditionsStatement conditions)
+            {
+                if (conditions.Condition == Condition.And)
+                {
+                    BuildCondition(sb, cmd, info, conditions.Left, context);
+                    sb.Append(" AND ");
+                    BuildCondition(sb, cmd, info, conditions.Right, context);
+                }
+                else
+                {
+                    sb.Append(" (");
+                    BuildCondition(sb, cmd, info, conditions.Left, context);
+                    sb.Append(" OR ");
+                    BuildCondition(sb, cmd, info, conditions.Right, context); 
+                    sb.Append(") ");
+                }
+            }
+        }
+
+        private static void BuildInOperaterStatement(StringBuilder sb, InOperaterStatement io, DbCommand cmd, DbEntityInfo info, BuildConditionContext context)
+        {
+            sb.Append(' ');
+            BuildValueStatement(io.Left, sb, cmd, info, null, context);
+            sb.Append(" in (");
+            BuildArrayValueStatement(io.Right, sb, cmd, info, io.Left as FieldValueStatement, context);
+            sb.Append(") ");
+        }
+
+        private static void BuildArrayValueStatement(ArrayValueStatement array, StringBuilder sb, DbCommand cmd, DbEntityInfo info, FieldValueStatement? fieldValueStatement, BuildConditionContext context)
+        {
+            if (array is StringArrayValueStatement s)
+            {
+                ColumnAttribute c = null;
+                var f = fieldValueStatement != null && info.Columns != null && info.Columns.TryGetValue(fieldValueStatement.Field, out c);
+                for (var i = 0; i < s.Value.Count; i++)
+                {
+                    if (i > 0)
+                        sb.Append(',');
+
+                    var p = cmd.CreateParameter();
+                    p.ParameterName = context.NewParamsName();
+                    if (f)
+                    {
+                        p.DbType = c.Type;
+                        p.Direction = c.Direction;
+                        if (c.Precision > 0)
+                            p.Precision = c.Precision;
+                        if (c.Size > 0)
+                            p.Size = c.Size;
+                        if (c.Scale > 0)
+                            p.Scale = c.Scale;
+                    }
+                    else
+                    {
+                        p.DbType = DbType.String;
+                    }
+                    p.Value = s.Value[i];
+                    cmd.Parameters.Add(p);
+                    sb.Append(p.ParameterName);
+                }
+            }
+            else if (array is BooleanArrayValueStatement b)
+            {
+                for (var i = 0; i < b.Value.Count; i++)
+                {
+                    var bb = b.Value[i];
+                    if (i > 0)
+                        sb.Append(',');
+                    sb.Append(bb ? "true" : "false");
+                }
+            }
+            else if (array is NumberArrayValueStatement n)
+            {
+                for (var i = 0; i < n.Value.Count; i++)
+                {
+                    var bb = n.Value[i];
+                    if (i > 0)
+                        sb.Append(',');
+                    sb.Append(bb);
+                }
+            }
+        }
+
+        private static void BuildUnaryOperaterStatement(StringBuilder sb, UnaryOperaterStatement uo, DbCommand cmd, DbEntityInfo info, BuildConditionContext context)
+        {
+            if (uo.Operater == "not")
+            {
+                sb.Append(" not (");
+                BuildCondition(sb, cmd, info, uo.Right, context);
+                sb.Append(") ");
+            }
+        }
+
+        public static string ReplaceLikeValue(string str)
+        {
+            return str.Replace("\\", "\\\\").Replace("'", "\\'").Replace("\"", "\\\"").Replace("%", "\\%").Replace("_", "\\_").Replace("[", "\\[").Replace("^", "\\^");
         }
 
         private static void BuildOperaterStatement(StringBuilder sb, OperaterStatement os, DbCommand cmd, DbEntityInfo info, BuildConditionContext context)
@@ -178,9 +282,39 @@ namespace SV.Db.Sloth.SQLite
             sb.Append(' ');
             BuildValueStatement(os.Left, sb, cmd, info, os.Left as FieldValueStatement, context);
             sb.Append(' ');
-            sb.Append(os.Operater);
-            sb.Append(' ');
-            BuildValueStatement(os.Right, sb, cmd, info, os.Right as FieldValueStatement, context);
+            switch (os.Operater)
+            {
+                case "is-null":
+                    sb.Append("IS NULL");
+                    break;
+                case "like":
+                    sb.Append(os.Operater);
+                    sb.Append(' ');
+                    var rf = os.Right as StringValueStatement;
+                    rf.Value = $"%{rf.Value}%";
+                    BuildValueStatement(os.Right, sb, cmd, info, os.Right as FieldValueStatement, context);
+                    break;
+                case "prefix-like":
+                    sb.Append(os.Operater);
+                    sb.Append(' ');
+                    var lrf = os.Right as StringValueStatement;
+                    lrf.Value = $"{lrf.Value}%";
+                    BuildValueStatement(os.Right, sb, cmd, info, os.Right as FieldValueStatement, context);
+                    break;
+                case "suffix-like":
+                    sb.Append(os.Operater);
+                    sb.Append(' ');
+                    var srf = os.Right as StringValueStatement;
+                    srf.Value = $"%{srf.Value}";
+                    BuildValueStatement(os.Right, sb, cmd, info, os.Right as FieldValueStatement, context);
+                    break;
+                default:
+                    sb.Append(os.Operater);
+                    sb.Append(' ');
+                    BuildValueStatement(os.Right, sb, cmd, info, os.Right as FieldValueStatement, context);
+                    break;
+            }
+            
             sb.Append(' ');
         }
 

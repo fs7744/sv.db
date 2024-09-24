@@ -53,6 +53,7 @@ namespace SV.Db.Sloth
 
         private static readonly FrozenDictionary<string, Func<string, string, ConditionStatement>> operators = new Dictionary<string, Func<string, string, ConditionStatement>>
         {
+            { "{{nl}}", (k, v) => new OperaterStatement() { Operater = "is-null", Left = new FieldValueStatement() { Field = k } } },
             { "{{eq}}", (k, v) => new OperaterStatement() { Operater = "=", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },
             { "{{lt}}", (k, v) => new OperaterStatement() { Operater = "<=", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },
             { "{{le}}", (k, v) => new OperaterStatement() { Operater = "<", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },

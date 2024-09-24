@@ -163,7 +163,12 @@ namespace SV.Db.Sloth
             switch (bExpr.NodeType)
             {
                 case ExpressionType.Equal:
-                    return new OperaterStatement() { Operater = "=", Left = ConvertValueStatement(bExpr.Left), Right = ConvertValueStatement(bExpr.Right) };
+                    var r = new OperaterStatement() { Operater = "=", Left = ConvertValueStatement(bExpr.Left), Right = ConvertValueStatement(bExpr.Right) };
+                    if (r.Right is NullValueStatement)
+                    {
+                        r.Operater = "is-null";
+                    }
+                    return r;
 
                 case ExpressionType.GreaterThan:
                     return new OperaterStatement() { Operater = ">", Left = ConvertValueStatement(bExpr.Left), Right = ConvertValueStatement(bExpr.Right) };

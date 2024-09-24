@@ -1,6 +1,6 @@
 @RestfulSample_HostAddress = http://localhost:5259
 
-GET {{RestfulSample_HostAddress}}/weather?value={{kk}}hello
+GET {{RestfulSample_HostAddress}}/weather?name=Hello&name=Hello&totalcount=true
 Accept: application/json
 
 ###
