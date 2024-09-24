@@ -21,8 +21,7 @@ namespace Microsoft.AspNetCore.Mvc
             SelectStatement statement;
             try
             {
-                info = factory.GetDbEntityInfo<T>();
-                statement = From.ParseByParams<T>(ps).Build(info);
+                statement = factory.ParseByParams<T>(ps, out info);
             }
             catch (Exception ex)
             {
@@ -42,8 +41,7 @@ namespace Microsoft.AspNetCore.Mvc
             SelectStatement statement;
             try
             {
-                info = factory.GetDbEntityInfo<T>();
-                statement = From.ParseByParams<T>(ps).Build(info);
+                statement = factory.ParseByParams<T>(ps, out info);
             }
             catch (Exception ex)
             {

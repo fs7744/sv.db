@@ -277,7 +277,7 @@ namespace UT.Sloth
         public void AssertWhere<T, O>(Expression<Func<T, bool>> expr, Action<O> action)
         {
             var a = From.Of<T>();
-            var s = a.Where(expr).Build();
+            var s = a.Where(expr).Build(null);
             Assert.NotNull(s);
             Assert.NotNull(s.Where);
             Assert.NotNull(s.Where.Condition);

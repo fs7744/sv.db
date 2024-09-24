@@ -17,7 +17,7 @@ namespace RestfulSample.Controllers
         private readonly IConnectionFactory factory;
 
         [HttpGet] //todo [QueryByParamsSwagger(typeof(Weather))]
-        public async Task<object> Selects([FromQuery, Required] string value)
+        public async Task<object> Selects([FromQuery, Required] string name)
         {
             return await this.QueryByParamsAsync<Weather>();
         }

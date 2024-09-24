@@ -124,8 +124,7 @@ namespace SV.Db.Sloth.SQLite
             }
             else
             {
-                sql = sql.Replace("{{Where}}", string.Empty);
-                //todo
+                sql = sql.Replace("{{Where}}", BuildCondition(cmd, info, statement.Where.Condition));
             }
 
             if (statement.OrderBy == null || statement.OrderBy.Fields.IsNullOrEmpty())
@@ -148,6 +147,80 @@ namespace SV.Db.Sloth.SQLite
             sql = sql.Replace("{{Limit}}", $"Limit {statement.Limit.Offset},{statement.Limit.Rows} ");
 
             cmd.CommandText = sql.ToString();
+        }
+
+        public class BuildConditionContext
+        {
+            public int ParamsCount;
+
+            public string NewParamsName() => $"@P_{ParamsCount++}";
+        }
+
+        public static string BuildCondition(DbCommand cmd, DbEntityInfo info, ConditionStatement condition)
+        {
+            var sb = new StringBuilder();
+            var context = new BuildConditionContext();
+            BuildCondition(sb, cmd, info, condition, context);
+            sb.Insert(0, "where");
+            return sb.ToString();
+        }
+
+        private static void BuildCondition(StringBuilder sb, DbCommand cmd, DbEntityInfo info, ConditionStatement condition, BuildConditionContext context)
+        {
+            if (condition is OperaterStatement os)
+            {
+                BuildOperaterStatement(sb, os, cmd, info, context);
+            }
+        }
+
+        private static void BuildOperaterStatement(StringBuilder sb, OperaterStatement os, DbCommand cmd, DbEntityInfo info, BuildConditionContext context)
+        {
+            sb.Append(' ');
+            BuildValueStatement(os.Left, sb, cmd, info, os.Left as FieldValueStatement, context);
+            sb.Append(' ');
+            sb.Append(os.Operater);
+            sb.Append(' ');
+            BuildValueStatement(os.Right, sb, cmd, info, os.Right as FieldValueStatement, context);
+            sb.Append(' ');
+        }
+
+        private static void BuildValueStatement(ValueStatement v, StringBuilder sb, DbCommand cmd, DbEntityInfo info, FieldValueStatement? fieldValueStatement, BuildConditionContext context)
+        {
+            if (v is FieldValueStatement f)
+            {
+                sb.Append(info.SelectFields[f.Field]);
+            }
+            else if (v is StringValueStatement s)
+            {
+                var p = cmd.CreateParameter();
+                p.ParameterName = context.NewParamsName();
+                if (fieldValueStatement != null && info.Columns != null && info.Columns.TryGetValue(fieldValueStatement.Field, out var c))
+                {
+                    p.DbType = c.Type;
+                    p.Direction = c.Direction;
+                    if (c.Precision > 0)
+                        p.Precision = c.Precision;
+                    if (c.Size > 0)
+                        p.Size = c.Size;
+                    if (c.Scale > 0)
+                        p.Scale = c.Scale;
+                }
+                else
+                {
+                    p.DbType = DbType.String;
+                }
+                p.Value = s.Value;
+                cmd.Parameters.Add(p);
+                sb.Append(p.ParameterName);
+            }
+            else if (v is BooleanValueStatement b)
+            {
+                sb.Append(b.Value ? "true" : "false");
+            }
+            else if (v is NumberValueStatement n)
+            {
+                sb.Append(n.Value.ToString());
+            }
         }
     }
 }

@@ -7,6 +7,13 @@ namespace SV.Db.Sloth
 {
     public static partial class From
     {
+        public static SelectStatement ParseByParams<T>(this IConnectionFactory factory, IDictionary<string, StringValues> ps, out DbEntityInfo info)
+        {
+            info = factory.GetDbEntityInfo<T>();
+            var builder = ParseByParams<T>(ps).Build(info);
+            return builder;
+        }
+
         public static SelectStatementBuilder<T> ParseByParams<T>(IDictionary<string, StringValues> ps)
         {
             var builder = new SelectStatementBuilder<T>();
@@ -67,6 +74,8 @@ namespace SV.Db.Sloth
                 return new NumberValueStatement() { Value = value };
             else if (bool.TryParse(v, out var b))
                 return new BooleanValueStatement() { Value = b };
+            else if (v.StartsWith("\"") && v.EndsWith("\""))
+                return new StringValueStatement() { Value = JsonSerializer.Deserialize<string>(v) };
             else
                 return new StringValueStatement() { Value = v };
         }
@@ -97,7 +106,7 @@ namespace SV.Db.Sloth
         {
             if (string.IsNullOrWhiteSpace(v))
                 throw new NotSupportedException($"Field {key} can not be empty");
-            var op = v.Length < OperatorLength ? "{{eq}}" : v[0..OperatorLength];
+            var op = v.Length < OperatorLength || !v.StartsWith("{{") ? "{{eq}}" : v[0..OperatorLength];
             var vv = v;
             if (op.StartsWith("{{") && v.Length >= OperatorLength)
             {

@@ -79,7 +79,7 @@ namespace UT
 
         protected override DbParameter CreateDbParameter()
         {
-            throw new NotImplementedException();
+            return new TestDataParameter();
         }
 
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
@@ -94,9 +94,12 @@ namespace UT
 
         public override object? SyncRoot { get; }
 
+        public List<object> Params = new List<object>();
+
         public override int Add(object value)
         {
-            throw new NotImplementedException();
+            Params.Add(value);
+            return Params.Count;
         }
 
         public override void AddRange(Array values)
