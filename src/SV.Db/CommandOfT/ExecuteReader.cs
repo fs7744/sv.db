@@ -18,7 +18,7 @@ namespace SV.Db
             return cmd.ExecuteReader(behavior);
         }
 
-        public static async Task<DbDataReader> ExecuteReaderAsync(this DbCommand cmd, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default)
+        public static async Task<DbDataReader> ExecuteReaderAsync(this DbCommand cmd, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.CloseConnection)
         {
             cmd.SetParams(args);
             var connection = cmd.Connection;
@@ -29,7 +29,7 @@ namespace SV.Db
             return await cmd.ExecuteReaderAsync(behavior, cancellationToken);
         }
 
-        public static DbDataReader ExecuteReader(this DbConnection connection, string sql, object? args = null, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text)
+        public static DbDataReader ExecuteReader(this DbConnection connection, string sql, object? args = null, CommandBehavior behavior = CommandBehavior.CloseConnection, CommandType commandType = CommandType.Text)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
@@ -42,7 +42,7 @@ namespace SV.Db
             return cmd.ExecuteReader(behavior);
         }
 
-        public static async Task<DbDataReader> ExecuteReaderAsync(this DbConnection connection, string sql, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text)
+        public static async Task<DbDataReader> ExecuteReaderAsync(this DbConnection connection, string sql, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.CloseConnection, CommandType commandType = CommandType.Text)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
