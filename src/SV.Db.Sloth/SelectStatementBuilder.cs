@@ -6,6 +6,6 @@ namespace SV.Db.Sloth
     {
         internal readonly SelectStatement statement = new SelectStatement() { Limit = new LimitStatement() { Rows = 10 } };
 
-        public (string key, SelectStatement statement) Build() => ("demo", statement);
+        public SelectStatement Build() => statement;
     }
 }

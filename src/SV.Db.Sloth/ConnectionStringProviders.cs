@@ -1,4 +1,8 @@
-﻿namespace SV.Db
+﻿using SV.Db.Sloth.Attributes;
+using System.Collections.Frozen;
+using System.Reflection;
+
+namespace SV.Db
 {
     public class ConnectionStringProviders : ConnectionStringProvider, IConnectionFactory
     {
@@ -27,6 +31,24 @@
                     return item.Get(key);
             }
             throw new KeyNotFoundException(key);
+        }
+
+        public DbEntityInfo GetDbEntityInfo<T>()
+        {
+            var c = DbEntityInfo<T>.Cache;
+            if (c == null)
+            {
+                c = new DbEntityInfo();
+                var t = typeof(T);
+                c.DbKey = t.GetCustomAttribute<DbAttribute>()?.Key;
+                c.Fields = t.GetMembers().Where(i => i.MemberType == MemberTypes.Property || i.MemberType == MemberTypes.Field)
+                    .Select(DbEntityInfo.ConvertMember)
+                    .Where(i => i != null)
+                    .ToFrozenDictionary(i => i.Name, i => i, StringComparer.OrdinalIgnoreCase);
+                DbEntityInfo<T>.Cache = c;
+            }
+
+            return c;
         }
     }
 }

@@ -17,11 +17,12 @@ namespace Microsoft.AspNetCore.Mvc
         {
             var factory = controller.HttpContext.RequestServices.GetRequiredService<IConnectionFactory>();
             var ps = controller.GetQueryParams();
-            string key;
+            DbEntityInfo info;
             SelectStatement statement;
             try
             {
-                (key, statement) = From.ParseByParams<T>(ps).Build();
+                info = factory.GetDbEntityInfo<T>();
+                statement = From.ParseByParams<T>(ps).Build();
             }
             catch (Exception ex)
             {
@@ -30,18 +31,19 @@ namespace Microsoft.AspNetCore.Mvc
                     error = ex.Message
                 });
             }
-            return factory.ExecuteQuery<dynamic>(key, statement);
+            return factory.ExecuteQuery<dynamic>(info, statement);
         }
 
         public static async Task<object> QueryByParamsAsync<T>(this ControllerBase controller, CancellationToken cancellationToken = default)
         {
             var factory = controller.HttpContext.RequestServices.GetRequiredService<IConnectionFactory>();
             var ps = controller.GetQueryParams();
-            string key;
+            DbEntityInfo info;
             SelectStatement statement;
             try
             {
-                (key, statement) = From.ParseByParams<T>(ps).Build();
+                info = factory.GetDbEntityInfo<T>();
+                statement = From.ParseByParams<T>(ps).Build();
             }
             catch (Exception ex)
             {
@@ -51,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc
                 });
             }
 
-            return await factory.ExecuteQueryAsync<dynamic>(key, statement, cancellationToken);
+            return await factory.ExecuteQueryAsync<dynamic>(info, statement, cancellationToken);
         }
     }
 }

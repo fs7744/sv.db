@@ -8,8 +8,10 @@ namespace SV.Db
     {
         DbConnection GetConnection(string key);
 
-        PageResult<T> ExecuteQuery<T>(string key, SelectStatement statement);
+        PageResult<T> ExecuteQuery<T>(DbEntityInfo info, SelectStatement statement);
 
-        Task<PageResult<T>> ExecuteQueryAsync<T>(string key, SelectStatement statement, CancellationToken cancellationToken = default);
+        Task<PageResult<T>> ExecuteQueryAsync<T>(DbEntityInfo info, SelectStatement statement, CancellationToken cancellationToken = default);
+
+        public DbEntityInfo GetDbEntityInfo<T>();
     }
 }

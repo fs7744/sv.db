@@ -13,16 +13,16 @@ namespace SV.Db
 
         public abstract bool ContainsKey(string key);
 
-        public PageResult<T> ExecuteQuery<T>(string key, SelectStatement statement)
+        public PageResult<T> ExecuteQuery<T>(DbEntityInfo info, SelectStatement statement)
         {
-            (string dbType, string connectionString) = Get(key);
+            (string dbType, string connectionString) = Get(info.DbKey);
             var p = ConnectionFactory.GetProvider(dbType);
             return p.ExecuteQuery<T>(connectionString, statement);
         }
 
-        public Task<PageResult<T>> ExecuteQueryAsync<T>(string key, SelectStatement statement, CancellationToken cancellationToken = default)
+        public Task<PageResult<T>> ExecuteQueryAsync<T>(DbEntityInfo info, SelectStatement statement, CancellationToken cancellationToken = default)
         {
-            (string dbType, string connectionString) = Get(key);
+            (string dbType, string connectionString) = Get(info.DbKey);
             var p = ConnectionFactory.GetProvider(dbType);
             return p.ExecuteQueryAsync<T>(connectionString, statement, cancellationToken);
         }
