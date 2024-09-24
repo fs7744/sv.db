@@ -31,12 +31,15 @@ namespace RestfulSample.Controllers
         public async Task<object> OldWay()
         {
             var a = factory.GetConnection(StaticInfo.Demo);
-            var dd = await a.ExecuteQueryAsync<string>("""
+            using var dd = await a.ExecuteReaderAsync("""
+    SELECT count(1)
+    FROM Weather;
     SELECT *
-    FROM Weather
-    """).ToListAsync();
-
-            return dd;
+    FROM Weather;
+    """);
+            var t = await dd.QueryFirstOrDefaultAsync<int>();
+            var r = await dd.QueryAsync<string>().ToListAsync();
+            return new { TotalCount = t, Rows = r };
         }
     }
 

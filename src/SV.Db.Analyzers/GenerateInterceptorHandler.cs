@@ -13,7 +13,7 @@ namespace SV.Db.Analyzers
         internal static string GenerateCode(Dictionary<string, GeneratedMapping> map, Compilation compilation)
         {
             var kvs = map.Where(i => i.Value.NeedInterceptor).ToArray();
-            if(kvs.Length == 0 ) return string.Empty;
+            if (kvs.Length == 0) return string.Empty;
 
             return $@"
 namespace SV.Db
@@ -23,7 +23,6 @@ namespace SV.Db
         {string.Join("", kvs.SelectMany(i => i.Value.Sources.Select(j => (j, i))).GroupBy(i => (i.j.GeneratedArgs, i.j.GeneratedReturn, MethodName: i.j.Invocation.TargetMethod.ToDisplayString())).Select(i => GenerateCode(i, map, compilation)))}
     }}
 }}
-
 
 namespace System.Runtime.CompilerServices
 {{
@@ -91,10 +90,12 @@ namespace System.Runtime.CompilerServices
                 case "ExecuteReaderAsync":
                     GenerateExecuteReaderMethod(sb, vv.kv.Value, op, vv.state.IsAsync);
                     break;
+
                 case "QueryFirstOrDefault":
                 case "QueryFirstOrDefaultAsync":
                     GenerateQueryFirstOrDefaultMethod(sb, vv.kv.Value, vv.state.IsAsync);
                     break;
+
                 case "Query":
                 case "QueryAsync":
                     GenerateQueryMethod(sb, vv.kv.Value, vv.state.IsAsync);
@@ -229,7 +230,7 @@ namespace System.Runtime.CompilerServices
 
         private static void GenerateQueryFirstOrDefaultMethod(StringBuilder sb, GeneratedMapping value, bool isAsync)
         {
-            sb.AppendLine(isAsync 
+            sb.AppendLine(isAsync
                 ? $"return {value.ClassName}.Instance.DbDataReaderQueryFirstOrDefaultAsync(reader, cancellationToken);"
                 : $"return {value.ClassName}.Instance.DbDataReaderQueryFirstOrDefault(reader);");
         }
@@ -244,19 +245,19 @@ namespace System.Runtime.CompilerServices
         private static void GenerateExecuteReaderMethod(StringBuilder sb, GeneratedMapping value, IInvocationOperation op, bool isAsync)
         {
             var isDbConnection = op.IsDbConnection();
-            if (isDbConnection) 
+            if (isDbConnection)
             {
                 sb.AppendLine("var cmd = connection.CreateCommand();");
                 sb.AppendLine("cmd.CommandText = sql;");
                 sb.AppendLine("cmd.CommandType = commandType;");
             }
             sb.AppendLine($"{value.ClassName}.Instance.SetParams(cmd, args);");
-            sb.AppendLine(isAsync 
-                ? "return cmd.ExecuteReaderAsync(behavior, cancellationToken);"
-                : "return cmd.ExecuteReader(behavior);");
+            sb.AppendLine(isAsync
+                ? "return CommandExtensions.DbDataReaderAsync(cmd, behavior, cancellationToken);"
+                : "var c = cmd.Connection;if (c.State != ConnectionState.Open){c.Open();} return cmd.ExecuteReader(behavior);");
         }
 
-        private static void GenerateSetParamsMethod(StringBuilder sb,GeneratedMapping value)
+        private static void GenerateSetParamsMethod(StringBuilder sb, GeneratedMapping value)
         {
             sb.AppendLine($"{value.ClassName}.Instance.SetParams(cmd, args);");
         }

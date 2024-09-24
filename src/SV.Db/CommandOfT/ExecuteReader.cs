@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Data.Common;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace SV.Db
 {
@@ -9,13 +10,23 @@ namespace SV.Db
         public static DbDataReader ExecuteReader(this DbCommand cmd, object? args = null, CommandBehavior behavior = CommandBehavior.Default)
         {
             cmd.SetParams(args);
+            var connection = cmd.Connection;
+            if (connection.State != ConnectionState.Open)
+            {
+                connection.Open();
+            }
             return cmd.ExecuteReader(behavior);
         }
 
-        public static Task<DbDataReader> ExecuteReaderAsync(this DbCommand cmd, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default)
+        public static async Task<DbDataReader> ExecuteReaderAsync(this DbCommand cmd, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default)
         {
             cmd.SetParams(args);
-            return cmd.ExecuteReaderAsync(behavior, cancellationToken);
+            var connection = cmd.Connection;
+            if (connection.State != ConnectionState.Open)
+            {
+                await connection.OpenAsync(cancellationToken);
+            }
+            return await cmd.ExecuteReaderAsync(behavior, cancellationToken);
         }
 
         public static DbDataReader ExecuteReader(this DbConnection connection, string sql, object? args = null, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text)
@@ -24,16 +35,24 @@ namespace SV.Db
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
             cmd.SetParams(args);
+            if (connection.State != ConnectionState.Open)
+            {
+                connection.Open();
+            }
             return cmd.ExecuteReader(behavior);
         }
 
-        public static Task<DbDataReader> ExecuteReaderAsync(this DbConnection connection, string sql, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text)
+        public static async Task<DbDataReader> ExecuteReaderAsync(this DbConnection connection, string sql, object? args = null, CancellationToken cancellationToken = default, CommandBehavior behavior = CommandBehavior.Default, CommandType commandType = CommandType.Text)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
             cmd.SetParams(args);
-            return cmd.ExecuteReaderAsync(behavior, cancellationToken);
+            if (connection.State != ConnectionState.Open)
+            {
+                await connection.OpenAsync(cancellationToken);
+            }
+            return await cmd.ExecuteReaderAsync(behavior, cancellationToken);
         }
 
         public static T? QueryFirstOrDefault<T>(this DbDataReader reader)
@@ -45,6 +64,17 @@ namespace SV.Db
                 return r;
             }
             return default;
+        }
+
+        [MethodImpl(DBUtils.Optimization)]
+        public static async Task<DbDataReader> DbDataReaderAsync(DbCommand cmd, CommandBehavior behavior, CancellationToken cancellationToken = default)
+        {
+            var connection = cmd.Connection;
+            if (connection.State != ConnectionState.Open)
+            {
+                await connection.OpenAsync(cancellationToken);
+            }
+            return await cmd.ExecuteReaderAsync(behavior, cancellationToken); ;
         }
 
         [MethodImpl(DBUtils.Optimization)]
@@ -126,7 +156,7 @@ namespace SV.Db
                 {
                     yield return item;
                 }
-                
+
                 await reader.NextResultAsync(cancellationToken);
             }
         }
