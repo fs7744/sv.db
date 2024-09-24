@@ -8,8 +8,8 @@ namespace SV.Db
     {
         DbConnection Create(string connectionString);
 
-        PageResult<T> ExecuteQuery<T>(string connectionString, SelectStatement statement);
+        PageResult<T> ExecuteQuery<T>(string connectionString, DbEntityInfo info, SelectStatement statement);
 
-        Task<PageResult<T>> ExecuteQueryAsync<T>(string connectionString, SelectStatement statement, CancellationToken cancellationToken = default);
+        Task<PageResult<T>> ExecuteQueryAsync<T>(string connectionString, DbEntityInfo info, SelectStatement statement, CancellationToken cancellationToken = default);
     }
 }

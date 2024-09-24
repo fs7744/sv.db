@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc
             try
             {
                 info = factory.GetDbEntityInfo<T>();
-                statement = From.ParseByParams<T>(ps).Build();
+                statement = From.ParseByParams<T>(ps).Build(info);
             }
             catch (Exception ex)
             {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc
             try
             {
                 info = factory.GetDbEntityInfo<T>();
-                statement = From.ParseByParams<T>(ps).Build();
+                statement = From.ParseByParams<T>(ps).Build(info);
             }
             catch (Exception ex)
             {

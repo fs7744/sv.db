@@ -11,12 +11,12 @@ namespace SV.Db.Sloth.MySql
             return new SqlConnection(connectionString);
         }
 
-        public PageResult<T> ExecuteQuery<T>(string connectionString, SelectStatement statement)
+        public PageResult<T> ExecuteQuery<T>(string connectionString, DbEntityInfo info, SelectStatement statement)
         {
             throw new NotImplementedException();
         }
 
-        public Task<PageResult<T>> ExecuteQueryAsync<T>(string connectionString, SelectStatement statement, CancellationToken cancellationToken = default)
+        public Task<PageResult<T>> ExecuteQueryAsync<T>(string connectionString, DbEntityInfo info, SelectStatement statement, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

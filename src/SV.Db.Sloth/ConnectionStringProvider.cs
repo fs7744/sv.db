@@ -17,14 +17,14 @@ namespace SV.Db
         {
             (string dbType, string connectionString) = Get(info.DbKey);
             var p = ConnectionFactory.GetProvider(dbType);
-            return p.ExecuteQuery<T>(connectionString, statement);
+            return p.ExecuteQuery<T>(connectionString, info, statement);
         }
 
         public Task<PageResult<T>> ExecuteQueryAsync<T>(DbEntityInfo info, SelectStatement statement, CancellationToken cancellationToken = default)
         {
             (string dbType, string connectionString) = Get(info.DbKey);
             var p = ConnectionFactory.GetProvider(dbType);
-            return p.ExecuteQueryAsync<T>(connectionString, statement, cancellationToken);
+            return p.ExecuteQueryAsync<T>(connectionString, info, statement, cancellationToken);
         }
 
         public abstract (string dbType, string connectionString) Get(string key);
