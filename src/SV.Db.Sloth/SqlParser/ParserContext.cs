@@ -69,6 +69,20 @@
             }
         }
 
+        public bool TryPeek(int index, out char character)
+        {
+            if (index >= 0 && index < data.Length)
+            {
+                character = data[index];
+                return true;
+            }
+            else
+            {
+                character = char.MaxValue;
+                return false;
+            }
+        }
+
         public char Peek()
         {
             return data[index];
@@ -76,14 +90,27 @@
 
         public string GetSomeChars()
         {
-            if (HasNext)
+            return GetSomeChars(index);
+        }
+
+        public string GetSomeChars(int index)
+        {
+            if (index >= 0 && index < data.Length)
             {
-                return data.Substring(index, Math.Min(5, data.Length - index - 1));
+                return data.Substring(index, Math.Min(50, data.Length - index));
             }
             else
             {
                 return string.Empty;
             }
+        }
+
+        public void Reset(Token token)
+        {
+            Line = token.StartLine;
+            Column = token.StartColumn;
+            index = token.StartIndex;
+            HasNext = index < data.Length;
         }
     }
 }

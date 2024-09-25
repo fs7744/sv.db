@@ -11,17 +11,50 @@ namespace UT.SqlParser
     public class SqlStatementParserTest
     {
         [Fact]
-        public void TestParse()
+        public void TestParseToken()
         {
-            TestCondition("", condition =>
+            TestToken("", tokens =>
             {
-                Assert.Null(condition);
+                Assert.Empty(tokens);
             });
         }
 
-        private void TestCondition(string v, Action<ConditionStatement> action)
+        [Theory]
+        [InlineData("1", "1")]
+        [InlineData(" 2 ", "2")]
+        [InlineData(" -3 ", "-3")]
+        [InlineData("-4", "-4")]
+        [InlineData("-5.6", "-5.6")]
+        [InlineData("0.789", "0.789")]
+        [InlineData("\r\t\n\r\t\n0.789   \r\t\n\r\t\n", "0.789")]
+        public void ShouldParseNumber(string test, string expected)
         {
-            action(SqlStatementParser.ParseWhereConditionStatement(v));
+            TestToken(test, tokens =>
+            {
+                Assert.Single(tokens);
+                var t = tokens[0];
+                Assert.Equal(TokenType.Number, t.Type);
+                Assert.Equal(expected, t.GetValue());
+            });
+        }
+
+        [Theory]
+        [InlineData("--1", "Can't parse near by --1 (Line:0,Col:0)")]
+        [InlineData(" 2.3.4 ", "Can't parse near by 2.3.4  (Line:0,Col:1)")]
+        public void ShouldNotParseNumber(string test, string expected)
+        {
+            var ex = Assert.Throws<ParserExecption>(() => 
+            {
+                TestToken(test, tokens =>
+                {
+                });
+            });
+            Assert.Equal(expected, ex.Message);
+        }
+
+        private void TestToken(string v, Action<List<Token>> action)
+        {
+            action(SqlStatementParser.ParseTokens(v).ToList());
         }
     }
 }

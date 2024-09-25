@@ -1,5 +1,6 @@
 ﻿using SV.Db.Sloth.Statements;
 using System;
+using System.Collections;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,14 +15,19 @@ namespace SV.Db.Sloth.SqlParser
 
         static SqlStatementParser()
         {
-            parsers = new ITokenParser[] { new IngoreTokenParser() };
+            parsers = new ITokenParser[] { new IngoreTokenParser(), new NumberTokenParser() };
         }
 
         public static ConditionStatement ParseWhereConditionStatement(string sql)
         {
-            var context = new ParserContext(sql);
-            var statements = Tokenize(context).ToList();
+            var tokens = ParseTokens(sql);
             return null;
+        }
+
+        public static IEnumerable<Token> ParseTokens(string sql)
+        {
+            var context = new ParserContext(sql);
+            return Tokenize(context);
         }
 
         public static IEnumerable<Token> Tokenize(ParserContext context)

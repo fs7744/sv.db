@@ -1,5 +1,4 @@
-﻿using SV.Db.Sloth.Statements;
-using System.Collections.Frozen;
+﻿using System.Collections.Frozen;
 
 namespace SV.Db.Sloth.SqlParser
 {
@@ -12,7 +11,8 @@ namespace SV.Db.Sloth.SqlParser
             t = null;
             if (context.TryPeek(out var c) && chars.Contains(c))
             {
-                return context.TryNext(out c);
+                context.TryNext(out c);
+                return true;
             }
             return false;
         }
