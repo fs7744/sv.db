@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Primitives;
+using SV.Db.Sloth.SqlParser;
 using SV.Db.Sloth.Statements;
 using System.Collections.Frozen;
 using System.Text.Json;
@@ -26,8 +27,8 @@ namespace SV.Db.Sloth
 
         private static void ParseWhere<T>(IDictionary<string, StringValues> ps, SelectStatementBuilder<T> builder)
         {
-            // todo 复杂条件转换
             var where = new WhereStatement();
+            where.Condition = ParseComplexWhere(ps);
             foreach (var kv in ps)
             {
                 foreach (var v in kv.Value)
@@ -46,6 +47,20 @@ namespace SV.Db.Sloth
             if (where.Condition != null)
             {
                 builder.statement.Where = where;
+            }
+        }
+
+        private static ConditionStatement ParseComplexWhere(IDictionary<string, StringValues> ps)
+        {
+            if (ps.TryGetValue("Where", out var w))
+            {
+                ps.Remove("Where");
+                var c = string.Join(" AND ", w.Select(i => $" ({i}) "));
+                return string.IsNullOrWhiteSpace(c) ? null : SqlStatementParser.ParseWhereConditionStatement(c);
+            }
+            else
+            {
+                return null;
             }
         }
 
