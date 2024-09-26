@@ -20,6 +20,12 @@ namespace Microsoft.AspNetCore.Mvc
             return controller.HttpContext.Request.Query.ToDictionary(StringComparer.OrdinalIgnoreCase);
         }
 
+        public static async ValueTask<IDictionary<string, StringValues>> GetQueryParamsByBody(this ControllerBase controller, CancellationToken cancellationToken = default)
+        {
+            return (await System.Text.Json.JsonSerializer.DeserializeAsync<Dictionary<string, string>>(controller.HttpContext.Request.Body, options: null, cancellationToken))
+                .ToDictionary(i => i.Key, i => new StringValues( i.Value), StringComparer.OrdinalIgnoreCase);
+        }
+
         public static object QueryByParams<T>(this ControllerBase controller)
         {
             var factory = controller.HttpContext.RequestServices.GetRequiredService<IConnectionFactory>();
