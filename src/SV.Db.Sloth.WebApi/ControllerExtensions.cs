@@ -3,11 +3,18 @@ using Microsoft.Extensions.Primitives;
 using SV.Db;
 using SV.Db.Sloth;
 using SV.Db.Sloth.Statements;
+using System.Web;
 
 namespace Microsoft.AspNetCore.Mvc
 {
     public static class ControllerExtensions
     {
+        public static string ParseToQueryString(this SelectStatement statement)
+        {
+            var dict = From.ParseToQueryParams(statement);
+            return string.Join("&", dict.Select(i => $"{i.Key}={HttpUtility.UrlPathEncode(i.Value)}"));
+        }
+
         public static IDictionary<string, StringValues> GetQueryParams(this ControllerBase controller)
         {
             return controller.HttpContext.Request.Query.ToDictionary(StringComparer.OrdinalIgnoreCase);

@@ -9,7 +9,7 @@ namespace SV.Db.Sloth.SqlParser
 
         static SqlStatementParser()
         {
-            statementParsers = new IStatementParser[] { new ValueStatementParser() };
+            statementParsers = new IStatementParser[] { new ValueStatementParser(), new OperaterStatementParser() };
             tokenParsers = new ITokenParser[] { new IngoreTokenParser(), new StringTokenParser(), new NumberTokenParser(), new WordTokenParser(), new SignTokenParser() };
         }
 
@@ -20,7 +20,13 @@ namespace SV.Db.Sloth.SqlParser
 
         public static IEnumerable<Statement> ParseStatements(string sql)
         {
-            var context = new StatementParserContext(Tokenize(sql).ToArray());
+            var context = new StatementParserContext(Tokenize(sql).ToArray(), ParseStatements);
+            ParseStatements(context);
+            return context.Stack;
+        }
+
+        private static void ParseStatements(StatementParserContext context)
+        {
             while (context.HasToken())
             {
                 bool matched = false;
@@ -38,7 +44,6 @@ namespace SV.Db.Sloth.SqlParser
                     throw new ParserExecption($"Can't parse near by {c.GetValue()} (Line:{c.StartLine},Col:{c.StartColumn})");
                 }
             }
-            return context.Stack;
         }
 
         public static IEnumerable<Token> Tokenize(string sql)

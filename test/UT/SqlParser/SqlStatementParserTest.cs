@@ -1,4 +1,5 @@
-﻿using SV.Db.Sloth.SqlParser;
+﻿using SV.Db.Sloth;
+using SV.Db.Sloth.SqlParser;
 using SV.Db.Sloth.Statements;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,8 @@ namespace UT.SqlParser
         [InlineData("true", "tRue", typeof(BooleanValueStatement))]
         [InlineData("false", "false", typeof(BooleanValueStatement))]
         [InlineData("xx", "xx", typeof(FieldValueStatement))]
+        [InlineData("xx = s", " xx = s ", typeof(OperaterStatement))]
+        [InlineData("xx != 'sdsd != s'", " xx != 'sdsd != s' ", typeof(OperaterStatement))]
         public void ShouldParse(string test, string expected, Type type)
         {
             TestStatement(test, statements =>
@@ -40,6 +43,12 @@ namespace UT.SqlParser
                 else if (t is FieldValueStatement f)
                 {
                     Assert.Equal(expected, f.Field);
+                }
+                else if (t is OperaterStatement op)
+                {
+                    var sb = new StringBuilder();
+                    From.ParseConditionStatementToQuery(sb, op);
+                    Assert.Equal(expected, sb.ToString());
                 }
             });
         }
