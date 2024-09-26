@@ -1,107 +1,53 @@
 ﻿using SV.Db.Sloth.SqlParser;
+using SV.Db.Sloth.Statements;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace UT.SqlParser
 {
-    public class TokenParserTest
+    public class SqlStatementParserTest
     {
-        [Fact]
-        public void TestParseToken()
-        {
-            TestToken("", tokens =>
-            {
-                Assert.Empty(tokens);
-            });
-        }
-
         [Theory]
-        [InlineData("1", "1")]
-        [InlineData(" 2 ", "2")]
-        [InlineData(" -3 ", "-3")]
-        [InlineData("-4", "-4")]
-        [InlineData("-5.6", "-5.6")]
-        [InlineData("0.789", "0.789")]
-        [InlineData("\r\t\n\r\t\n0.789   \r\t\n\r\t\n", "0.789")]
-        public void ShouldParseNumber(string test, string expected)
+        [InlineData("1", "1", typeof(NumberValueStatement))]
+        [InlineData("1.3", "1.3", typeof(NumberValueStatement))]
+        [InlineData("-77.3", "-77.3", typeof(NumberValueStatement))]
+        [InlineData("'sdd sd'", "sdd sd", typeof(StringValueStatement))]
+        [InlineData("true", "tRue", typeof(BooleanValueStatement))]
+        [InlineData("false", "false", typeof(BooleanValueStatement))]
+        [InlineData("xx", "xx", typeof(FieldValueStatement))]
+        public void ShouldParse(string test, string expected, Type type)
         {
-            TestToken(test, tokens =>
+            TestStatement(test, statements =>
             {
-                Assert.Single(tokens);
-                var t = tokens[0];
-                Assert.Equal(TokenType.Number, t.Type);
-                Assert.Equal(expected, t.GetValue());
-            });
-        }
-
-        [Theory]
-        [InlineData(" 2.3.4 ", "Can't parse near by 2.3.4  (Line:0,Col:1)")]
-        public void ShouldNotParseNumber(string test, string expected)
-        {
-            var ex = Assert.Throws<ParserExecption>(() =>
-            {
-                TestToken(test, tokens =>
+                Assert.Single(statements);
+                var t = statements[0];
+                Assert.Equal(type, t.GetType());
+                if (t is NumberValueStatement nv)
                 {
-                });
-            });
-            Assert.Equal(expected, ex.Message);
-        }
-
-        [Theory]
-        [InlineData("k", "k")]
-        [InlineData(" k1 ", "k1")]
-        public void ShouldParseWord(string test, string expected)
-        {
-            TestToken(test, tokens =>
-            {
-                Assert.Single(tokens);
-                var t = tokens[0];
-                Assert.Equal(TokenType.Word, t.Type);
-                Assert.Equal(expected, t.GetValue());
-            });
-        }
-
-        [Theory]
-        [InlineData(" k$1 ", "k,$,1")]
-        [InlineData("-1-", "-1,-")]
-        [InlineData("-1<=3", "-1,<=,3")]
-        [InlineData("-1 <= 3", "-1,<=,3")]
-        [InlineData("-1 < = 3", "-1,<,=,3")]
-        [InlineData("-1 =< 3", "-1,=,<,3")]
-        [InlineData("-1 => 3", "-1,=,>,3")]
-        [InlineData("(-1 = 3) and (5 = 4)", "(,-1,=,3,),and,(,5,=,4,)")]
-        [InlineData(" '\r\t's\\'  gdfdg'     ", "\r\t,s\\,  gdfdg")]
-        public void ShouldParseSign(string test, string expected)
-        {
-            TestToken(test, tokens =>
-            {
-                var s = expected.Split(",");
-                Assert.Equal(s, tokens.Select(i => i.GetValue().ToString()));
-                Assert.Equal(s.Length, tokens.Count);
-                for (var i = 0; i < s.Length; i++)
+                    Assert.Equal(expected, nv.Value.ToString());
+                }
+                else if (t is StringValueStatement s)
                 {
-                    Assert.Equal(s[i], tokens[i].GetValue());
+                    Assert.Equal(expected, s.Value);
+                }
+                else if (t is BooleanValueStatement b)
+                {
+                    Assert.Equal(bool.Parse(expected), b.Value);
+                }
+                else if (t is FieldValueStatement f)
+                {
+                    Assert.Equal(expected, f.Field);
                 }
             });
         }
 
-        [Theory]
-        [InlineData("'s'", "s")]
-        [InlineData(" '\r\t\\'s\\'  gdfdg'     ", "\r\t\'s\'  gdfdg")]
-        [InlineData(" \"\r\t's'  gdfdg\\\"    \\\" ", "\r\t's'  gdfdg\"    \"")]
-        public void ShouldParseString(string test, string expected)
+        private void TestStatement(string v, Action<Statement[]> action)
         {
-            TestToken(test, tokens =>
-            {
-                Assert.Single(tokens);
-                var t = tokens[0];
-                Assert.Equal(TokenType.String, t.Type);
-                Assert.Equal(expected, t.GetValue());
-            });
-        }
-
-        private void TestToken(string v, Action<List<Token>> action)
-        {
-            var tokens = SqlStatementParser.Tokenize(v);
-            action(tokens.ToList());
+            var statements = SqlStatementParser.ParseStatements(v).ToArray();
+            action(statements);
         }
     }
 }

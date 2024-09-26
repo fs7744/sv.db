@@ -1,12 +1,4 @@
 ﻿using SV.Db.Sloth.Statements;
-using System;
-using System.Collections;
-using System.Collections.Frozen;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace SV.Db.Sloth.SqlParser
 {
@@ -17,7 +9,7 @@ namespace SV.Db.Sloth.SqlParser
 
         static SqlStatementParser()
         {
-            statementParsers = new IStatementParser[] { };
+            statementParsers = new IStatementParser[] { new ValueStatementParser() };
             tokenParsers = new ITokenParser[] { new IngoreTokenParser(), new StringTokenParser(), new NumberTokenParser(), new WordTokenParser(), new SignTokenParser() };
         }
 
@@ -31,12 +23,19 @@ namespace SV.Db.Sloth.SqlParser
             var context = new StatementParserContext(Tokenize(sql).ToArray());
             while (context.HasToken())
             {
+                bool matched = false;
                 foreach (var parser in statementParsers)
                 {
                     if (parser.TryParse(context))
                     {
+                        matched = true;
                         break;
                     }
+                }
+                if (!matched && context.HasToken())
+                {
+                    var c = context.Current;
+                    throw new ParserExecption($"Can't parse near by {c.GetValue()} (Line:{c.StartLine},Col:{c.StartColumn})");
                 }
             }
             return context.Stack;
