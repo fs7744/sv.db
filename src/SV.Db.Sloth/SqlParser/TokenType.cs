@@ -4,6 +4,7 @@
     {
         Number,
         Sign,
-        Word
+        Word,
+        String
     }
 }

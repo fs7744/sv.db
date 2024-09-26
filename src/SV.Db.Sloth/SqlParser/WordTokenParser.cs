@@ -8,7 +8,7 @@ namespace SV.Db.Sloth.SqlParser
         { Symbols.ParenClose, Symbols.ParenOpen, Symbols.Plus, Symbols.Divide, Symbols.Dot, Symbols.LessThan, Symbols.GreaterThan, Symbols.Equal,
             Symbols.Comma, Symbols.Semicolon, Symbols.Minus, Symbols.ExclamationMark, Symbols.Tilde,Symbols.Pipe, Symbols.Backtick, Symbols.Num, Symbols.Dollar,
             Symbols.Asterisk, Symbols.Caret,Symbols.QuestionMark, Symbols.Colon, Symbols.Percent, Symbols.SquareBracketClose, Symbols.SquareBracketOpen,
-            Symbols.CurlyBracketClose, Symbols.CurlyBracketOpen,
+            Symbols.CurlyBracketClose, Symbols.CurlyBracketOpen, Symbols.SingleQuote, Symbols.DoubleQuote,
         }).ToFrozenSet();
 
         public bool TryTokenize(ParserContext context, out Token t)

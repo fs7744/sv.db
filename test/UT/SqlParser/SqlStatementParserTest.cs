@@ -68,16 +68,33 @@ namespace UT.SqlParser
         [InlineData("-1 =< 3", "-1,=,<,3")]
         [InlineData("-1 => 3", "-1,=,>,3")]
         [InlineData("(-1 = 3) and (5 = 4)", "(,-1,=,3,),and,(,5,=,4,)")]
+        [InlineData(" '\r\t's\\'  gdfdg'     ", "\r\t,s\\,  gdfdg")]
         public void ShouldParseSign(string test, string expected)
         {
             TestToken(test, tokens =>
             {
                 var s = expected.Split(",");
+                Assert.Equal(s, tokens.Select(i => i.GetValue().ToString()));
                 Assert.Equal(s.Length, tokens.Count);
                 for (var i = 0; i < s.Length; i++)
                 {
                     Assert.Equal(s[i], tokens[i].GetValue());
                 }
+            });
+        }
+
+        [Theory]
+        [InlineData("'s'", "s")]
+        [InlineData(" '\r\t\\'s\\'  gdfdg'     ", "\r\t\'s\'  gdfdg")]
+        [InlineData(" \"\r\t's'  gdfdg\\\"    \\\" ", "\r\t's'  gdfdg\"    \"")]
+        public void ShouldParseString(string test, string expected)
+        {
+            TestToken(test, tokens =>
+            {
+                Assert.Single(tokens);
+                var t = tokens[0];
+                Assert.Equal(TokenType.String, t.Type);
+                Assert.Equal(expected, t.GetValue());
             });
         }
 

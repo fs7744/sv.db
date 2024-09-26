@@ -1,8 +1,5 @@
-﻿
-
-namespace SV.Db.Sloth.SqlParser
+﻿namespace SV.Db.Sloth.SqlParser
 {
-
     public class Token
     {
         public TokenType Type { get; set; }
@@ -38,7 +35,14 @@ namespace SV.Db.Sloth.SqlParser
 
         public ReadOnlySpan<char> GetValue()
         {
-            return Context.Data.AsSpan(StartIndex, Count);
+            var r = Context.Data.AsSpan(StartIndex, Count);
+            if (Type == TokenType.String)
+            {
+                return r[0] == Symbols.SingleQuote
+                    ? r[1..^1].ToString().Replace("\\'", "'")
+                    : r[1..^1].ToString().Replace("\\\"", "\"");
+            }
+            return r;
         }
 
         public override string ToString()
