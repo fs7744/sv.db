@@ -1,10 +1,4 @@
 ﻿using SV.Db.Sloth.SqlParser;
-using SV.Db.Sloth.Statements;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UT.SqlParser
 {
@@ -39,7 +33,6 @@ namespace UT.SqlParser
         }
 
         [Theory]
-        //[InlineData("-1-", "Can't parse near by --1 (Line:0,Col:0)")]
         [InlineData(" 2.3.4 ", "Can't parse near by 2.3.4  (Line:0,Col:1)")]
         public void ShouldNotParseNumber(string test, string expected)
         {
@@ -55,7 +48,6 @@ namespace UT.SqlParser
         [Theory]
         [InlineData("k", "k")]
         [InlineData(" k1 ", "k1")]
-        [InlineData(" k$1 ", "k$1")]
         public void ShouldParseWord(string test, string expected)
         {
             TestToken(test, tokens =>
@@ -64,6 +56,28 @@ namespace UT.SqlParser
                 var t = tokens[0];
                 Assert.Equal(TokenType.Word, t.Type);
                 Assert.Equal(expected, t.GetValue());
+            });
+        }
+
+        [Theory]
+        [InlineData(" k$1 ", "k,$,1")]
+        [InlineData("-1-", "-1,-")]
+        [InlineData("-1<=3", "-1,<=,3")]
+        [InlineData("-1 <= 3", "-1,<=,3")]
+        [InlineData("-1 < = 3", "-1,<,=,3")]
+        [InlineData("-1 =< 3", "-1,=,<,3")]
+        [InlineData("-1 => 3", "-1,=,>,3")]
+        [InlineData("(-1 = 3) and (5 = 4)", "(,-1,=,3,),and,(,5,=,4,)")]
+        public void ShouldParseSign(string test, string expected)
+        {
+            TestToken(test, tokens =>
+            {
+                var s = expected.Split(",");
+                Assert.Equal(s.Length, tokens.Count);
+                for (var i = 0; i < s.Length; i++)
+                {
+                    Assert.Equal(s[i], tokens[i].GetValue());
+                }
             });
         }
 

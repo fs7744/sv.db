@@ -3,7 +3,7 @@
     public enum TokenType
     {
         Number,
-        Keyword,
+        Sign,
         Word
     }
 }

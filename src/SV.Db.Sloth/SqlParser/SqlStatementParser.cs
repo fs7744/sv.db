@@ -15,7 +15,7 @@ namespace SV.Db.Sloth.SqlParser
 
         static SqlStatementParser()
         {
-            parsers = new ITokenParser[] { new IngoreTokenParser(), new NumberTokenParser(), new WordTokenParser() };
+            parsers = new ITokenParser[] { new IngoreTokenParser(), new NumberTokenParser(), new WordTokenParser(), new SignTokenParser() };
         }
 
         public static ConditionStatement ParseWhereConditionStatement(string sql)
@@ -42,6 +42,7 @@ namespace SV.Db.Sloth.SqlParser
                         matched = true;
                         if (t != null)
                             yield return t;
+                        break;
                     }
                 }
                 if (!matched)
