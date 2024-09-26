@@ -83,6 +83,20 @@
             }
         }
 
+        public bool TryPeek(int index, int count, out ReadOnlySpan<char> character)
+        {
+            if (index >= 0 && index < data.Length)
+            {
+                character = data.AsSpan(index, count);
+                return true;
+            }
+            else
+            {
+                character = ReadOnlySpan<char>.Empty;
+                return false;
+            }
+        }
+
         public char Peek()
         {
             return data[index];

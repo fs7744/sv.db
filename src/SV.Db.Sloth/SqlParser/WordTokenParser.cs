@@ -1,20 +1,32 @@
-﻿using System.Collections.Frozen;
-
-namespace SV.Db.Sloth.SqlParser
+﻿namespace SV.Db.Sloth.SqlParser
 {
-    public class IngoreTokenParser : ITokenParser
+    public class WordTokenParser : ITokenParser
     {
-        internal static readonly FrozenSet<char> chars = new char[] { Symbols.NewLine, Symbols.Whitespace, Symbols.CarriageReturn, Symbols.Tab, Symbols.EOF }.ToFrozenSet();
-
         public bool TryTokenize(ParserContext context, out Token t)
         {
+            if (context.TryPeek(out var c))
+            {
+                t = Token.New(context);
+                t.Type = TokenType.Word;
+                if (TryParseWord(t))
+                {
+                    return true;
+                }
+                t.Reset();
+            }
             t = null;
-            if (context.TryPeek(out var c) && chars.Contains(c))
+            return false;
+        }
+
+        private bool TryParseWord(Token t)
+        {
+            var context = t.Context;
+            while (context.TryPeek(out var c) && !IngoreTokenParser.chars.Contains(c))
             {
                 context.TryNext(out c);
-                return true;
             }
-            return false;
+            t.Count = context.Index - t.StartIndex;
+            return t.Count > 0;
         }
     }
 

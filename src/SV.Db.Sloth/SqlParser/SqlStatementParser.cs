@@ -15,7 +15,7 @@ namespace SV.Db.Sloth.SqlParser
 
         static SqlStatementParser()
         {
-            parsers = new ITokenParser[] { new IngoreTokenParser(), new NumberTokenParser() };
+            parsers = new ITokenParser[] { new IngoreTokenParser(), new NumberTokenParser(), new WordTokenParser() };
         }
 
         public static ConditionStatement ParseWhereConditionStatement(string sql)

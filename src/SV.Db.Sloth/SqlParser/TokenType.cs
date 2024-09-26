@@ -1,9 +1,9 @@
-﻿
-
-namespace SV.Db.Sloth.SqlParser
+﻿namespace SV.Db.Sloth.SqlParser
 {
     public enum TokenType
     {
-        Number
+        Number,
+        Keyword,
+        Word
     }
 }
