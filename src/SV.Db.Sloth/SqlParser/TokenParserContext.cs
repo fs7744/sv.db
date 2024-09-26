@@ -1,6 +1,6 @@
 ﻿namespace SV.Db.Sloth.SqlParser
 {
-    public class ParserContext
+    public class TokenParserContext
     {
         private string data;
         private int index;
@@ -23,7 +23,7 @@
             Column += 1;
         }
 
-        public ParserContext(string sql)
+        public TokenParserContext(string sql)
         {
             this.data = sql;
             this.HasNext = data.Length > 0;

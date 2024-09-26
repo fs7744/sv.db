@@ -5,37 +5,50 @@ using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SV.Db.Sloth.SqlParser
 {
     public static class SqlStatementParser
     {
-        private static readonly ITokenParser[] parsers;
+        private static readonly ITokenParser[] tokenParsers;
+        private static readonly IStatementParser[] statementParsers;
 
         static SqlStatementParser()
         {
-            parsers = new ITokenParser[] { new IngoreTokenParser(), new StringTokenParser(), new NumberTokenParser(), new WordTokenParser(), new SignTokenParser() };
+            statementParsers = new IStatementParser[] { };
+            tokenParsers = new ITokenParser[] { new IngoreTokenParser(), new StringTokenParser(), new NumberTokenParser(), new WordTokenParser(), new SignTokenParser() };
         }
 
         public static ConditionStatement ParseWhereConditionStatement(string sql)
         {
-            var tokens = ParseTokens(sql);
             return null;
         }
 
-        public static IEnumerable<Token> ParseTokens(string sql)
+        public static IEnumerable<Statement> ParseStatements(string sql)
         {
-            var context = new ParserContext(sql);
-            return Tokenize(context);
+            var context = new StatementParserContext(Tokenize(sql).ToArray());
+            while (context.HasToken())
+            {
+                foreach (var parser in statementParsers)
+                {
+                    if (parser.TryParse(context))
+                    {
+                        break;
+                    }
+                }
+            }
+            return context.Stack;
         }
 
-        public static IEnumerable<Token> Tokenize(ParserContext context)
+        public static IEnumerable<Token> Tokenize(string sql)
         {
+            var context = new TokenParserContext(sql);
             while (context.TryPeek(out var character))
             {
                 bool matched = false;
-                foreach (var parser in parsers)
+                foreach (var parser in tokenParsers)
                 {
                     if (parser.TryTokenize(context, out var t))
                     {

@@ -2,6 +2,6 @@
 {
     public interface ITokenParser
     {
-        bool TryTokenize(ParserContext context, out Token t);
+        bool TryTokenize(TokenParserContext context, out Token t);
     }
 }

@@ -3,7 +3,7 @@
     public class Token
     {
         public TokenType Type { get; set; }
-        public ParserContext Context { get; set; }
+        public TokenParserContext Context { get; set; }
         public int StartLine { get; set; }
         public int StartColumn { get; set; }
         public int EndLine { get; set; }
@@ -22,7 +22,7 @@
             EndColumn = Context.Column;
         }
 
-        public static Token New(ParserContext context)
+        public static Token New(TokenParserContext context)
         {
             return new Token()
             {

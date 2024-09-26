@@ -11,7 +11,7 @@ namespace SV.Db.Sloth.SqlParser
             Symbols.CurlyBracketClose, Symbols.CurlyBracketOpen, Symbols.SingleQuote, Symbols.DoubleQuote,
         }).ToFrozenSet();
 
-        public bool TryTokenize(ParserContext context, out Token t)
+        public bool TryTokenize(TokenParserContext context, out Token t)
         {
             if (context.TryPeek(out var c))
             {

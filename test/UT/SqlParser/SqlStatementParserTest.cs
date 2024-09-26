@@ -2,7 +2,7 @@
 
 namespace UT.SqlParser
 {
-    public class SqlStatementParserTest
+    public class TokenParserTest
     {
         [Fact]
         public void TestParseToken()
@@ -100,7 +100,8 @@ namespace UT.SqlParser
 
         private void TestToken(string v, Action<List<Token>> action)
         {
-            action(SqlStatementParser.ParseTokens(v).ToList());
+            var tokens = SqlStatementParser.Tokenize(v);
+            action(tokens.ToList());
         }
     }
 }
