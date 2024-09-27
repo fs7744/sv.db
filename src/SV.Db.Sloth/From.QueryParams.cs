@@ -116,7 +116,7 @@ namespace SV.Db.Sloth
             switch (os.Operater)
             {
                 case "is-null":
-                    sb.Append("IS NULL");
+                    sb.Append("= NULL");
                     break;
 
                 case "like":

@@ -20,7 +20,15 @@ namespace UT.SqlParser
         [InlineData("false", "false", typeof(BooleanValueStatement))]
         [InlineData("xx", "xx", typeof(FieldValueStatement))]
         [InlineData("xx = s", " xx = s ", typeof(OperaterStatement))]
+        [InlineData("xx <= 3", " xx <= 3 ", typeof(OperaterStatement))]
+        [InlineData("xx >= 3", " xx >= 3 ", typeof(OperaterStatement))]
+        [InlineData("xx > 3", " xx > 3 ", typeof(OperaterStatement))]
+        [InlineData("xx != 3", " xx != 3 ", typeof(OperaterStatement))]
         [InlineData("xx != 'sdsd != s'", " xx != 'sdsd != s' ", typeof(OperaterStatement))]
+        [InlineData("yy like '%s%'", " yy like '%s%' ", typeof(OperaterStatement))]
+        [InlineData("yy like 's%'", " yy like 's%' ", typeof(OperaterStatement))]
+        [InlineData("yy like '%s'", " yy like '%s' ", typeof(OperaterStatement))]
+        [InlineData("yy = null", " yy = NULL ", typeof(OperaterStatement))]
         public void ShouldParse(string test, string expected, Type type)
         {
             TestStatement(test, statements =>

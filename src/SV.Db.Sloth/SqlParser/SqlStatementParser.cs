@@ -9,7 +9,7 @@ namespace SV.Db.Sloth.SqlParser
 
         static SqlStatementParser()
         {
-            statementParsers = new IStatementParser[] { new ValueStatementParser(), new OperaterStatementParser() };
+            statementParsers = new IStatementParser[] { new OperaterStatementParser(), new ValueStatementParser() };
             tokenParsers = new ITokenParser[] { new IngoreTokenParser(), new StringTokenParser(), new NumberTokenParser(), new WordTokenParser(), new SignTokenParser() };
         }
 
