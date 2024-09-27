@@ -19,7 +19,9 @@ namespace UT.SqlParser
         [InlineData("true", "tRue", typeof(BooleanValueStatement))]
         [InlineData("false", "false", typeof(BooleanValueStatement))]
         [InlineData("xx", "xx", typeof(FieldValueStatement))]
-        [InlineData("xx = s", " xx = s ", typeof(OperaterStatement))]
+        [InlineData("(1)", " v in (1) ", typeof(NumberArrayValueStatement))]
+        [InlineData("(1,2,3,4)", " v in (1,2,3,4) ", typeof(NumberArrayValueStatement))]
+        [InlineData("xx = true", " xx = true ", typeof(OperaterStatement))]
         [InlineData("xx <= 3", " xx <= 3 ", typeof(OperaterStatement))]
         [InlineData("xx >= 3", " xx >= 3 ", typeof(OperaterStatement))]
         [InlineData("xx > 3", " xx > 3 ", typeof(OperaterStatement))]
@@ -56,6 +58,12 @@ namespace UT.SqlParser
                 {
                     var sb = new StringBuilder();
                     From.ParseConditionStatementToQuery(sb, op);
+                    Assert.Equal(expected, sb.ToString());
+                }
+                else if (t is NumberArrayValueStatement na)
+                {
+                    var sb = new StringBuilder();
+                    From.ParseConditionStatementToQuery(sb, new InOperaterStatement() { Left = new FieldValueStatement() { Field = "v" }, Right = na });
                     Assert.Equal(expected, sb.ToString());
                 }
             });
