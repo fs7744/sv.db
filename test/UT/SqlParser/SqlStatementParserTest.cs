@@ -19,11 +19,11 @@ namespace UT.SqlParser
         [InlineData("true", "tRue", typeof(BooleanValueStatement))]
         [InlineData("false", "false", typeof(BooleanValueStatement))]
         [InlineData("xx", "xx", typeof(FieldValueStatement))]
-        [InlineData("(1)", " v in (1) ", typeof(NumberArrayValueStatement))]
-        [InlineData("(1,2,3,4)", " v in (1,2,3,4) ", typeof(NumberArrayValueStatement))]
-        [InlineData("('1')", " v in ('1') ", typeof(StringArrayValueStatement))]
-        [InlineData("('1\\'',  '2' ,'3', '4')", " v in ('1\\'','2','3','4') ", typeof(StringArrayValueStatement))]
-        [InlineData("(true,false)", " v in (true,false) ", typeof(BooleanArrayValueStatement))]
+        [InlineData("v in (1)", " v in (1) ", typeof(InOperaterStatement))]
+        [InlineData("v in (1,2,3,4)", " v in (1,2,3,4) ", typeof(InOperaterStatement))]
+        [InlineData("v in ('1')", " v in ('1') ", typeof(InOperaterStatement))]
+        [InlineData("v in ('1\\'',  '2' ,'3', '4')", " v in ('1\\'','2','3','4') ", typeof(InOperaterStatement))]
+        [InlineData("v in (true,false)", " v in (true,false) ", typeof(InOperaterStatement))]
         [InlineData("xx = true", " xx = true ", typeof(OperaterStatement))]
         [InlineData("xx <= 3", " xx <= 3 ", typeof(OperaterStatement))]
         [InlineData("xx >= 3", " xx >= 3 ", typeof(OperaterStatement))]
@@ -63,10 +63,10 @@ namespace UT.SqlParser
                     From.ParseConditionStatementToQuery(sb, op);
                     Assert.Equal(expected, sb.ToString());
                 }
-                else if (t is ArrayValueStatement na)
+                else if (t is InOperaterStatement na)
                 {
                     var sb = new StringBuilder();
-                    From.ParseConditionStatementToQuery(sb, new InOperaterStatement() { Left = new FieldValueStatement() { Field = "v" }, Right = na });
+                    From.ParseConditionStatementToQuery(sb, na);
                     Assert.Equal(expected, sb.ToString());
                 }
             });

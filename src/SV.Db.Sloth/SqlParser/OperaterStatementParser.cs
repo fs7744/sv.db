@@ -29,13 +29,9 @@ namespace SV.Db.Sloth.SqlParser
                             op.Left = vs;
                             context.Stack.Pop();
                             context.Stack.Push(op);
-                            context.Parse(context);
-                            if (context.Stack.TryPop(out var vsss) && vsss is ArrayValueStatement vss)
+                            if (ConvertArrary(context, op) && context.Stack.Peek() == op)
                             {
-                                if (context.Stack.Peek() == op)
-                                {
-                                    return true;
-                                }
+                                return true;
                             }
                             context.Index = index;
                             c = context.Current;
@@ -45,6 +41,42 @@ namespace SV.Db.Sloth.SqlParser
                     else if (v.Equals("not", StringComparison.OrdinalIgnoreCase))
                     {
                         var op = new UnaryOperaterStatement() { Operater = "not" };
+                    }
+                }
+            }
+            return false;
+        }
+
+        private bool ConvertArrary(StatementParserContext context, InOperaterStatement iop)
+        {
+            var t = context.Current;
+            if (t.Type == TokenType.Sign
+                && t.GetValue().Equals("(", StringComparison.Ordinal)
+                && context.MoveNext())
+            {
+                t = context.Current;
+                if (t.Type == TokenType.Number)
+                {
+                    if (ConvertNumberArrary(context, t, out var op))
+                    {
+                        iop.Right = op;
+                        return true;
+                    }
+                }
+                else if (t.Type == TokenType.String)
+                {
+                    if (ConvertStringArrary(context, t, out var op))
+                    {
+                        iop.Right = op;
+                        return true;
+                    }
+                }
+                else if (t.Type == TokenType.True || t.Type == TokenType.False)
+                {
+                    if (ConvertBoolArrary(context, t, out var op))
+                    {
+                        iop.Right = op;
+                        return true;
                     }
                 }
             }
@@ -92,44 +124,13 @@ namespace SV.Db.Sloth.SqlParser
                         }
                     }
                     break;
-
-                case "(":
-                    if (context.MoveNext())
-                    {
-                        var t = context.Current;
-                        if (t.Type == TokenType.Number)
-                        {
-                            if (ConvertNumberArrary(context, t, out var op))
-                            {
-                                context.Stack.Push(op);
-                                return true;
-                            }
-                        }
-                        else if (t.Type == TokenType.String)
-                        {
-                            if (ConvertStringArrary(context, t, out var op))
-                            {
-                                context.Stack.Push(op);
-                                return true;
-                            }
-                        }
-                        else if (t.Type == TokenType.True || t.Type == TokenType.False)
-                        {
-                            if (ConvertBoolArrary(context, t, out var op))
-                            {
-                                context.Stack.Push(op);
-                                return true;
-                            }
-                        }
-                    }
-                    break;
             }
             context.Index = index;
             c = context.Current;
             throw new ParserExecption($"Can't parse near by {c.GetValue()} (Line:{c.StartLine},Col:{c.StartColumn})");
         }
 
-        private static bool ConvertBoolArrary(StatementParserContext context, Token t, out Statement o)
+        private static bool ConvertBoolArrary(StatementParserContext context, Token t, out ArrayValueStatement o)
         {
             var op = new BooleanArrayValueStatement() { Value = new List<bool>() { t.Type == TokenType.True } };
             o = op;
@@ -171,7 +172,7 @@ namespace SV.Db.Sloth.SqlParser
             return hasEnd;
         }
 
-        private static bool ConvertStringArrary(StatementParserContext context, Token t, out Statement o)
+        private static bool ConvertStringArrary(StatementParserContext context, Token t, out ArrayValueStatement o)
         {
             var op = new StringArrayValueStatement() { Value = new List<string>() { t.GetValue().ToString() } };
             o = op;
@@ -208,7 +209,7 @@ namespace SV.Db.Sloth.SqlParser
             return hasEnd;
         }
 
-        private static bool ConvertNumberArrary(StatementParserContext context, Token t, out Statement o)
+        private static bool ConvertNumberArrary(StatementParserContext context, Token t, out ArrayValueStatement o)
         {
             var op = new NumberArrayValueStatement() { Value = new List<decimal>() { decimal.Parse(t.GetValue()) } };
             o = op;
