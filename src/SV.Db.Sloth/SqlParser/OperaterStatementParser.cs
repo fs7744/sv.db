@@ -105,12 +105,57 @@ namespace SV.Db.Sloth.SqlParser
                                 return true;
                             }
                         }
+                        else if (t.Type == TokenType.String)
+                        {
+                            if (ConvertStringArrary(context, t, out var op))
+                            {
+                                context.Stack.Push(op);
+                                return true;
+                            }
+                        }
                     }
                     break;
             }
             context.Index = index;
             c = context.Current;
             throw new ParserExecption($"Can't parse near by {c.GetValue()} (Line:{c.StartLine},Col:{c.StartColumn})");
+        }
+
+        private static bool ConvertStringArrary(StatementParserContext context, Token t, out Statement o)
+        {
+            var op = new StringArrayValueStatement() { Value = new List<string>() { t.GetValue().ToString() } };
+            o = op;
+            var hasEnd = false;
+            while (context.MoveNext())
+            {
+                t = context.Current;
+                if (t.Type == TokenType.Sign)
+                {
+                    var tv = t.GetValue().ToString();
+                    if (tv.Equals(","))
+                    {
+                        if (context.MoveNext())
+                        {
+                            t = context.Current;
+                            if (t.Type == TokenType.String)
+                            {
+                                op.Value.Add(t.GetValue().ToString());
+                                continue;
+                            }
+                        }
+                    }
+                    else if (tv.Equals(")"))
+                    {
+                        context.MoveNext();
+                        hasEnd = true;
+                        break;
+                    }
+                }
+
+                break;
+            }
+
+            return hasEnd;
         }
 
         private static bool ConvertNumberArrary(StatementParserContext context, Token t, out Statement o)
