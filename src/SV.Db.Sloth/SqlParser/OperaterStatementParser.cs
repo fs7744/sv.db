@@ -42,9 +42,9 @@ namespace SV.Db.Sloth.SqlParser
                     {
                         var op = new UnaryOperaterStatement() { Operater = "not" };
                     }
-                    else if (v.Equals("and", StringComparison.OrdinalIgnoreCase))
+                    else if (v.Equals("or", StringComparison.OrdinalIgnoreCase))
                     {
-                        var op = new ConditionsStatement() { Condition = Condition.And }; 
+                        var op = new ConditionsStatement() { Condition = Condition.Or };
                         if (context.MoveNext() && context.Stack.Peek() is ConditionStatement vs)
                         {
                             var index = context.Index;
@@ -65,9 +65,9 @@ namespace SV.Db.Sloth.SqlParser
                         }
                         throw new ParserExecption($"Can't parse near by {c.GetValue()} (Line:{c.StartLine},Col:{c.StartColumn})");
                     }
-                    else if (v.Equals("or", StringComparison.OrdinalIgnoreCase))
+                    else if (v.Equals("and", StringComparison.OrdinalIgnoreCase))
                     {
-                        var op = new ConditionsStatement() { Condition = Condition.Or };
+                        var op = new ConditionsStatement() { Condition = Condition.And };
                         if (context.MoveNext() && context.Stack.Peek() is ConditionStatement vs)
                         {
                             var index = context.Index;

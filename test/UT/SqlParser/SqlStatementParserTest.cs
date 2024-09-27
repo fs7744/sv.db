@@ -35,7 +35,7 @@ namespace UT.SqlParser
         [InlineData("yy like '%s'", " yy like '%s' ", typeof(OperaterStatement))]
         [InlineData("yy = NULL ", " yy = null ", typeof(OperaterStatement))]
         [InlineData("1 = 1", " 1 = 1 ", typeof(OperaterStatement))]
-        [InlineData("1 = 1 and 2 != 3 ", " 1 = 1  and  2 != 3 ", typeof(ConditionsStatement))]
+        [InlineData("1 = 1 and 2 != 3 or 11 >= 13.1 or 23 <= 31", " 1 = 1  and  ( 2 != 3  or  ( 11 >= 13.1  or  23 <= 31 ) ) ", typeof(ConditionsStatement))]
         [InlineData("11 >= 13.1 or 23 <= 31 ", " ( 11 >= 13.1  or  23 <= 31 ) ", typeof(ConditionsStatement))]
         public void ShouldParse(string test, string expected, Type type)
         {
