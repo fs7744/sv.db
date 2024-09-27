@@ -35,7 +35,20 @@ namespace SV.Db.Sloth.SqlParser
                 context.TryNext(out c);
             }
             t.Count = context.Index - t.StartIndex;
-            return t.Count > 0;
+            var r = t.Count > 0;
+            if (r) 
+            {
+                var v = t.GetValue();
+                if (v.Equals("true", StringComparison.OrdinalIgnoreCase))
+                {
+                    t.Type = TokenType.True;
+                }
+                else if (v.Equals("false", StringComparison.OrdinalIgnoreCase))
+                {
+                    t.Type = TokenType.False;
+                }
+            }
+            return r;
         }
     }
 }

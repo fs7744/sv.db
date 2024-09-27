@@ -15,16 +15,17 @@ namespace SV.Db.Sloth.SqlParser
                         context.Stack.Push(new NumberValueStatement() { Value = decimal.Parse(c.GetValue()) });
                         context.MoveNext();
                         return true;
+                    case TokenType.True:
+                        context.Stack.Push(new BooleanValueStatement() { Value = true });
+                        context.MoveNext(); 
+                        return true;
+                    case TokenType.False:
+                        context.Stack.Push(new BooleanValueStatement() { Value = false });
+                        context.MoveNext();
+                        return true;
                     case TokenType.Word:
                         var v = c.GetValue();
-                        if (bool.TryParse(v, out var s))
-                        {
-                            context.Stack.Push(new BooleanValueStatement() { Value = s });
-                        }
-                        else
-                        {
-                            context.Stack.Push(new FieldValueStatement() { Field = v.ToString() });
-                        }
+                        context.Stack.Push(new FieldValueStatement() { Field = v.ToString() });
                         context.MoveNext();
                         return true;
                     case TokenType.String:

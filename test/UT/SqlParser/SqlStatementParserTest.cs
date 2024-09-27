@@ -23,6 +23,7 @@ namespace UT.SqlParser
         [InlineData("(1,2,3,4)", " v in (1,2,3,4) ", typeof(NumberArrayValueStatement))]
         [InlineData("('1')", " v in ('1') ", typeof(StringArrayValueStatement))]
         [InlineData("('1\\'',  '2' ,'3', '4')", " v in ('1\\'','2','3','4') ", typeof(StringArrayValueStatement))]
+        [InlineData("(true,false)", " v in (true,false) ", typeof(BooleanArrayValueStatement))]
         [InlineData("xx = true", " xx = true ", typeof(OperaterStatement))]
         [InlineData("xx <= 3", " xx <= 3 ", typeof(OperaterStatement))]
         [InlineData("xx >= 3", " xx >= 3 ", typeof(OperaterStatement))]

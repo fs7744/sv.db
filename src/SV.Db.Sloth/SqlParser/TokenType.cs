@@ -5,6 +5,8 @@
         Number,
         Sign,
         Word,
-        String
+        String,
+        True,
+        False,
     }
 }

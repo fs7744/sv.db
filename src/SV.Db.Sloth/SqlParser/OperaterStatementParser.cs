@@ -113,12 +113,62 @@ namespace SV.Db.Sloth.SqlParser
                                 return true;
                             }
                         }
+                        else if (t.Type == TokenType.True || t.Type == TokenType.False)
+                        {
+                            if (ConvertBoolArrary(context, t, out var op))
+                            {
+                                context.Stack.Push(op);
+                                return true;
+                            }
+                        }
                     }
                     break;
             }
             context.Index = index;
             c = context.Current;
             throw new ParserExecption($"Can't parse near by {c.GetValue()} (Line:{c.StartLine},Col:{c.StartColumn})");
+        }
+
+        private static bool ConvertBoolArrary(StatementParserContext context, Token t, out Statement o)
+        {
+            var op = new BooleanArrayValueStatement() { Value = new List<bool>() { t.Type == TokenType.True } };
+            o = op;
+            var hasEnd = false;
+            while (context.MoveNext())
+            {
+                t = context.Current;
+                if (t.Type == TokenType.Sign)
+                {
+                    var tv = t.GetValue();
+                    if (tv.Equals(",", StringComparison.Ordinal))
+                    {
+                        if (context.MoveNext())
+                        {
+                            t = context.Current;
+                            if (t.Type == TokenType.True)
+                            {
+                                op.Value.Add(true);
+                                continue;
+                            }
+                            else if (t.Type == TokenType.False)
+                            {
+                                op.Value.Add(false);
+                                continue;
+                            }
+                        }
+                    }
+                    else if (tv.Equals(")", StringComparison.Ordinal))
+                    {
+                        context.MoveNext();
+                        hasEnd = true;
+                        break;
+                    }
+                }
+
+                break;
+            }
+
+            return hasEnd;
         }
 
         private static bool ConvertStringArrary(StatementParserContext context, Token t, out Statement o)
@@ -131,8 +181,8 @@ namespace SV.Db.Sloth.SqlParser
                 t = context.Current;
                 if (t.Type == TokenType.Sign)
                 {
-                    var tv = t.GetValue().ToString();
-                    if (tv.Equals(","))
+                    var tv = t.GetValue();
+                    if (tv.Equals(",", StringComparison.Ordinal))
                     {
                         if (context.MoveNext())
                         {
@@ -144,7 +194,7 @@ namespace SV.Db.Sloth.SqlParser
                             }
                         }
                     }
-                    else if (tv.Equals(")"))
+                    else if (tv.Equals(")", StringComparison.Ordinal))
                     {
                         context.MoveNext();
                         hasEnd = true;
@@ -168,8 +218,8 @@ namespace SV.Db.Sloth.SqlParser
                 t = context.Current;
                 if (t.Type == TokenType.Sign)
                 {
-                    var tv = t.GetValue().ToString();
-                    if (tv.Equals(","))
+                    var tv = t.GetValue();
+                    if (tv.Equals(",", StringComparison.Ordinal))
                     {
                         if (context.MoveNext())
                         {
@@ -181,7 +231,7 @@ namespace SV.Db.Sloth.SqlParser
                             }
                         }
                     }
-                    else if (tv.Equals(")"))
+                    else if (tv.Equals(")", StringComparison.Ordinal))
                     {
                         context.MoveNext();
                         hasEnd = true;
