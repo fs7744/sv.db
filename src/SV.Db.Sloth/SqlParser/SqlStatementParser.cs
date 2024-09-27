@@ -13,11 +13,6 @@ namespace SV.Db.Sloth.SqlParser
             tokenParsers = new ITokenParser[] { new IngoreTokenParser(), new StringTokenParser(), new NumberTokenParser(), new WordTokenParser(), new SignTokenParser() };
         }
 
-        public static ConditionStatement ParseWhereConditionStatement(string sql)
-        {
-            return null;
-        }
-
         public static IEnumerable<Statement> ParseStatements(string sql)
         {
             var context = new StatementParserContext(Tokenize(sql).ToArray(), ParseStatements);

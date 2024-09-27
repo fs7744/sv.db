@@ -56,12 +56,22 @@ namespace SV.Db.Sloth
             {
                 ps.Remove("Where");
                 var c = string.Join(" and ", w.Select(i => $" ({i}) "));
-                return string.IsNullOrWhiteSpace(c) ? null : SqlStatementParser.ParseWhereConditionStatement(c);
+                return string.IsNullOrWhiteSpace(c) ? null : ParseWhereConditionStatement(c);
             }
             else
             {
                 return null;
             }
+        }
+
+        private static ConditionStatement ParseWhereConditionStatement(string sql)
+        {
+            var s = SqlStatementParser.ParseStatements(sql).ToArray();
+            if (s.Length > 1 || s.Length < 1 || s[0] is not ConditionStatement c)
+            {
+                throw new ParserExecption($"Can't parse condition for {sql}");
+            }
+            return c;
         }
 
         private const int OperatorLength = 6;

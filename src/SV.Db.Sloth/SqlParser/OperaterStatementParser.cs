@@ -51,15 +51,24 @@ namespace SV.Db.Sloth.SqlParser
                             op.Left = vs;
                             context.Stack.Pop();
                             context.Stack.Push(op);
-                            context.Parse(context, false);
-                            if (context.Stack.TryPop(out var vsss) && vsss is ConditionStatement vss)
+                            do
                             {
-                                op.Right = vss;
-                                if (context.Stack.Peek() == op)
+                                context.Parse(context, true);
+                                if (op.Right != null)
                                 {
                                     return true;
                                 }
-                            }
+                                if (context.Stack.TryPeek(out var vsss) && vsss != op && vsss is ConditionStatement vss)
+                                {
+                                    context.Stack.Pop();
+                                    op.Right = vss;
+                                    if (context.Stack.Peek() == op)
+                                    {
+                                        return true;
+                                    }
+                                }
+                            } while (context.HasToken());
+                            
                             context.Index = index;
                             c = context.Current;
                         }
@@ -74,15 +83,23 @@ namespace SV.Db.Sloth.SqlParser
                             op.Left = vs;
                             context.Stack.Pop();
                             context.Stack.Push(op);
-                            context.Parse(context, false);
-                            if (context.Stack.TryPop(out var vsss) && vsss is ConditionStatement vss)
+                            do
                             {
-                                op.Right = vss;
-                                if (context.Stack.Peek() == op)
+                                context.Parse(context, true);
+                                if (op.Right != null)
                                 {
                                     return true;
                                 }
-                            }
+                                if (context.Stack.TryPeek(out var vsss) && vsss != op && vsss is ConditionStatement vss)
+                                {
+                                    context.Stack.Pop();
+                                    op.Right = vss;
+                                    if (context.Stack.Peek() == op)
+                                    {
+                                        return true;
+                                    }
+                                }
+                            } while (context.HasToken());
                             context.Index = index;
                             c = context.Current;
                         }
@@ -167,9 +184,39 @@ namespace SV.Db.Sloth.SqlParser
                 }
             }
             else if (v.Equals("(", StringComparison.Ordinal))
-            { 
-                
+            {
+                if (context.MoveNext())
+                {
+                    var op = new OperaterStatement();
+                    context.Stack.Push(op);
+                    do
+                    {
+                        context.Parse(context, true);
+                        if (context.Current.Type == TokenType.Sign
+                            && context.Current.GetValue().Equals(")", StringComparison.Ordinal))
+                        {
+                            context.MoveNext();
+                            if (context.Stack.TryPop(out var s) && s is ConditionStatement css)
+                            {
+                                if (context.Stack.Peek() == op)
+                                {
+                                    context.Stack.Pop();
+                                    if (context.Stack.TryPeek(out var p) && p is ConditionsStatement cs && cs.Right == null)
+                                    {
+                                        cs.Right = css;
+                                    }
+                                    else
+                                    {
+                                        context.Stack.Push(s);
+                                    }
+                                    return true;
+                                }
+                            }
+                        }
+                    } while (context.HasToken());
+                }
             }
+            
             context.Index = index;
             c = context.Current;
             throw new ParserExecption($"Can't parse near by {c.GetValue()} (Line:{c.StartLine},Col:{c.StartColumn})");

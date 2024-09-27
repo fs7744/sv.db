@@ -38,9 +38,11 @@ namespace SV.Db.Sloth
             {
                 if (conditions.Condition == Condition.And)
                 {
+                    sb.Append(" (");
                     ParseConditionStatementToQuery(sb, conditions.Left);
                     sb.Append(" and ");
                     ParseConditionStatementToQuery(sb, conditions.Right);
+                    sb.Append(") ");
                 }
                 else
                 {
