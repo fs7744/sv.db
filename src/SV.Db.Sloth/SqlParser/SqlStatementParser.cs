@@ -21,11 +21,11 @@ namespace SV.Db.Sloth.SqlParser
         public static IEnumerable<Statement> ParseStatements(string sql)
         {
             var context = new StatementParserContext(Tokenize(sql).ToArray(), ParseStatements);
-            ParseStatements(context);
+            ParseStatements(context, false);
             return context.Stack;
         }
 
-        private static void ParseStatements(StatementParserContext context)
+        private static void ParseStatements(StatementParserContext context, bool doOnce)
         {
             while (context.HasToken())
             {
@@ -38,6 +38,7 @@ namespace SV.Db.Sloth.SqlParser
                         break;
                     }
                 }
+                if (doOnce) break;
                 if (!matched && context.HasToken())
                 {
                     var c = context.Current;

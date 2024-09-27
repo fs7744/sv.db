@@ -33,7 +33,10 @@ namespace UT.SqlParser
         [InlineData("yy like '%s%'", " yy like '%s%' ", typeof(OperaterStatement))]
         [InlineData("yy like 's%'", " yy like 's%' ", typeof(OperaterStatement))]
         [InlineData("yy like '%s'", " yy like '%s' ", typeof(OperaterStatement))]
-        [InlineData("yy = null", " yy = NULL ", typeof(OperaterStatement))]
+        [InlineData("yy = NULL ", " yy = null ", typeof(OperaterStatement))]
+        [InlineData("1 = 1", " 1 = 1 ", typeof(OperaterStatement))]
+        [InlineData("1 = 1 and 2 != 3 ", " 1 = 1  and  2 != 3 ", typeof(ConditionsStatement))]
+        [InlineData("11 >= 13.1 or 23 <= 31 ", " ( 11 >= 13.1  or  23 <= 31 ) ", typeof(ConditionsStatement))]
         public void ShouldParse(string test, string expected, Type type)
         {
             TestStatement(test, statements =>
@@ -67,6 +70,12 @@ namespace UT.SqlParser
                 {
                     var sb = new StringBuilder();
                     From.ParseConditionStatementToQuery(sb, na);
+                    Assert.Equal(expected, sb.ToString());
+                }
+                else if (t is ConditionsStatement cs)
+                {
+                    var sb = new StringBuilder();
+                    From.ParseConditionStatementToQuery(sb, cs);
                     Assert.Equal(expected, sb.ToString());
                 }
             });

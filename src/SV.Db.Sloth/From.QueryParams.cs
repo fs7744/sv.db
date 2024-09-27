@@ -39,14 +39,14 @@ namespace SV.Db.Sloth
                 if (conditions.Condition == Condition.And)
                 {
                     ParseConditionStatementToQuery(sb, conditions.Left);
-                    sb.Append(" AND ");
+                    sb.Append(" and ");
                     ParseConditionStatementToQuery(sb, conditions.Right);
                 }
                 else
                 {
                     sb.Append(" (");
                     ParseConditionStatementToQuery(sb, conditions.Left);
-                    sb.Append(" OR ");
+                    sb.Append(" or ");
                     ParseConditionStatementToQuery(sb, conditions.Right);
                     sb.Append(") ");
                 }
@@ -116,7 +116,7 @@ namespace SV.Db.Sloth
             switch (os.Operater)
             {
                 case "is-null":
-                    sb.Append("= NULL");
+                    sb.Append("= null");
                     break;
 
                 case "like":

@@ -42,6 +42,52 @@ namespace SV.Db.Sloth.SqlParser
                     {
                         var op = new UnaryOperaterStatement() { Operater = "not" };
                     }
+                    else if (v.Equals("and", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var op = new ConditionsStatement() { Condition = Condition.And }; 
+                        if (context.MoveNext() && context.Stack.Peek() is ConditionStatement vs)
+                        {
+                            var index = context.Index;
+                            op.Left = vs;
+                            context.Stack.Pop();
+                            context.Stack.Push(op);
+                            context.Parse(context, false);
+                            if (context.Stack.TryPop(out var vsss) && vsss is ConditionStatement vss)
+                            {
+                                op.Right = vss;
+                                if (context.Stack.Peek() == op)
+                                {
+                                    return true;
+                                }
+                            }
+                            context.Index = index;
+                            c = context.Current;
+                        }
+                        throw new ParserExecption($"Can't parse near by {c.GetValue()} (Line:{c.StartLine},Col:{c.StartColumn})");
+                    }
+                    else if (v.Equals("or", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var op = new ConditionsStatement() { Condition = Condition.Or };
+                        if (context.MoveNext() && context.Stack.Peek() is ConditionStatement vs)
+                        {
+                            var index = context.Index;
+                            op.Left = vs;
+                            context.Stack.Pop();
+                            context.Stack.Push(op);
+                            context.Parse(context, false);
+                            if (context.Stack.TryPop(out var vsss) && vsss is ConditionStatement vss)
+                            {
+                                op.Right = vss;
+                                if (context.Stack.Peek() == op)
+                                {
+                                    return true;
+                                }
+                            }
+                            context.Index = index;
+                            c = context.Current;
+                        }
+                        throw new ParserExecption($"Can't parse near by {c.GetValue()} (Line:{c.StartLine},Col:{c.StartColumn})");
+                    }
                 }
             }
             return false;
@@ -86,44 +132,43 @@ namespace SV.Db.Sloth.SqlParser
         private static bool ConvertSign(StatementParserContext context, ref Token c)
         {
             var v = c.GetValue();
-            var s = v.ToString();
             var index = context.Index;
-            switch (s)
+            if (v.Equals("<", StringComparison.Ordinal)
+                || v.Equals("<=", StringComparison.Ordinal)
+                || v.Equals(">", StringComparison.Ordinal)
+                || v.Equals(">=", StringComparison.Ordinal)
+                || v.Equals("=", StringComparison.Ordinal)
+                || v.Equals("!=", StringComparison.Ordinal))
             {
-                case "<":
-                case "<=":
-                case ">":
-                case ">=":
-                case "=":
-                case "!=":
+                var op = new OperaterStatement();
+                op.Operater = v.ToString();
+                if (context.MoveNext() && context.Stack.Peek() is ValueStatement vs)
+                {
+                    op.Left = vs;
+                    context.Stack.Pop();
+                    context.Stack.Push(op);
+                    context.Parse(context, true);
+                    if (context.Stack.TryPop(out var vsss) && vsss is ValueStatement vss)
                     {
-                        var op = new OperaterStatement();
-                        op.Operater = s;
-                        if (context.MoveNext() && context.Stack.Peek() is ValueStatement vs)
+                        if (op.Operater == "=" && vss is FieldValueStatement f && f.Field.Equals("null", StringComparison.OrdinalIgnoreCase))
                         {
-                            op.Left = vs;
-                            context.Stack.Pop();
-                            context.Stack.Push(op);
-                            context.Parse(context);
-                            if (context.Stack.TryPop(out var vsss) && vsss is ValueStatement vss)
-                            {
-                                if (s == "=" && vss is FieldValueStatement f && f.Field.Equals("null", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    op.Operater = "is-null";
-                                }
-                                else
-                                {
-                                    op.Right = vss;
-                                }
+                            op.Operater = "is-null";
+                        }
+                        else
+                        {
+                            op.Right = vss;
+                        }
 
-                                if (context.Stack.Peek() == op)
-                                {
-                                    return true;
-                                }
-                            }
+                        if (context.Stack.Peek() == op)
+                        {
+                            return true;
                         }
                     }
-                    break;
+                }
+            }
+            else if (v.Equals("(", StringComparison.Ordinal))
+            { 
+                
             }
             context.Index = index;
             c = context.Current;
@@ -257,7 +302,7 @@ namespace SV.Db.Sloth.SqlParser
                 op.Left = vs;
                 context.Stack.Pop();
                 context.Stack.Push(op);
-                context.Parse(context);
+                context.Parse(context, true);
                 if (context.Stack.TryPop(out var vsss) && vsss is StringValueStatement vss)
                 {
                     op.Right = vss;

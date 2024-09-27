@@ -55,7 +55,7 @@ namespace SV.Db.Sloth
             if (ps.TryGetValue("Where", out var w))
             {
                 ps.Remove("Where");
-                var c = string.Join(" AND ", w.Select(i => $" ({i}) "));
+                var c = string.Join(" and ", w.Select(i => $" ({i}) "));
                 return string.IsNullOrWhiteSpace(c) ? null : SqlStatementParser.ParseWhereConditionStatement(c);
             }
             else
