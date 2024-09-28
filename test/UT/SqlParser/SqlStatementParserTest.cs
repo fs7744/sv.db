@@ -40,6 +40,8 @@ namespace UT.SqlParser
         [InlineData("((11 >= 13.1) or (23 <= 31 ))", " ( 11 >= 13.1  or  23 <= 31 ) ", typeof(ConditionsStatement))]
         [InlineData("((11 >= 13.1 and 1 != 2) or (23 <= 31  or x != y ))", " ( ( 11 >= 13.1  and  1 != 2 )  or  ( 23 <= 31  or  x != y ) ) ", typeof(ConditionsStatement))]
         [InlineData("(11 >= 13.1)", " 11 >= 13.1 ", typeof(OperaterStatement))]
+        [InlineData("not(11 >= 13.1)", " not ( 11 >= 13.1 ) ", typeof(UnaryOperaterStatement))]
+        [InlineData("(not(11 >= 13.1 and 1 != 2) or (23 <= 31  or x != y ))", " ( not ( ( 11 >= 13.1  and  1 != 2 ) )  or  ( 23 <= 31  or  x != y ) ) ", typeof(ConditionsStatement))]
         public void ShouldParse(string test, string expected, Type type)
         {
             TestStatement(test, statements =>
@@ -79,6 +81,12 @@ namespace UT.SqlParser
                 {
                     var sb = new StringBuilder();
                     From.ParseConditionStatementToQuery(sb, cs);
+                    Assert.Equal(expected, sb.ToString());
+                }
+                else if (t is UnaryOperaterStatement us)
+                {
+                    var sb = new StringBuilder();
+                    From.ParseConditionStatementToQuery(sb, us);
                     Assert.Equal(expected, sb.ToString());
                 }
             });

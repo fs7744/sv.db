@@ -41,6 +41,32 @@ namespace SV.Db.Sloth.SqlParser
                     else if (v.Equals("not", StringComparison.OrdinalIgnoreCase))
                     {
                         var op = new UnaryOperaterStatement() { Operater = "not" };
+                        if (context.MoveNext())
+                        {
+                            var index = context.Index;
+                            context.Stack.Push(op);
+                            do
+                            {
+                                context.Parse(context, true);
+                                if (op.Right != null)
+                                {
+                                    return true;
+                                }
+                                if (context.Stack.TryPeek(out var vsss) && vsss != op && vsss is ConditionStatement vss)
+                                {
+                                    context.Stack.Pop();
+                                    op.Right = vss;
+                                    if (context.Stack.Peek() == op)
+                                    {
+                                        return true;
+                                    }
+                                }
+                            } while (context.HasToken());
+
+                            context.Index = index;
+                            c = context.Current;
+                        }
+                        throw new ParserExecption($"Can't parse near by {c.GetValue()} (Line:{c.StartLine},Col:{c.StartColumn})");
                     }
                     else if (v.Equals("or", StringComparison.OrdinalIgnoreCase))
                     {
@@ -68,7 +94,7 @@ namespace SV.Db.Sloth.SqlParser
                                     }
                                 }
                             } while (context.HasToken());
-                            
+
                             context.Index = index;
                             c = context.Current;
                         }
@@ -216,7 +242,7 @@ namespace SV.Db.Sloth.SqlParser
                     } while (context.HasToken());
                 }
             }
-            
+
             context.Index = index;
             c = context.Current;
             throw new ParserExecption($"Can't parse near by {c.GetValue()} (Line:{c.StartLine},Col:{c.StartColumn})");
