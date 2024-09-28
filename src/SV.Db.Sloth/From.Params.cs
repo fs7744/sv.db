@@ -8,19 +8,19 @@ namespace SV.Db.Sloth
 {
     public static partial class From
     {
-        public static PageResult<T> ExecuteQuery<T>(this SelectStatementBuilder builder)
+        public static PageResult<T> ExecuteQuery<T>(this SelectStatementBuilder builder, SelectStatementOptions? options = null)
         {
-            SelectStatement statement = builder.Build();
+            SelectStatement statement = builder.Build(options);
             return builder.factory.ExecuteQuery<T>(builder.dbEntityInfo, statement);
         }
 
-        public static Task<PageResult<T>> ExecuteQueryAsync<T>(this SelectStatementBuilder builder, CancellationToken cancellationToken = default)
+        public static Task<PageResult<T>> ExecuteQueryAsync<T>(this SelectStatementBuilder builder, SelectStatementOptions? options = null, CancellationToken cancellationToken = default)
         {
-            SelectStatement statement = builder.Build();
+            SelectStatement statement = builder.Build(options);
             return builder.factory.ExecuteQueryAsync<T>(builder.dbEntityInfo, statement, cancellationToken);
         }
 
-        public static SelectStatement ParseByParams<T>(this IConnectionFactory factory, IDictionary<string, StringValues> ps, out DbEntityInfo info)
+        public static SelectStatement ParseByParams<T>(this IConnectionFactory factory, IDictionary<string, StringValues> ps, out DbEntityInfo info, SelectStatementOptions? options = null)
         {
             var builder = factory.From<T>();
             ParseFields(ps, builder);
@@ -28,10 +28,10 @@ namespace SV.Db.Sloth
             ParsePage(ps, builder);
             ParseWhere(ps, builder);
             info = builder.dbEntityInfo;
-            return builder.Build();
+            return builder.Build(options);
         }
 
-        public static SelectStatement ParseByParams(this IConnectionFactory factory, string key, IDictionary<string, StringValues> ps, out DbEntityInfo info)
+        public static SelectStatement ParseByParams(this IConnectionFactory factory, string key, IDictionary<string, StringValues> ps, out DbEntityInfo info, SelectStatementOptions? options = null)
         {
             var builder = factory.From(key);
             ParseFields(ps, builder);
@@ -39,7 +39,7 @@ namespace SV.Db.Sloth
             ParsePage(ps, builder);
             ParseWhere(ps, builder);
             info = builder.dbEntityInfo;
-            return builder.Build();
+            return builder.Build(options);
         }
 
         private static void ParseWhere(IDictionary<string, StringValues> ps, SelectStatementBuilder builder)
@@ -224,16 +224,16 @@ namespace SV.Db.Sloth
                     foreach (var item in fs.ToString().Split(",", StringSplitOptions.RemoveEmptyEntries))
                     {
                         var f = new FieldStatement();
-                        if (item.Contains(":"))
-                        {
-                            var ff = item.Split(':', 2);
-                            f.Name = ff[0];
-                            f.As = ff[1];
-                        }
-                        else
-                        {
-                            f.Name = item;
-                        }
+                        //if (item.Contains(":"))
+                        //{
+                        //    var ff = item.Split(':', 2);
+                        //    f.Name = ff[0];
+                        //    f.As = ff[1];
+                        //}
+                        //else
+                        //{
+                        f.Name = item;
+                        //}
                         fields.Fields.Add(f);
                     }
                 }

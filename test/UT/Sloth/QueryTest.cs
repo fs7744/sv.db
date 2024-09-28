@@ -273,12 +273,32 @@ namespace UT.Sloth
                 Assert.Equal(12, o2.Value.First());
             });
             Assert.Throws<NotSupportedException>(() => AssertWhere<QueryTest, UnaryOperaterStatement>(i => i.T2.GetValueOrDefault(), o => { }));
+
+            AssertWhere<QueryTest, OperaterStatement>("3 = 4", oo =>
+            {
+                Assert.Equal("=", oo.Operater);
+                var o2 = Assert.IsType<NumberValueStatement>(oo.Left);
+                Assert.Equal(3, o2.Value);
+                var o3 = Assert.IsType<NumberValueStatement>(oo.Right);
+                Assert.Equal(4, o3.Value);
+            });
         }
 
         public void AssertWhere<T, O>(Expression<Func<T, bool>> expr, Action<O> action)
         {
             var a = new ConnectionStringProviders(null, null).From<T>();
-            var s = a.Where(expr).Build();
+            var s = a.Where(expr).Build(new SelectStatementOptions() { AllowNotFoundFields = true });
+            Assert.NotNull(s);
+            Assert.NotNull(s.Where);
+            Assert.NotNull(s.Where.Condition);
+            var o = Assert.IsType<O>(s.Where.Condition);
+            action(o);
+        }
+
+        public void AssertWhere<T, O>(string expr, Action<O> action)
+        {
+            var a = new ConnectionStringProviders(null, null).From<T>();
+            var s = a.Where(expr).Build(new SelectStatementOptions() { AllowNotFoundFields = true, AllowNonStrictCondition = true });
             Assert.NotNull(s);
             Assert.NotNull(s.Where);
             Assert.NotNull(s.Where.Condition);
