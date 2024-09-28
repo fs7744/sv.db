@@ -8,6 +8,20 @@ namespace SV.Db.Sloth
 {
     public static partial class From
     {
+        public static PageResult<dynamic> ExecuteQuery<T>(this IConnectionFactory factory, SelectStatementBuilder<T> builder)
+        {
+            DbEntityInfo info = factory.GetDbEntityInfo<T>();
+            SelectStatement statement = builder.Build(info);
+            return factory.ExecuteQuery<dynamic>(info, statement);
+        }
+
+        public static Task<PageResult<dynamic>> ExecuteQueryAsync<T>(this IConnectionFactory factory, SelectStatementBuilder<T> builder, CancellationToken cancellationToken = default)
+        {
+            DbEntityInfo info = factory.GetDbEntityInfo<T>();
+            SelectStatement statement = builder.Build(info);
+            return factory.ExecuteQueryAsync<dynamic>(info, statement, cancellationToken);
+        }
+
         public static SelectStatement ParseByParams<T>(this IConnectionFactory factory, IDictionary<string, StringValues> ps, out DbEntityInfo info)
         {
             info = factory.GetDbEntityInfo<T>();

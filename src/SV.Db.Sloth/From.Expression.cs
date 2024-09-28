@@ -15,7 +15,21 @@ namespace SV.Db.Sloth
 
         public static SelectStatementBuilder<T> Select<T>(this SelectStatementBuilder<T> select, params string[] fields)
         {
-            select.statement.Fields = new SelectFieldsStatement() { Fields = fields.Select(i => new FieldStatement() { Name = i }).ToList() };
+            foreach (var item in fields.Where(j => !select.statement.Fields.Fields.Any(i => i.Name.Equals(j, StringComparison.OrdinalIgnoreCase))))
+            {
+                select.statement.Fields.Fields.Add(new FieldStatement() { Name = item });
+            }
+
+            return select;
+        }
+
+        public static SelectStatementBuilder<T> WithTotalCount<T>(this SelectStatementBuilder<T> select)
+        {
+            if (!select.statement.Fields.Fields.Any(i => i.Name.Equals("count()", StringComparison.OrdinalIgnoreCase)))
+            {
+                select.statement.Fields.Fields.Add(new FuncCallerStatement() { Name = "count()" });
+            }
+
             return select;
         }
 
