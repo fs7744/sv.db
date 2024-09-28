@@ -1,5 +1,5 @@
 ﻿using SV.Db;
-using SV.Db.Sloth.MySql;
+using SV.Db.Sloth.PostgreSQL;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

@@ -60,10 +60,10 @@ namespace RestfulSample.Controllers
     [Table(nameof(Weather))]
     public class Weather
     {
-        [Select]
+        [Select, Where, OrderBy]
         public string Name { get; set; }
 
-        [Select(Field = "Value as v")]
+        [Select(Field = "Value as v"), Where, OrderBy]
         public string V { get; set; }
 
         [Select(NotAllow = true)]

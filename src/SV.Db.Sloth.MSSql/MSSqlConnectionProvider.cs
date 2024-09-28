@@ -4,7 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Text;
 
-namespace SV.Db.Sloth.MySql
+namespace SV.Db.Sloth.MSSql
 {
     public class MSSqlConnectionProvider : IConnectionProvider
     {
