@@ -6,14 +6,7 @@ namespace SV.Db.Sloth
 {
     public static partial class From
     {
-        public static SelectStatementBuilder<T> Of<T>()
-        {
-            var r = new SelectStatementBuilder<T>();
-            r.statement.Fields = new SelectFieldsStatement { Fields = new List<FieldStatement> { new FieldStatement { Name = "*" } } };
-            return r;
-        }
-
-        public static SelectStatementBuilder<T> Select<T>(this SelectStatementBuilder<T> select, params string[] fields)
+        public static SelectStatementBuilder Select(this SelectStatementBuilder select, params string[] fields)
         {
             var f = select.statement.Fields.Fields;
             if (f == null)
@@ -31,7 +24,18 @@ namespace SV.Db.Sloth
             return select;
         }
 
-        public static SelectStatementBuilder<T> WithTotalCount<T>(this SelectStatementBuilder<T> select)
+        public static SelectStatementBuilder<T> Select<T>(this SelectStatementBuilder<T> select, params string[] fields)
+        {
+            Select(select as SelectStatementBuilder, fields);
+            return select;
+        }
+
+        public static SelectStatementBuilder<T> Select<T>(this SelectStatementBuilder<T> select, params Expression<Func<T, object>>[] exprs)
+        {
+            return select.Select<T>(exprs.Select(i => i.GetMemberName()).ToArray());
+        }
+
+        public static SelectStatementBuilder WithTotalCount(this SelectStatementBuilder select)
         {
             var f = select.statement.Fields.Fields;
             if (f == null)
@@ -44,7 +48,13 @@ namespace SV.Db.Sloth
             return select;
         }
 
-        public static SelectStatementBuilder<T> NoRows<T>(this SelectStatementBuilder<T> select)
+        public static SelectStatementBuilder<T> WithTotalCount<T>(this SelectStatementBuilder<T> select)
+        {
+            WithTotalCount(select as SelectStatementBuilder);
+            return select;
+        }
+
+        public static SelectStatementBuilder NoRows(this SelectStatementBuilder select)
         {
             var f = select.statement.Fields.Fields;
             if (f != null)
@@ -63,9 +73,18 @@ namespace SV.Db.Sloth
             return select;
         }
 
-        public static SelectStatementBuilder<T> Select<T>(this SelectStatementBuilder<T> select, params Expression<Func<T, object>>[] exprs)
+        public static SelectStatementBuilder<T> NoRows<T>(this SelectStatementBuilder<T> select)
         {
-            return select.Select<T>(exprs.Select(i => i.GetMemberName()).ToArray());
+            NoRows(select as SelectStatementBuilder);
+            return select;
+        }
+
+        public static SelectStatementBuilder Where(this SelectStatementBuilder select, string expr)
+        {
+            ConditionStatement r = ParseWhereConditionStatement(expr);
+            if (r == null) throw new NotSupportedException(expr);
+            select.statement.Where = new WhereStatement() { Condition = r };
+            return select;
         }
 
         public static SelectStatementBuilder<T> Where<T>(this SelectStatementBuilder<T> select, Expression<Func<T, bool>> expr)
@@ -76,7 +95,7 @@ namespace SV.Db.Sloth
             return select;
         }
 
-        public static SelectStatementBuilder<T> Limit<T>(this SelectStatementBuilder<T> select, int rows, int? offset = null)
+        public static SelectStatementBuilder Limit(this SelectStatementBuilder select, int rows, int? offset = null)
         {
             var l = select.statement.Limit;
             l.Offset = offset;
@@ -84,9 +103,21 @@ namespace SV.Db.Sloth
             return select;
         }
 
-        public static SelectStatementBuilder<T> OrderBy<T>(this SelectStatementBuilder<T> select, params (string, OrderByDirection)[] fields)
+        public static SelectStatementBuilder<T> Limit<T>(this SelectStatementBuilder<T> select, int rows, int? offset = null)
+        {
+            Limit(select as SelectStatementBuilder, rows, offset);
+            return select;
+        }
+
+        public static SelectStatementBuilder OrderBy(this SelectStatementBuilder select, params (string, OrderByDirection)[] fields)
         {
             select.statement.OrderBy = new OrderByStatement() { Fields = fields.Select(i => new OrderByFieldStatement() { Name = i.Item1, Direction = i.Item2 }).ToList() };
+            return select;
+        }
+
+        public static SelectStatementBuilder<T> OrderBy<T>(this SelectStatementBuilder<T> select, params (string, OrderByDirection)[] fields)
+        {
+            OrderBy(select as SelectStatementBuilder, fields); 
             return select;
         }
 

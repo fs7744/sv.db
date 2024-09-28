@@ -9,6 +9,12 @@ namespace Microsoft.AspNetCore.Mvc
 {
     public static class ControllerExtensions
     {
+        public static string ParseToQueryString(this SelectStatementBuilder builder)
+        {
+            var dict = From.ParseToQueryParams(builder.Build());
+            return string.Join("&", dict.Select(i => $"{i.Key}={HttpUtility.UrlPathEncode(i.Value)}"));
+        }
+
         public static string ParseToQueryString(this SelectStatement statement)
         {
             var dict = From.ParseToQueryParams(statement);

@@ -8,45 +8,41 @@ namespace SV.Db.Sloth
 {
     public static partial class From
     {
-        public static SelectStatement BuildStatement<T>(this IConnectionFactory factory, SelectStatementBuilder<T> builder)
+        public static PageResult<T> ExecuteQuery<T>(this SelectStatementBuilder builder)
         {
-            DbEntityInfo info = factory.GetDbEntityInfo<T>();
-            SelectStatement statement = builder.Build(info);
-            return statement;
+            SelectStatement statement = builder.Build();
+            return builder.factory.ExecuteQuery<T>(builder.dbEntityInfo, statement);
         }
 
-        public static PageResult<dynamic> ExecuteQuery<T>(this IConnectionFactory factory, SelectStatementBuilder<T> builder)
+        public static Task<PageResult<T>> ExecuteQueryAsync<T>(this SelectStatementBuilder builder, CancellationToken cancellationToken = default)
         {
-            DbEntityInfo info = factory.GetDbEntityInfo<T>();
-            SelectStatement statement = builder.Build(info);
-            return factory.ExecuteQuery<dynamic>(info, statement);
-        }
-
-        public static Task<PageResult<dynamic>> ExecuteQueryAsync<T>(this IConnectionFactory factory, SelectStatementBuilder<T> builder, CancellationToken cancellationToken = default)
-        {
-            DbEntityInfo info = factory.GetDbEntityInfo<T>();
-            SelectStatement statement = builder.Build(info);
-            return factory.ExecuteQueryAsync<dynamic>(info, statement, cancellationToken);
+            SelectStatement statement = builder.Build();
+            return builder.factory.ExecuteQueryAsync<T>(builder.dbEntityInfo, statement, cancellationToken);
         }
 
         public static SelectStatement ParseByParams<T>(this IConnectionFactory factory, IDictionary<string, StringValues> ps, out DbEntityInfo info)
         {
-            info = factory.GetDbEntityInfo<T>();
-            var builder = ParseByParams<T>(ps).Build(info);
-            return builder;
-        }
-
-        public static SelectStatementBuilder<T> ParseByParams<T>(IDictionary<string, StringValues> ps)
-        {
-            var builder = new SelectStatementBuilder<T>();
+            var builder = factory.From<T>();
             ParseFields(ps, builder);
             ParseOrderBy(ps, builder);
             ParsePage(ps, builder);
             ParseWhere(ps, builder);
-            return builder;
+            info = builder.dbEntityInfo;
+            return builder.Build();
         }
 
-        private static void ParseWhere<T>(IDictionary<string, StringValues> ps, SelectStatementBuilder<T> builder)
+        public static SelectStatement ParseByParams(this IConnectionFactory factory, string key, IDictionary<string, StringValues> ps, out DbEntityInfo info)
+        {
+            var builder = factory.From(key);
+            ParseFields(ps, builder);
+            ParseOrderBy(ps, builder);
+            ParsePage(ps, builder);
+            ParseWhere(ps, builder);
+            info = builder.dbEntityInfo;
+            return builder.Build();
+        }
+
+        private static void ParseWhere(IDictionary<string, StringValues> ps, SelectStatementBuilder builder)
         {
             var where = new WhereStatement();
             where.Condition = ParseComplexWhere(ps);
@@ -166,7 +162,7 @@ namespace SV.Db.Sloth
             return opr(key, vv);
         }
 
-        private static void ParsePage<T>(IDictionary<string, StringValues> ps, SelectStatementBuilder<T> builder)
+        private static void ParsePage(IDictionary<string, StringValues> ps, SelectStatementBuilder builder)
         {
             if (ps.TryGetValue("Rows", out var psize) && int.TryParse(psize, out var ipsize))
             {
@@ -180,7 +176,7 @@ namespace SV.Db.Sloth
             }
         }
 
-        private static void ParseOrderBy<T>(IDictionary<string, StringValues> ps, SelectStatementBuilder<T> builder)
+        private static void ParseOrderBy(IDictionary<string, StringValues> ps, SelectStatementBuilder builder)
         {
             if (ps.TryGetValue("OrderBy", out var ob))
             {
@@ -209,7 +205,7 @@ namespace SV.Db.Sloth
             }
         }
 
-        private static void ParseFields<T>(IDictionary<string, StringValues> ps, SelectStatementBuilder<T> builder)
+        private static void ParseFields(IDictionary<string, StringValues> ps, SelectStatementBuilder builder)
         {
             var fields = new SelectFieldsStatement() { Fields = new List<FieldStatement>() };
             var hasTotalCount = ps.TryGetValue("TotalCount", out var tc) && bool.TryParse(tc, out var htc) && htc;

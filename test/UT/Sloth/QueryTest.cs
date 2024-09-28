@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 namespace UT.Sloth
 {
     [Table("QueryTest")]
+    [Db("t")]
     public class QueryTest
     {
         public int A { get; set; }
@@ -18,7 +19,7 @@ namespace UT.Sloth
         [Fact]
         public void SelectFields()
         {
-            var a = From.Of<QueryTest>();
+            var a = new ConnectionStringProviders(null, null).From<QueryTest>();
             a.Select(nameof(QueryTest.A), nameof(QueryTest.B));
             a.Select(i => i.A, i => i.B);
         }
@@ -276,8 +277,8 @@ namespace UT.Sloth
 
         public void AssertWhere<T, O>(Expression<Func<T, bool>> expr, Action<O> action)
         {
-            var a = From.Of<T>();
-            var s = a.Where(expr).Build(null);
+            var a = new ConnectionStringProviders(null, null).From<T>();
+            var s = a.Where(expr).Build();
             Assert.NotNull(s);
             Assert.NotNull(s.Where);
             Assert.NotNull(s.Where.Condition);

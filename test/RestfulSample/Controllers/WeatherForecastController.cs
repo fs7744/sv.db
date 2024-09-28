@@ -26,13 +26,13 @@ namespace RestfulSample.Controllers
         [HttpGet("expr")]
         public async Task<object> DoSelects()
         {
-            return await factory.ExecuteQueryAsync(From.Of<Weather>().Where(i => !i.Name.Like("e")).WithTotalCount());
+            return await factory.From<Weather>().Where(i => !i.Name.Like("e")).WithTotalCount().ExecuteQueryAsync<dynamic>();
         }
 
         [HttpGet("querystring")]
         public object Doquerystring()
         {
-            return factory.BuildStatement(From.Of<Weather>().Where(i => !i.Name.Like("e")).WithTotalCount()).ParseToQueryString();
+            return factory.From<Weather>().Where(i => !i.Name.Like("e")).WithTotalCount().ParseToQueryString();
         }
 
         public WeatherForecastController(IConnectionFactory factory)

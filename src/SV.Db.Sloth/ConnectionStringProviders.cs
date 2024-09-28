@@ -1,16 +1,17 @@
-﻿using SV.Db.Sloth.Attributes;
-using System.Collections.Frozen;
-using System.Reflection;
+﻿using SV.Db.Sloth.Statements;
+using SV.Db.Sloth;
 
 namespace SV.Db
 {
     public class ConnectionStringProviders : ConnectionStringProvider, IConnectionFactory
     {
         private readonly IConnectionStringProvider[] providers;
+        private readonly IDbEntityInfoProvider entityInfoProvider;
 
-        public ConnectionStringProviders(IConnectionStringProvider[] providers)
+        public ConnectionStringProviders(IConnectionStringProvider[] providers, IDbEntityInfoProvider entityInfoProvider)
         {
             this.providers = providers;
+            this.entityInfoProvider = entityInfoProvider;
         }
 
         public override bool ContainsKey(string key)
@@ -36,6 +37,29 @@ namespace SV.Db
         public DbEntityInfo GetDbEntityInfo<T>()
         {
             return DbEntityInfo<T>.Get();
+        }
+
+        public DbEntityInfo GetDbEntityInfo(string key)
+        {
+            return entityInfoProvider?.GetDbEntityInfo(key);
+        }
+
+        public SelectStatementBuilder<T> From<T>()
+        {
+            var r = new SelectStatementBuilder<T>();
+            r.dbEntityInfo = GetDbEntityInfo<T>();
+            r.factory = this;
+            r.statement.Fields = new SelectFieldsStatement { Fields = new List<FieldStatement> { new FieldStatement { Name = "*" } } };
+            return r;
+        }
+
+        public SelectStatementBuilder From(string key)
+        {
+            var r = new SelectStatementBuilder();
+            r.dbEntityInfo = GetDbEntityInfo(key);
+            r.factory = this;
+            r.statement.Fields = new SelectFieldsStatement { Fields = new List<FieldStatement> { new FieldStatement { Name = "*" } } };
+            return r;
         }
     }
 }
