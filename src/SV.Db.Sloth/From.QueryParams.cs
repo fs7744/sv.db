@@ -16,6 +16,7 @@ namespace SV.Db.Sloth
                     ParseConditionStatementToQuery(sb, statement.Where.Condition);
                     dict.Add("Where", sb.ToString());
                 }
+                // todo
             }
             return dict;
         }

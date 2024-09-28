@@ -8,6 +8,13 @@ namespace SV.Db.Sloth
 {
     public static partial class From
     {
+        public static SelectStatement BuildStatement<T>(this IConnectionFactory factory, SelectStatementBuilder<T> builder)
+        {
+            DbEntityInfo info = factory.GetDbEntityInfo<T>();
+            SelectStatement statement = builder.Build(info);
+            return statement;
+        }
+
         public static PageResult<dynamic> ExecuteQuery<T>(this IConnectionFactory factory, SelectStatementBuilder<T> builder)
         {
             DbEntityInfo info = factory.GetDbEntityInfo<T>();

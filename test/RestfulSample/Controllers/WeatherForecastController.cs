@@ -29,6 +29,12 @@ namespace RestfulSample.Controllers
             return await factory.ExecuteQueryAsync(From.Of<Weather>().Where(i => !i.Name.Like("e")).WithTotalCount());
         }
 
+        [HttpGet("querystring")]
+        public object Doquerystring()
+        {
+            return factory.BuildStatement(From.Of<Weather>().Where(i => !i.Name.Like("e")).WithTotalCount()).ParseToQueryString();
+        }
+
         public WeatherForecastController(IConnectionFactory factory)
         {
             this.factory = factory;

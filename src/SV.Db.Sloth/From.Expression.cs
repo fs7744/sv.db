@@ -15,9 +15,15 @@ namespace SV.Db.Sloth
 
         public static SelectStatementBuilder<T> Select<T>(this SelectStatementBuilder<T> select, params string[] fields)
         {
-            foreach (var item in fields.Where(j => !select.statement.Fields.Fields.Any(i => i.Name.Equals(j, StringComparison.OrdinalIgnoreCase))))
+            var f = select.statement.Fields.Fields;
+            foreach (var item in fields.Where(j => !f.Any(i => i.Name.Equals(j, StringComparison.OrdinalIgnoreCase))))
             {
-                select.statement.Fields.Fields.Add(new FieldStatement() { Name = item });
+                f.Add(new FieldStatement() { Name = item });
+            }
+            var fs = f.Count(i => i is FieldStatement) > 1 ? f.FirstOrDefault(i => i.Name.Equals("*", StringComparison.OrdinalIgnoreCase)) : null;
+            if (fs != null)
+            {
+                f.Remove(fs);
             }
 
             return select;
