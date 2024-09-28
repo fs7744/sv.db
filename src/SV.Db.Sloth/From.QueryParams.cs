@@ -16,7 +16,37 @@ namespace SV.Db.Sloth
                     ParseConditionStatementToQuery(sb, statement.Where.Condition);
                     dict.Add("Where", sb.ToString());
                 }
-                // todo
+                if (statement.Limit != null)
+                {
+                    var limit = statement.Limit;
+                    dict.Add("Rows", limit.Rows.ToString());
+                    if (limit.Offset > 0)
+                    {
+                        dict.Add("Offset", limit.Offset.ToString());
+                    }
+                }
+                if (statement.OrderBy != null && statement.OrderBy.Fields.IsNotNullOrEmpty())
+                {
+                    var order = statement.OrderBy;
+                    dict.Add("OrderBy", string.Join(",", order.Fields.Select(i => $"{i.Name}:{Enums<OrderByDirection>.GetName(i.Direction)}")));
+                }
+                if (statement.Fields != null && statement.Fields.Fields.IsNotNullOrEmpty())
+                {
+                    var fs = statement.Fields.Fields;
+                    if (fs?.Any(i => i is FuncCallerStatement f && f.Name.Equals("count()", StringComparison.OrdinalIgnoreCase)) == true)
+                    {
+                        dict.Add("TotalCount", "true");
+                    }
+
+                    if (fs?.Any(i => i is FieldStatement f && f.Name.Equals("*", StringComparison.OrdinalIgnoreCase)) != true)
+                    {
+                        dict.Add("Fields", string.Join(",", fs.Where(i => i is FieldStatement && i.Name != "*").Select(i => i.Name)));
+                    }
+                }
+                else
+                {
+                    dict.Add("NoRows", "true");
+                }
             }
             return dict;
         }

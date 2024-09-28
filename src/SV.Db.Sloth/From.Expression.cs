@@ -16,6 +16,8 @@ namespace SV.Db.Sloth
         public static SelectStatementBuilder<T> Select<T>(this SelectStatementBuilder<T> select, params string[] fields)
         {
             var f = select.statement.Fields.Fields;
+            if (f == null)
+                f = select.statement.Fields.Fields = new List<FieldStatement>();
             foreach (var item in fields.Where(j => !f.Any(i => i.Name.Equals(j, StringComparison.OrdinalIgnoreCase))))
             {
                 f.Add(new FieldStatement() { Name = item });
@@ -31,9 +33,31 @@ namespace SV.Db.Sloth
 
         public static SelectStatementBuilder<T> WithTotalCount<T>(this SelectStatementBuilder<T> select)
         {
-            if (!select.statement.Fields.Fields.Any(i => i.Name.Equals("count()", StringComparison.OrdinalIgnoreCase)))
+            var f = select.statement.Fields.Fields;
+            if (f == null)
+                f = select.statement.Fields.Fields = new List<FieldStatement>();
+            if (!f.Any(i => i.Name.Equals("count()", StringComparison.OrdinalIgnoreCase)))
             {
-                select.statement.Fields.Fields.Add(new FuncCallerStatement() { Name = "count()" });
+                f.Add(new FuncCallerStatement() { Name = "count()" });
+            }
+
+            return select;
+        }
+
+        public static SelectStatementBuilder<T> NoRows<T>(this SelectStatementBuilder<T> select)
+        {
+            var f = select.statement.Fields.Fields;
+            if (f != null)
+            {
+                if (f.Any(i => i.Name.Equals("count()", StringComparison.OrdinalIgnoreCase)))
+                {
+                    f.Clear();
+                    f.Add(new FuncCallerStatement() { Name = "count()" });
+                }
+                else
+                {
+                    f.Clear();
+                }
             }
 
             return select;
