@@ -1,6 +1,11 @@
 @RestfulSample_HostAddress = http://localhost:5259
 
-GET {{RestfulSample_HostAddress}}/weather?where=not (name like '%e%')
+POST {{RestfulSample_HostAddress}}/weather
 Accept: application/json
+Content-Type: application/json
+
+{
+  "where":"not (name like '%e%')"
+}
 
 ###

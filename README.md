@@ -94,7 +94,7 @@ You can use such code to query Weather which name no Contains 'e'
 [HttpGet("expr")]
 public async Task<object> DoSelects()
 {
-    return await factory.ExecuteQueryAsync(From.Of<Weather>().Where(i => !i.Name.Like("e")).WithTotalCount());
+    return await factory.From<Weather>().Where(i => !i.Name.Like("e")).WithTotalCount().ExecuteQueryAsync<dynamic>();
 }
 
 [Db("Demo")]

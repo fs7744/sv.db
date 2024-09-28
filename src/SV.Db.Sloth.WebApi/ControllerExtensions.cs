@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using SV.Db;
 using SV.Db.Sloth;
@@ -26,10 +27,91 @@ namespace Microsoft.AspNetCore.Mvc
             return controller.HttpContext.Request.Query.ToDictionary(StringComparer.OrdinalIgnoreCase);
         }
 
-        public static async ValueTask<IDictionary<string, StringValues>> GetQueryParamsByBody(this ControllerBase controller, CancellationToken cancellationToken = default)
+        public static async Task<object> QueryByBodyAsync<T>(this ControllerBase controller, CancellationToken cancellationToken = default)
         {
-            return (await System.Text.Json.JsonSerializer.DeserializeAsync<Dictionary<string, string>>(controller.HttpContext.Request.Body, options: null, cancellationToken))
+            var ps = (await System.Text.Json.JsonSerializer.DeserializeAsync<Dictionary<string, string>>(controller.HttpContext.Request.Body, options: null, cancellationToken))
+                .ToDictionary(i => i.Key, i => new StringValues(i.Value), StringComparer.OrdinalIgnoreCase);
+
+            var factory = controller.HttpContext.RequestServices.GetRequiredService<IConnectionFactory>();
+            DbEntityInfo info;
+            SelectStatement statement;
+            try
+            {
+                statement = factory.ParseByParams<T>(ps, out info);
+            }
+            catch (Exception ex)
+            {
+                return controller.BadRequest(new
+                {
+                    error = ex.Message
+                });
+            }
+
+            return await factory.ExecuteQueryAsync<dynamic>(info, statement, cancellationToken);
+        }
+
+        public static async Task<object> QueryByBodyAsync(this ControllerBase controller, string key, CancellationToken cancellationToken = default)
+        {
+            var ps = (await System.Text.Json.JsonSerializer.DeserializeAsync<Dictionary<string, string>>(controller.HttpContext.Request.Body, options: null, cancellationToken))
                 .ToDictionary(i => i.Key, i => new StringValues( i.Value), StringComparer.OrdinalIgnoreCase);
+
+            var factory = controller.HttpContext.RequestServices.GetRequiredService<IConnectionFactory>();
+            DbEntityInfo info;
+            SelectStatement statement;
+            try
+            {
+                statement = factory.ParseByParams(key, ps, out info);
+            }
+            catch (Exception ex)
+            {
+                return controller.BadRequest(new
+                {
+                    error = ex.Message
+                });
+            }
+
+            return await factory.ExecuteQueryAsync<dynamic>(info, statement, cancellationToken);
+        }
+
+        public static object QueryByParams(this ControllerBase controller, string key)
+        {
+            var factory = controller.HttpContext.RequestServices.GetRequiredService<IConnectionFactory>();
+            var ps = controller.GetQueryParams();
+            DbEntityInfo info;
+            SelectStatement statement;
+            try
+            {
+                statement = factory.ParseByParams(key, ps, out info);
+            }
+            catch (Exception ex)
+            {
+                return controller.BadRequest(new
+                {
+                    error = ex.Message
+                });
+            }
+            return factory.ExecuteQuery<dynamic>(info, statement);
+        }
+
+        public static async Task<object> QueryByParamsAsync(this ControllerBase controller, string key, CancellationToken cancellationToken = default)
+        {
+            var factory = controller.HttpContext.RequestServices.GetRequiredService<IConnectionFactory>();
+            var ps = controller.GetQueryParams();
+            DbEntityInfo info;
+            SelectStatement statement;
+            try
+            {
+                statement = factory.ParseByParams(key, ps, out info);
+            }
+            catch (Exception ex)
+            {
+                return controller.BadRequest(new
+                {
+                    error = ex.Message
+                });
+            }
+
+            return await factory.ExecuteQueryAsync<dynamic>(info, statement, cancellationToken);
         }
 
         public static object QueryByParams<T>(this ControllerBase controller)

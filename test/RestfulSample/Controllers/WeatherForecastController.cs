@@ -23,6 +23,12 @@ namespace RestfulSample.Controllers
             return await this.QueryByParamsAsync<Weather>();
         }
 
+        [HttpPost] //todo [QueryByParamsSwagger(typeof(Weather))]
+        public async Task<object> PostSelects()//[FromQuery, Required] string name)
+        {
+            return await this.QueryByBodyAsync<Weather>();
+        }
+
         [HttpGet("expr")]
         public async Task<object> DoSelects()
         {
