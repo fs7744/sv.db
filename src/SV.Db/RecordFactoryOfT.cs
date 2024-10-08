@@ -228,7 +228,7 @@ namespace SV.Db
             return new UnBuffedAsyncEnumerator(reader, s, this, state, ref cancellationToken);
         }
 
-        internal struct UnBuffedAsyncEnumerator : IAsyncEnumerable<T?>, IAsyncEnumerator<T?>
+        internal class UnBuffedAsyncEnumerator : IAsyncEnumerable<T?>, IAsyncEnumerator<T?>
         {
             private readonly DbDataReader reader;
             private readonly RecordFactory<T> factory;

@@ -164,7 +164,8 @@ namespace SV.Db.Analyzers
                 return false;
             }
             var type = method.ContainingType;
-            if (type is not { Name: "CommandExtensions", ContainingNamespace: { Name: "Db", IsGlobalNamespace: false, ContainingNamespace: { Name: "SV", IsGlobalNamespace: false, ContainingNamespace.IsGlobalNamespace: true } } })
+            if ((type is not { Name: "CommandExtensions", ContainingNamespace: { Name: "Db", IsGlobalNamespace: false, ContainingNamespace: { Name: "SV", IsGlobalNamespace: false, ContainingNamespace.IsGlobalNamespace: true } } })
+                && (type is not { Name: "From", ContainingNamespace: { Name: "Sloth", IsGlobalNamespace: false, ContainingNamespace: { Name: "Db", IsGlobalNamespace: false, ContainingNamespace: { Name: "SV", IsGlobalNamespace: false, ContainingNamespace.IsGlobalNamespace: true } } } }))
             {
                 return false;
             }

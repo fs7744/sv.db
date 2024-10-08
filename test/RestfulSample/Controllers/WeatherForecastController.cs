@@ -32,7 +32,7 @@ namespace RestfulSample.Controllers
         [HttpGet("expr")]
         public async Task<object> DoSelects()
         {
-            return await factory.From<Weather>().Where(i => !i.Name.Like("e")).WithTotalCount().ExecuteQueryAsync<dynamic>();
+            return await factory.From<Weather>().Where(i => !i.Name.Like("e")).WithTotalCount().ExecuteQueryAsync<Weather>();
         }
 
         [HttpGet("querystring")]
