@@ -9,5 +9,7 @@
         }
 
         public string Key { get; }
+
+        public int Timeout { get; set; } = 30;
     }
 }

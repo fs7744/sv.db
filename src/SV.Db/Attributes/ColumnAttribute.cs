@@ -15,7 +15,7 @@ namespace SV.Db
 
         public byte Scale { get; set; }
 
-        public byte Size { get; set; }
+        public int Size { get; set; }
 
         public string? CustomConvertToDbMethod { get; set; }
 

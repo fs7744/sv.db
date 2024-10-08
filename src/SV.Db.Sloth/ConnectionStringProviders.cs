@@ -36,7 +36,14 @@ namespace SV.Db
 
         public DbEntityInfo GetDbEntityInfo<T>()
         {
-            return DbEntityInfo<T>.Get();
+            var r = DbEntityInfo<T>.Get();
+            if (entityInfoProvider != null)
+            {
+                var rr = entityInfoProvider?.GetDbEntityInfo(r.DbKey);
+                if (rr != null)
+                    return rr;
+            }
+            return r;
         }
 
         public DbEntityInfo GetDbEntityInfo(string key)

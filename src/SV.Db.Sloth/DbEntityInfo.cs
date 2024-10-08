@@ -6,6 +6,7 @@ namespace SV.Db
 {
     public class DbEntityInfo
     {
+        public int Timeout { get; set; } = 30;
         public string? DbKey { get; set; }
 
         public string Table { get; set; }
@@ -66,12 +67,14 @@ namespace SV.Db
             {
                 c = new DbEntityInfo();
                 var t = typeof(T);
-                c.DbKey = t.GetCustomAttribute<DbAttribute>()?.Key;
+                var d = t.GetCustomAttribute<DbAttribute>();
+                c.DbKey = d?.Key;
                 if (string.IsNullOrWhiteSpace(c.DbKey))
                     throw new KeyNotFoundException("DbAttribute");
+                c.Timeout = d.Timeout;
                 c.Table = t.GetCustomAttribute<TableAttribute>()?.Table;
-                if (string.IsNullOrWhiteSpace(c.Table))
-                    throw new KeyNotFoundException("TableAttribute");
+                //if (string.IsNullOrWhiteSpace(c.Table))
+                //    throw new KeyNotFoundException("TableAttribute");
                 var fields = t.GetMembers(BindingFlags.Public | BindingFlags.Instance).Where(i => i.MemberType == MemberTypes.Property || i.MemberType == MemberTypes.Field).ToList();
                 c.SelectFields = fields.Select(DbEntityInfo.ConvertSelectMember)
                     .Where(i => i.HasValue)

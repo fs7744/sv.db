@@ -55,6 +55,7 @@ namespace SV.Db.Sloth.MySql
 
         private void BuildSelectStatement(DbCommand cmd, DbEntityInfo info, SelectStatement statement, out bool hasTotalCount, out bool hasRows)
         {
+            cmd.CommandTimeout = info.Timeout;
             var fs = statement.Fields?.Fields;
             var sql = new StringBuilder();
 
@@ -287,21 +288,25 @@ namespace SV.Db.Sloth.MySql
                 case "is-null":
                     sb.Append("IS NULL");
                     break;
+
                 case "like":
                     sb.Append("like ");
                     var rf = os.Right as StringValueStatement;
                     sb.Append($"'%{ReplaceLikeValue(rf.Value)}%'");
                     break;
+
                 case "prefix-like":
                     sb.Append("like ");
                     var lrf = os.Right as StringValueStatement;
                     sb.Append($"'{ReplaceLikeValue(lrf.Value)}%'");
                     break;
+
                 case "suffix-like":
                     sb.Append("like ");
                     var srf = os.Right as StringValueStatement;
                     sb.Append($"'%{ReplaceLikeValue(srf.Value)}'");
                     break;
+
                 default:
                     sb.Append(os.Operater);
                     sb.Append(' ');
