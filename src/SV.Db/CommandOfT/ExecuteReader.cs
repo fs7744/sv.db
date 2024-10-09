@@ -83,7 +83,7 @@ namespace SV.Db
             if (reader.HasRows)
             {
                 var r = factory.Read(reader);
-                if (reader.HasRows && !reader.IsClosed)
+                if (!reader.IsClosed && reader.HasRows)
                 {
                     reader.NextResult();
                 }
@@ -97,7 +97,7 @@ namespace SV.Db
             if (reader.HasRows)
             {
                 var r = reader.Read<T>();
-                if (reader.HasRows && !reader.IsClosed)
+                if (!reader.IsClosed && reader.HasRows)
                 {
                     await reader.NextResultAsync(cancellationToken);
                 }
@@ -112,7 +112,7 @@ namespace SV.Db
             if (reader.HasRows)
             {
                 var r = factory.Read(reader);
-                if (reader.HasRows && !reader.IsClosed)
+                if (!reader.IsClosed && reader.HasRows)
                 {
                     await reader.NextResultAsync(cancellationToken);
                 }
@@ -126,7 +126,7 @@ namespace SV.Db
             if (reader.HasRows)
             {
                 var r = reader.ReadEnumerable<T>(estimateRow, true);
-                if (reader.HasRows && !reader.IsClosed)
+                if (!reader.IsClosed && reader.HasRows)
                 {
                     reader.NextResult();
                 }
@@ -141,7 +141,7 @@ namespace SV.Db
             if (reader.HasRows)
             {
                 var r = factory.ReadBuffed(reader, estimateRow);
-                if (reader.HasRows && !reader.IsClosed)
+                if (!reader.IsClosed && reader.HasRows)
                 {
                     reader.NextResult();
                 }
@@ -158,7 +158,7 @@ namespace SV.Db
                 {
                     yield return item;
                 }
-                if (reader.HasRows && !reader.IsClosed)
+                if (!reader.IsClosed && reader.HasRows)
                 {
                     await reader.NextResultAsync(cancellationToken);
                 }
@@ -174,7 +174,7 @@ namespace SV.Db
                 {
                     yield return item;
                 }
-                if (reader.HasRows && !reader.IsClosed)
+                if (!reader.IsClosed && reader.HasRows)
                 {
                     await reader.NextResultAsync(cancellationToken);
                 }

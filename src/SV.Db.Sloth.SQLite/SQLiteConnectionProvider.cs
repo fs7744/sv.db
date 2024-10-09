@@ -57,84 +57,86 @@ namespace SV.Db.Sloth.SQLite
         {
             cmd.CommandTimeout = info.Timeout;
             var fs = statement.Fields?.Fields;
-            var sql = new StringBuilder();
 
+            string table = info.Table;
+            if (!table.Contains("{Where}", StringComparison.OrdinalIgnoreCase))
+            {
+                table += " {Where} ";
+            }
+
+            string tableTotal;
             var hasTotal = fs?.FirstOrDefault(i => i is FuncCallerStatement f && f.Name.Equals("count()", StringComparison.OrdinalIgnoreCase));
             if (hasTotal != null)
             {
                 fs.Remove(hasTotal);
-                sql.Append("SELECT count(*) FROM {{TableTotal}} ; ");
+                if (table.Contains("{Fields}", StringComparison.OrdinalIgnoreCase))
+                {
+                    tableTotal = table.Replace("{Fields}", " count(*) ", StringComparison.OrdinalIgnoreCase) + " ; ";
+                }
+                else
+                {
+                    tableTotal = $"SELECT count(*) FROM {table} ; ";
+                }
                 hasTotalCount = true;
             }
             else
             {
+                tableTotal = string.Empty;
                 hasTotalCount = false;
             }
 
             if (fs.IsNotNullOrEmpty())
             {
                 hasRows = true;
-                sql.Append("SELECT {{Fields}} FROM {{Table}} ");
+                if (!table.Contains("{Fields}", StringComparison.OrdinalIgnoreCase))
+                {
+                    table = $"SELECT {{Fields}} FROM {table} ";
+                }
             }
             else
             {
                 hasRows = false;
             }
 
-            var table = info.Table;
-            if (table.Contains("{{Where}}", StringComparison.OrdinalIgnoreCase))
+            if (table.Contains("{OrderBy}", StringComparison.OrdinalIgnoreCase))
             {
-                table = table.Replace("{{Where}}", "{{Where}}", StringComparison.OrdinalIgnoreCase);
+                tableTotal = tableTotal.Replace("{OrderBy}", string.Empty, StringComparison.OrdinalIgnoreCase);
             }
             else
             {
-                table += " {{Where}} ";
+                table += " {OrderBy} ";
             }
 
-            if (table.Contains("{{OrderBy}}", StringComparison.OrdinalIgnoreCase))
-            {
-                table = table.Replace("{{OrderBy}}", "{{OrderBy}}", StringComparison.OrdinalIgnoreCase);
-                sql = sql.Replace("{{TableTotal}}", table.Replace("{{OrderBy}}", string.Empty));
-                if (hasRows)
-                {
-                    sql = sql.Replace("{{Table}}", table);
-                }
-            }
-            else
-            {
-                sql = sql.Replace("{{TableTotal}}", table);
-                if (hasRows)
-                {
-                    sql = sql.Replace("{{Table}}", table);
-                    sql = sql.Append(" {{OrderBy}}");
-                }
-            }
+            table = tableTotal + table;
 
-            if (fs?.Any(i => i is FieldStatement f && f.Name.Equals("*", StringComparison.OrdinalIgnoreCase)) == true)
+            if (hasRows)
             {
-                sql = sql.Replace("{{Fields}}", string.Join(",", info.SelectFields.Select(i => i.Value)));
-            }
-            else if (hasRows)
-            {
-                sql = sql.Replace("{{Fields}}", string.Join(",", fs.Select(i => info.SelectFields.TryGetValue(i.Name, out var v) ? v : null).Where(i => !string.IsNullOrWhiteSpace(i))));
+                if (fs?.Any(i => i is FieldStatement f && f.Name.Equals("*", StringComparison.OrdinalIgnoreCase)) == true)
+                {
+                    table = table.Replace("{Fields}", string.Join(",", info.SelectFields.Select(i => i.Value)), StringComparison.OrdinalIgnoreCase);
+                }
+                else
+                {
+                    table = table.Replace("{Fields}", string.Join(",", fs.Select(i => info.SelectFields.TryGetValue(i.Name, out var v) ? v : null).Where(i => !string.IsNullOrWhiteSpace(i))), StringComparison.OrdinalIgnoreCase);
+                }
             }
 
             if (statement.Where == null || statement.Where.Condition == null)
             {
-                sql = sql.Replace("{{Where}}", string.Empty);
+                table = table.Replace("{Where}", string.Empty, StringComparison.OrdinalIgnoreCase);
             }
             else
             {
-                sql = sql.Replace("{{Where}}", BuildCondition(cmd, info, statement.Where.Condition));
+                table = table.Replace("{Where}", BuildCondition(cmd, info, statement.Where.Condition), StringComparison.OrdinalIgnoreCase);
             }
 
             if (statement.OrderBy == null || statement.OrderBy.Fields.IsNullOrEmpty())
             {
-                sql = sql.Replace("{{OrderBy}}", " {{Limit}} ");
+                table = table.Replace("{OrderBy}", " {Limit} ", StringComparison.OrdinalIgnoreCase);
             }
             else
             {
-                sql = sql.Replace("{{OrderBy}}", " order by " + string.Join(",", statement.OrderBy.Fields.Select(i => $"{i.Name} {(i.Direction == OrderByDirection.Asc ? "asc" : "desc")}")) + " {{Limit}} ");
+                table = table.Replace("{OrderBy}", " order by " + string.Join(",", statement.OrderBy.Fields.Select(i => $"{i.Name} {(i.Direction == OrderByDirection.Asc ? "asc" : "desc")}")) + " {Limit} ");
             }
 
             if (statement.Limit == null)
@@ -145,9 +147,9 @@ namespace SV.Db.Sloth.SQLite
             {
                 statement.Limit.Offset = 0;
             }
-            sql = sql.Replace("{{Limit}}", $"Limit {statement.Limit.Offset},{statement.Limit.Rows} ");
+            table = table.Replace("{Limit}", $"Limit {statement.Limit.Offset},{statement.Limit.Rows} ");
 
-            cmd.CommandText = sql.ToString();
+            cmd.CommandText = table;
         }
 
         public class BuildConditionContext

@@ -185,11 +185,11 @@ namespace SV.Db.Sloth
                 foreach (var item in ob.ToString().Split(",", StringSplitOptions.RemoveEmptyEntries))
                 {
                     var f = new OrderByFieldStatement();
-                    if (!item.Contains(":"))
+                    if (item.Contains(":"))
                     {
                         var ff = item.Split(':', 2);
                         f.Name = ff[0];
-                        f.Direction = Enums<OrderByDirection>.Parse(ff[1]);
+                        f.Direction = Enums<OrderByDirection>.Parse(ff[1], true);
                     }
                     else
                     {
