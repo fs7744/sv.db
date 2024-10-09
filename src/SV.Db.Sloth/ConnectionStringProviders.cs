@@ -34,7 +34,7 @@ namespace SV.Db
             throw new KeyNotFoundException(key);
         }
 
-        public DbEntityInfo GetDbEntityInfo<T>()
+        public DbEntityInfo GetDbEntityInfoOfT<T>()
         {
             var r = DbEntityInfo<T>.Get();
             if (entityInfoProvider != null)
@@ -54,7 +54,7 @@ namespace SV.Db
         public SelectStatementBuilder<T> From<T>()
         {
             var r = new SelectStatementBuilder<T>();
-            r.dbEntityInfo = GetDbEntityInfo<T>();
+            r.dbEntityInfo = GetDbEntityInfoOfT<T>();
             r.factory = this;
             r.statement.Fields = new SelectFieldsStatement { Fields = new List<FieldStatement> { new FieldStatement { Name = "*" } } };
             return r;

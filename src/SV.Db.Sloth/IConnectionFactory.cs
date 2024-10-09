@@ -12,7 +12,9 @@ namespace SV.Db
 
         Task<PageResult<T>> ExecuteQueryAsync<T>(DbEntityInfo info, SelectStatement statement, CancellationToken cancellationToken = default);
 
-        public DbEntityInfo GetDbEntityInfo<T>();
+        public DbEntityInfo GetDbEntityInfoOfT<T>();
+
+        public DbEntityInfo GetDbEntityInfo(string key);
 
         public SelectStatementBuilder<T> From<T>();
 
