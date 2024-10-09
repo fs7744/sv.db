@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc
             return controller.HttpContext.Request.Query.ToDictionary(StringComparer.OrdinalIgnoreCase);
         }
 
-        public static async Task<object> QueryByBodyAsync<T>(this ControllerBase controller, CancellationToken cancellationToken = default)
+        public static async Task<object> QueryByBodyAsync<T>(this ControllerBase controller, SelectStatementOptions options = null, CancellationToken cancellationToken = default)
         {
             var ps = (await System.Text.Json.JsonSerializer.DeserializeAsync<Dictionary<string, string>>(controller.HttpContext.Request.Body, options: null, cancellationToken))
                 .ToDictionary(i => i.Key, i => new StringValues(i.Value), StringComparer.OrdinalIgnoreCase);
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc
             SelectStatement statement;
             try
             {
-                statement = factory.ParseByParams<T>(ps, out info);
+                statement = factory.ParseByParams<T>(ps, out info, options);
             }
             catch (Exception ex)
             {
@@ -50,17 +50,17 @@ namespace Microsoft.AspNetCore.Mvc
             return await factory.ExecuteQueryAsync<dynamic>(info, statement, cancellationToken);
         }
 
-        public static async Task<object> QueryByBodyAsync(this ControllerBase controller, string key, CancellationToken cancellationToken = default)
+        public static async Task<object> QueryByBodyAsync(this ControllerBase controller, string key, SelectStatementOptions options = null, CancellationToken cancellationToken = default)
         {
             var ps = (await System.Text.Json.JsonSerializer.DeserializeAsync<Dictionary<string, string>>(controller.HttpContext.Request.Body, options: null, cancellationToken))
-                .ToDictionary(i => i.Key, i => new StringValues( i.Value), StringComparer.OrdinalIgnoreCase);
+                .ToDictionary(i => i.Key, i => new StringValues(i.Value), StringComparer.OrdinalIgnoreCase);
 
             var factory = controller.HttpContext.RequestServices.GetRequiredService<IConnectionFactory>();
             DbEntityInfo info;
             SelectStatement statement;
             try
             {
-                statement = factory.ParseByParams(key, ps, out info);
+                statement = factory.ParseByParams(key, ps, out info, options);
             }
             catch (Exception ex)
             {
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc
             return await factory.ExecuteQueryAsync<dynamic>(info, statement, cancellationToken);
         }
 
-        public static object QueryByParams(this ControllerBase controller, string key)
+        public static object QueryByParams(this ControllerBase controller, string key, SelectStatementOptions options = null)
         {
             var factory = controller.HttpContext.RequestServices.GetRequiredService<IConnectionFactory>();
             var ps = controller.GetQueryParams();
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc
             SelectStatement statement;
             try
             {
-                statement = factory.ParseByParams(key, ps, out info);
+                statement = factory.ParseByParams(key, ps, out info, options);
             }
             catch (Exception ex)
             {
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc
             return factory.ExecuteQuery<dynamic>(info, statement);
         }
 
-        public static async Task<object> QueryByParamsAsync(this ControllerBase controller, string key, CancellationToken cancellationToken = default)
+        public static async Task<object> QueryByParamsAsync(this ControllerBase controller, string key, SelectStatementOptions options = null, CancellationToken cancellationToken = default)
         {
             var factory = controller.HttpContext.RequestServices.GetRequiredService<IConnectionFactory>();
             var ps = controller.GetQueryParams();
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc
             SelectStatement statement;
             try
             {
-                statement = factory.ParseByParams(key, ps, out info);
+                statement = factory.ParseByParams(key, ps, out info, options);
             }
             catch (Exception ex)
             {
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc
             return await factory.ExecuteQueryAsync<dynamic>(info, statement, cancellationToken);
         }
 
-        public static object QueryByParams<T>(this ControllerBase controller)
+        public static object QueryByParams<T>(this ControllerBase controller, SelectStatementOptions options = null)
         {
             var factory = controller.HttpContext.RequestServices.GetRequiredService<IConnectionFactory>();
             var ps = controller.GetQueryParams();
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc
             SelectStatement statement;
             try
             {
-                statement = factory.ParseByParams<T>(ps, out info);
+                statement = factory.ParseByParams<T>(ps, out info, options);
             }
             catch (Exception ex)
             {
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc
             return factory.ExecuteQuery<dynamic>(info, statement);
         }
 
-        public static async Task<object> QueryByParamsAsync<T>(this ControllerBase controller, CancellationToken cancellationToken = default)
+        public static async Task<object> QueryByParamsAsync<T>(this ControllerBase controller, SelectStatementOptions options = null, CancellationToken cancellationToken = default)
         {
             var factory = controller.HttpContext.RequestServices.GetRequiredService<IConnectionFactory>();
             var ps = controller.GetQueryParams();
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc
             SelectStatement statement;
             try
             {
-                statement = factory.ParseByParams<T>(ps, out info);
+                statement = factory.ParseByParams<T>(ps, out info, options);
             }
             catch (Exception ex)
             {

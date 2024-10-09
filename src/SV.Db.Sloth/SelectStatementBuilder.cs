@@ -20,6 +20,10 @@ namespace SV.Db.Sloth
             {
                 statement.Visit(CheckStatement);
             }
+            if (this.options.Visiter != null)
+            {
+                statement.Visit(this.options.Visiter);
+            }
             return statement;
         }
 
@@ -67,5 +71,6 @@ namespace SV.Db.Sloth
 
         public bool AllowNotFoundFields { get; init; } = false;
         public bool AllowNonStrictCondition { get; init; } = false;
+        public Action<Statement> Visiter { get; init; } = null;
     }
 }
