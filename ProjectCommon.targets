@@ -10,5 +10,6 @@
 		<Copyright>@2024 Victor.x.qu</Copyright>
 		<PackageProjectUrl>https://git.newegg.org/newegg-college/mis-hub/pikaq</PackageProjectUrl>
 		<RepositoryUrl>https://git.newegg.org/newegg-college/mis-hub/pikaq</RepositoryUrl>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	</PropertyGroup>
 </Project>
