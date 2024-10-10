@@ -37,14 +37,7 @@ namespace SV.Db.Sloth
 
         public static SelectStatementBuilder WithTotalCount(this SelectStatementBuilder select)
         {
-            var f = select.statement.Fields.Fields;
-            if (f == null)
-                f = select.statement.Fields.Fields = new List<FieldStatement>();
-            if (!f.Any(i => i.Field.Equals("count()", StringComparison.OrdinalIgnoreCase)))
-            {
-                f.Add(new FuncCallerStatement() { Field = "count()" });
-            }
-
+            select.statement.HasTotalCount = true;
             return select;
         }
 
@@ -59,15 +52,7 @@ namespace SV.Db.Sloth
             var f = select.statement.Fields.Fields;
             if (f != null)
             {
-                if (f.Any(i => i.Field.Equals("count()", StringComparison.OrdinalIgnoreCase)))
-                {
-                    f.Clear();
-                    f.Add(new FuncCallerStatement() { Field = "count()" });
-                }
-                else
-                {
-                    f.Clear();
-                }
+                f.Clear();
             }
 
             return select;

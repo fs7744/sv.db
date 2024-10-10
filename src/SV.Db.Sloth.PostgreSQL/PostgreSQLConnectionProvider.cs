@@ -65,10 +65,8 @@ namespace SV.Db.Sloth.PostgreSQL
             }
 
             string tableTotal;
-            var hasTotal = fs?.FirstOrDefault(i => i is FuncCallerStatement f && f.Field.Equals("count()", StringComparison.OrdinalIgnoreCase));
-            if (hasTotal != null)
+            if (statement.HasTotalCount)
             {
-                fs.Remove(hasTotal);
                 if (table.Contains("{Fields}", StringComparison.OrdinalIgnoreCase))
                 {
                     tableTotal = table.Replace("{Fields}", " count(*) ", StringComparison.OrdinalIgnoreCase) + " ; ";

@@ -10,6 +10,8 @@
         public OrderByStatement OrderBy { get; set; }
         public LimitStatement Limit { get; set; }
 
+        public bool HasTotalCount { get; set; }
+
         public override void Visit(Action<Statement> visitor)
         {
             visitor(this);

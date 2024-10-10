@@ -33,7 +33,7 @@ namespace SV.Db.Sloth
                 if (statement.Fields != null && statement.Fields.Fields.IsNotNullOrEmpty())
                 {
                     var fs = statement.Fields.Fields;
-                    if (fs?.Any(i => i is FuncCallerStatement f && f.Field.Equals("count()", StringComparison.OrdinalIgnoreCase)) == true)
+                    if (statement.HasTotalCount)
                     {
                         dict.Add("TotalCount", "true");
                     }

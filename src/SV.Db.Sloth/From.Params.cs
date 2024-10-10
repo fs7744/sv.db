@@ -212,7 +212,7 @@ namespace SV.Db.Sloth
             ps.Remove("TotalCount");
             if (hasTotalCount)
             {
-                fields.Fields.Add(new FuncCallerStatement() { Field = "count()" });
+                builder.statement.HasTotalCount = true;
             }
             var noRows = ps.TryGetValue("NoRows", out var nr) && bool.TryParse(nr, out var nnr) && nnr;
             ps.Remove("NoRows");
