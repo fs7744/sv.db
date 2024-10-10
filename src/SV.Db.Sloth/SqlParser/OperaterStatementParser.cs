@@ -22,9 +22,9 @@ namespace SV.Db.Sloth.SqlParser
                     }
                     else if (v.Equals("in", StringComparison.OrdinalIgnoreCase))
                     {
-                        var op = new InOperaterStatement();
                         if (context.MoveNext() && context.Stack.Peek() is FieldStatement vs)
                         {
+                            var op = new InOperaterStatement();
                             var index = context.Index;
                             op.Left = vs;
                             context.Stack.Pop();
@@ -40,9 +40,9 @@ namespace SV.Db.Sloth.SqlParser
                     }
                     else if (v.Equals("not", StringComparison.OrdinalIgnoreCase))
                     {
-                        var op = new UnaryOperaterStatement() { Operater = "not" };
                         if (context.MoveNext())
                         {
+                            var op = new UnaryOperaterStatement() { Operater = "not" };
                             var index = context.Index;
                             context.Stack.Push(op);
                             do
@@ -70,9 +70,9 @@ namespace SV.Db.Sloth.SqlParser
                     }
                     else if (v.Equals("or", StringComparison.OrdinalIgnoreCase))
                     {
-                        var op = new ConditionsStatement() { Condition = Condition.Or };
                         if (context.MoveNext() && context.Stack.Peek() is ConditionStatement vs)
                         {
+                            var op = new ConditionsStatement() { Condition = Condition.Or };
                             var index = context.Index;
                             op.Left = vs;
                             context.Stack.Pop();
@@ -102,9 +102,9 @@ namespace SV.Db.Sloth.SqlParser
                     }
                     else if (v.Equals("and", StringComparison.OrdinalIgnoreCase))
                     {
-                        var op = new ConditionsStatement() { Condition = Condition.And };
                         if (context.MoveNext() && context.Stack.Peek() is ConditionStatement vs)
                         {
+                            var op = new ConditionsStatement() { Condition = Condition.And };
                             var index = context.Index;
                             op.Left = vs;
                             context.Stack.Pop();
@@ -131,11 +131,88 @@ namespace SV.Db.Sloth.SqlParser
                         }
                         throw new ParserExecption($"Can't parse near by {c.GetValue()} (Line:{c.StartLine},Col:{c.StartColumn})");
                     }
-                    //else if (v.Equals("json", StringComparison.OrdinalIgnoreCase))
-                    //{
-                    //    var op = new JsonFieldValueStatement() { Operater = "not" };
-                    //}
+                    else if (v.Equals("json", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (context.MoveNext())
+                        {
+                            var op = new JsonFieldStatement() { };
+                            var index = context.Index;
+                            context.Stack.Push(op);
+                            if (ConvertJsonField(context, op) && context.Stack.Peek() == op)
+                            {
+                                return true;
+                            }
+                            context.Index = index;
+                            c = context.Current;
+                        }
+                        throw new ParserExecption($"Can't parse near by {c.GetValue()} (Line:{c.StartLine},Col:{c.StartColumn})");
+                    }
                 }
+            }
+            return false;
+        }
+
+        private bool ConvertJsonField(StatementParserContext context, JsonFieldStatement op)
+        {
+            var t = context.Current;
+            if (t.Type == TokenType.Sign
+                && t.GetValue().Equals("(", StringComparison.Ordinal)
+                && context.MoveNext())
+            {
+                t = context.Current;
+                if (t.Type != TokenType.Word)
+                {
+                    return false;
+                }
+                op.Field = t.GetValue().ToString();
+                if (!context.MoveNext())
+                {
+                    return false;
+                }
+                t = context.Current;
+                if (t.Type != TokenType.Sign && !t.GetValue().Equals(",", StringComparison.Ordinal))
+                {
+                    return false;
+                }
+                if (!context.MoveNext())
+                {
+                    return false;
+                }
+                t = context.Current;
+                if (t.Type != TokenType.String)
+                {
+                    return false;
+                }
+                op.Path = t.GetValue().ToString();
+                if (!context.MoveNext())
+                {
+                    return false;
+                }
+                t = context.Current;
+                if (t.Type == TokenType.Sign && t.GetValue().Equals(",", StringComparison.Ordinal))
+                {
+                    if (!context.MoveNext())
+                    {
+                        return false;
+                    }
+                    t = context.Current;
+                    if (t.Type != TokenType.Word)
+                    {
+                        return false;
+                    }
+                    op.As = t.GetValue().ToString();
+                }
+                if (!context.MoveNext())
+                {
+                    return false;
+                }
+                t = context.Current;
+                if (t.Type != TokenType.Sign && !t.GetValue().Equals(")", StringComparison.Ordinal))
+                {
+                    return false;
+                }
+                context.MoveNext();
+                return true;
             }
             return false;
         }

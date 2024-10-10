@@ -12,7 +12,7 @@ namespace UT.SqlParser
     public class SqlStatementParserTest
     {
         [Theory]
-        //[InlineData("json(yy,\"$.a[2]\", \"name\") = NULL ", " yy = null ", typeof(OperaterStatement))]
+        [InlineData("json(yy,\"$.a[2]\", name) = NULL ", " json(yy,'$.a[2]',name) = null ", typeof(OperaterStatement))]
         [InlineData("1", "1", typeof(NumberValueStatement))]
         [InlineData("1.3", "1.3", typeof(NumberValueStatement))]
         [InlineData("-77.3", "-77.3", typeof(NumberValueStatement))]

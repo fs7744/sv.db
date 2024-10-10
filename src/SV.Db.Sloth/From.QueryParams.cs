@@ -182,7 +182,22 @@ namespace SV.Db.Sloth
 
         private static void ParseBuildValueStatementToQuery(ValueStatement v, StringBuilder sb)
         {
-            if (v is FieldStatement f)
+            if (v is JsonFieldStatement js)
+            {
+                sb.Append("json(");
+                sb.Append(js.Field);
+                sb.Append(",");
+                sb.Append("'");
+                sb.Append(js.Path.Replace("'", "\\'"));
+                sb.Append("'");
+                if (!string.IsNullOrWhiteSpace(js.As))
+                {
+                    sb.Append(",");
+                    sb.Append(js.As);
+                }
+                sb.Append(")");
+            }
+            else if (v is FieldStatement f)
             {
                 sb.Append(f.Field);
             }

@@ -37,7 +37,7 @@ namespace SV.Db.Sloth
             if (!options.AllowNotFoundFields)
             {
                 var fs = dbEntityInfo.SelectFields;
-                if (statement is FieldStatement field && field is not FuncCallerStatement && !field.Field.Equals("*") && (fs.IsNullOrEmpty() || !fs.ContainsKey(field.Field)))
+                if (statement is FieldStatement field && !field.Field.Equals("*") && (fs.IsNullOrEmpty() || !fs.ContainsKey(field.Field)))
                 {
                     throw new KeyNotFoundException($"Field {field.Field} not found");
                 }

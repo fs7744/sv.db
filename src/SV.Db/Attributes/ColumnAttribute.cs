@@ -20,5 +20,7 @@ namespace SV.Db
         public string? CustomConvertToDbMethod { get; set; }
 
         public string? CustomConvertFromDbMethod { get; set; }
+
+        public bool IsJson { get; set; }
     }
 }
