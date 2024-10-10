@@ -30,7 +30,7 @@ namespace UT.Sloth
             AssertWhere<QueryTest, OperaterStatement>(i => i.A > 1, o =>
             {
                 Assert.Equal(">", o.Operater);
-                var f = Assert.IsType<FieldValueStatement>(o.Left);
+                var f = Assert.IsType<FieldStatement>(o.Left);
                 Assert.Equal("A", f.Field);
                 var v = Assert.IsType<NumberValueStatement>(o.Right);
                 Assert.Equal(1, v.Value);
@@ -38,7 +38,7 @@ namespace UT.Sloth
             AssertWhere<QueryTest, OperaterStatement>(i => i.A >= 12, o =>
             {
                 Assert.Equal(">=", o.Operater);
-                var f = Assert.IsType<FieldValueStatement>(o.Left);
+                var f = Assert.IsType<FieldStatement>(o.Left);
                 Assert.Equal("A", f.Field);
                 var v = Assert.IsType<NumberValueStatement>(o.Right);
                 Assert.Equal(12, v.Value);
@@ -46,7 +46,7 @@ namespace UT.Sloth
             AssertWhere<QueryTest, OperaterStatement>(i => i.A <= 121, o =>
             {
                 Assert.Equal("<=", o.Operater);
-                var f = Assert.IsType<FieldValueStatement>(o.Left);
+                var f = Assert.IsType<FieldStatement>(o.Left);
                 Assert.Equal("A", f.Field);
                 var v = Assert.IsType<NumberValueStatement>(o.Right);
                 Assert.Equal(121, v.Value);
@@ -55,7 +55,7 @@ namespace UT.Sloth
             AssertWhere<QueryTest, OperaterStatement>(i => i.B != 121, o =>
             {
                 Assert.Equal("!=", o.Operater);
-                var f = Assert.IsType<FieldValueStatement>(o.Left);
+                var f = Assert.IsType<FieldStatement>(o.Left);
                 Assert.Equal("B", f.Field);
                 var v = Assert.IsType<NumberValueStatement>(o.Right);
                 Assert.Equal(121, v.Value);
@@ -64,7 +64,7 @@ namespace UT.Sloth
             AssertWhere<QueryTest, OperaterStatement>(i => i.A < 121.4, o =>
             {
                 Assert.Equal("<", o.Operater);
-                var f = Assert.IsType<FieldValueStatement>(o.Left);
+                var f = Assert.IsType<FieldStatement>(o.Left);
                 Assert.Equal("A", f.Field);
                 var v = Assert.IsType<NumberValueStatement>(o.Right);
                 Assert.Equal(new decimal(121.4), v.Value);
@@ -72,7 +72,7 @@ namespace UT.Sloth
             AssertWhere<QueryTest, OperaterStatement>(i => i.A == 1, o =>
             {
                 Assert.Equal("=", o.Operater);
-                var f = Assert.IsType<FieldValueStatement>(o.Left);
+                var f = Assert.IsType<FieldStatement>(o.Left);
                 Assert.Equal("A", f.Field);
                 var v = Assert.IsType<NumberValueStatement>(o.Right);
                 Assert.Equal(1, v.Value);
@@ -80,7 +80,7 @@ namespace UT.Sloth
             AssertWhere<QueryTest, OperaterStatement>(i => 1 == i.A, o =>
             {
                 Assert.Equal("=", o.Operater);
-                var f = Assert.IsType<FieldValueStatement>(o.Right);
+                var f = Assert.IsType<FieldStatement>(o.Right);
                 Assert.Equal("A", f.Field);
                 var v = Assert.IsType<NumberValueStatement>(o.Left);
                 Assert.Equal(1, v.Value);
@@ -88,7 +88,7 @@ namespace UT.Sloth
             AssertWhere<QueryTest, OperaterStatement>(i => i.T, o =>
             {
                 Assert.Equal("=", o.Operater);
-                var f = Assert.IsType<FieldValueStatement>(o.Left);
+                var f = Assert.IsType<FieldStatement>(o.Left);
                 Assert.Equal("T", f.Field);
                 var v = Assert.IsType<BooleanValueStatement>(o.Right);
                 Assert.True(v.Value);
@@ -99,7 +99,7 @@ namespace UT.Sloth
                 Assert.Equal("not", oo.Operater);
                 var o = Assert.IsType<OperaterStatement>(oo.Right);
                 Assert.Equal("=", o.Operater);
-                var f = Assert.IsType<FieldValueStatement>(o.Left);
+                var f = Assert.IsType<FieldStatement>(o.Left);
                 Assert.Equal("T", f.Field);
                 var v = Assert.IsType<BooleanValueStatement>(o.Right);
                 Assert.True(v.Value);
@@ -107,7 +107,7 @@ namespace UT.Sloth
             AssertWhere<QueryTest, OperaterStatement>(i => i.T2 == false, o =>
             {
                 Assert.Equal("=", o.Operater);
-                var f = Assert.IsType<FieldValueStatement>(o.Left);
+                var f = Assert.IsType<FieldStatement>(o.Left);
                 Assert.Equal("T2", f.Field);
                 var v = Assert.IsType<BooleanValueStatement>(o.Right);
                 Assert.False(v.Value);
@@ -116,7 +116,7 @@ namespace UT.Sloth
             AssertWhere<QueryTest, OperaterStatement>(i => i.Ts == "s", o =>
             {
                 Assert.Equal("=", o.Operater);
-                var f = Assert.IsType<FieldValueStatement>(o.Left);
+                var f = Assert.IsType<FieldStatement>(o.Left);
                 Assert.Equal("Ts", f.Field);
                 var v = Assert.IsType<StringValueStatement>(o.Right);
                 Assert.Equal("s", v.Value);
@@ -127,7 +127,7 @@ namespace UT.Sloth
                 Assert.Equal(Condition.And, oo.Condition);
                 var o = Assert.IsType<OperaterStatement>(oo.Left);
                 Assert.Equal("=", o.Operater);
-                var f = Assert.IsType<FieldValueStatement>(o.Left);
+                var f = Assert.IsType<FieldStatement>(o.Left);
                 Assert.Equal("Ts", f.Field);
                 var v = Assert.IsType<StringValueStatement>(o.Right);
                 Assert.Equal("s", v.Value);
@@ -136,7 +136,7 @@ namespace UT.Sloth
                 Assert.Equal("not", o2.Operater);
                 var o3 = Assert.IsType<OperaterStatement>(o2.Right);
                 Assert.Equal("=", o.Operater);
-                var f2 = Assert.IsType<FieldValueStatement>(o3.Left);
+                var f2 = Assert.IsType<FieldStatement>(o3.Left);
                 Assert.Equal("T", f2.Field);
                 var v2 = Assert.IsType<BooleanValueStatement>(o3.Right);
                 Assert.True(v2.Value);
@@ -146,7 +146,7 @@ namespace UT.Sloth
                 Assert.Equal(Condition.And, oo.Condition);
                 var o = Assert.IsType<OperaterStatement>(oo.Left);
                 Assert.Equal("=", o.Operater);
-                var f = Assert.IsType<FieldValueStatement>(o.Left);
+                var f = Assert.IsType<FieldStatement>(o.Left);
                 Assert.Equal("Ts", f.Field);
                 var v = Assert.IsType<StringValueStatement>(o.Right);
                 Assert.Equal("s", v.Value);
@@ -155,7 +155,7 @@ namespace UT.Sloth
                 Assert.Equal("not", o2.Operater);
                 var o3 = Assert.IsType<OperaterStatement>(o2.Right);
                 Assert.Equal("=", o.Operater);
-                var f2 = Assert.IsType<FieldValueStatement>(o3.Left);
+                var f2 = Assert.IsType<FieldStatement>(o3.Left);
                 Assert.Equal("T", f2.Field);
                 var v2 = Assert.IsType<BooleanValueStatement>(o3.Right);
                 Assert.True(v2.Value);
@@ -165,7 +165,7 @@ namespace UT.Sloth
                 Assert.Equal(Condition.Or, oo.Condition);
                 var o = Assert.IsType<OperaterStatement>(oo.Left);
                 Assert.Equal("=", o.Operater);
-                var f = Assert.IsType<FieldValueStatement>(o.Left);
+                var f = Assert.IsType<FieldStatement>(o.Left);
                 Assert.Equal("Ts", f.Field);
                 var v = Assert.IsType<StringValueStatement>(o.Right);
                 Assert.Equal("s", v.Value);
@@ -174,7 +174,7 @@ namespace UT.Sloth
                 Assert.Equal("not", o2.Operater);
                 var o3 = Assert.IsType<OperaterStatement>(o2.Right);
                 Assert.Equal("=", o.Operater);
-                var f2 = Assert.IsType<FieldValueStatement>(o3.Left);
+                var f2 = Assert.IsType<FieldStatement>(o3.Left);
                 Assert.Equal("T", f2.Field);
                 var v2 = Assert.IsType<BooleanValueStatement>(o3.Right);
                 Assert.True(v2.Value);
@@ -184,7 +184,7 @@ namespace UT.Sloth
                 Assert.Equal(Condition.Or, oo.Condition);
                 var o = Assert.IsType<OperaterStatement>(oo.Left);
                 Assert.Equal("=", o.Operater);
-                var f = Assert.IsType<FieldValueStatement>(o.Left);
+                var f = Assert.IsType<FieldStatement>(o.Left);
                 Assert.Equal("Ts", f.Field);
                 var v = Assert.IsType<StringValueStatement>(o.Right);
                 Assert.Equal("s", v.Value);
@@ -193,7 +193,7 @@ namespace UT.Sloth
                 Assert.Equal("not", o2.Operater);
                 var o3 = Assert.IsType<OperaterStatement>(o2.Right);
                 Assert.Equal("=", o.Operater);
-                var f2 = Assert.IsType<FieldValueStatement>(o3.Left);
+                var f2 = Assert.IsType<FieldStatement>(o3.Left);
                 Assert.Equal("T", f2.Field);
                 var v2 = Assert.IsType<BooleanValueStatement>(o3.Right);
                 Assert.True(v2.Value);

@@ -27,13 +27,16 @@ namespace SV.Db.Sloth.SqlParser
             var context = t.Context;
             var hasMinus = false;
             bool hasDot = false;
+            bool hasNum = false;
             while (context.TryPeek(out var c))
             {
                 if (chars.Contains(c))
                 {
+                    hasNum = true;
                 }
                 else if (c == Symbols.Dot)
                 {
+                    if (!hasNum) return false;
                     if (hasDot)
                     {
                         //break;

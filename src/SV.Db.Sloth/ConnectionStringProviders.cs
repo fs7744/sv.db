@@ -56,7 +56,7 @@ namespace SV.Db
             var r = new SelectStatementBuilder<T>();
             r.dbEntityInfo = GetDbEntityInfoOfT<T>();
             r.factory = this;
-            r.statement.Fields = new SelectFieldsStatement { Fields = new List<FieldStatement> { new FieldStatement { Name = "*" } } };
+            r.statement.Fields = new SelectFieldsStatement { Fields = new List<FieldStatement> { new FieldStatement { Field = "*" } } };
             return r;
         }
 
@@ -65,7 +65,7 @@ namespace SV.Db
             var r = new SelectStatementBuilder();
             r.dbEntityInfo = GetDbEntityInfo(key);
             r.factory = this;
-            r.statement.Fields = new SelectFieldsStatement { Fields = new List<FieldStatement> { new FieldStatement { Name = "*" } } };
+            r.statement.Fields = new SelectFieldsStatement { Fields = new List<FieldStatement> { new FieldStatement { Field = "*" } } };
             return r;
         }
     }

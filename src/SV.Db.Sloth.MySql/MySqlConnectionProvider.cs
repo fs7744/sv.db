@@ -66,7 +66,7 @@ namespace SV.Db.Sloth.MySql
             }
 
             string tableTotal;
-            var hasTotal = fs?.FirstOrDefault(i => i is FuncCallerStatement f && f.Name.Equals("count()", StringComparison.OrdinalIgnoreCase));
+            var hasTotal = fs?.FirstOrDefault(i => i is FuncCallerStatement f && f.Field.Equals("count()", StringComparison.OrdinalIgnoreCase));
             if (hasTotal != null)
             {
                 fs.Remove(hasTotal);
@@ -112,14 +112,14 @@ namespace SV.Db.Sloth.MySql
 
             if (hasRows)
             {
-                if (fs?.Any(i => i is FieldStatement f && f.Name.Equals("*")) == true)
+                if (fs?.Any(i => i is FieldStatement f && f.Field.Equals("*")) == true)
                 {
                     var all = info.SelectFields.Where(i => i.Key.Equals("*")).Select(i => i.Value).FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
                     table = table.Replace("{Fields}", all != null ? all : string.Join(",", info.SelectFields.Select(i => i.Value)), StringComparison.OrdinalIgnoreCase);
                 }
                 else
                 {
-                    table = table.Replace("{Fields}", string.Join(",", fs.Select(i => info.SelectFields.TryGetValue(i.Name, out var v) ? v : null).Where(i => !string.IsNullOrWhiteSpace(i))), StringComparison.OrdinalIgnoreCase);
+                    table = table.Replace("{Fields}", string.Join(",", fs.Select(i => info.SelectFields.TryGetValue(i.Field, out var v) ? v : null).Where(i => !string.IsNullOrWhiteSpace(i))), StringComparison.OrdinalIgnoreCase);
                 }
             }
 
@@ -208,11 +208,11 @@ namespace SV.Db.Sloth.MySql
             sb.Append(' ');
             BuildValueStatement(io.Left, sb, cmd, info, null, context);
             sb.Append(" in (");
-            BuildArrayValueStatement(io.Right, sb, cmd, info, io.Left as FieldValueStatement, context);
+            BuildArrayValueStatement(io.Right, sb, cmd, info, io.Left as FieldStatement, context);
             sb.Append(") ");
         }
 
-        private static void BuildArrayValueStatement(ArrayValueStatement array, StringBuilder sb, DbCommand cmd, DbEntityInfo info, FieldValueStatement? fieldValueStatement, BuildConditionContext context)
+        private static void BuildArrayValueStatement(ArrayValueStatement array, StringBuilder sb, DbCommand cmd, DbEntityInfo info, FieldStatement? fieldValueStatement, BuildConditionContext context)
         {
             if (array is StringArrayValueStatement s)
             {
@@ -285,7 +285,7 @@ namespace SV.Db.Sloth.MySql
         private static void BuildOperaterStatement(StringBuilder sb, OperaterStatement os, DbCommand cmd, DbEntityInfo info, BuildConditionContext context)
         {
             sb.Append(' ');
-            BuildValueStatement(os.Left, sb, cmd, info, os.Left as FieldValueStatement, context);
+            BuildValueStatement(os.Left, sb, cmd, info, os.Left as FieldStatement, context);
             sb.Append(' ');
             switch (os.Operater)
             {
@@ -314,16 +314,16 @@ namespace SV.Db.Sloth.MySql
                 default:
                     sb.Append(os.Operater);
                     sb.Append(' ');
-                    BuildValueStatement(os.Right, sb, cmd, info, os.Right as FieldValueStatement, context);
+                    BuildValueStatement(os.Right, sb, cmd, info, os.Right as FieldStatement, context);
                     break;
             }
 
             sb.Append(' ');
         }
 
-        private static void BuildValueStatement(ValueStatement v, StringBuilder sb, DbCommand cmd, DbEntityInfo info, FieldValueStatement? fieldValueStatement, BuildConditionContext context)
+        private static void BuildValueStatement(ValueStatement v, StringBuilder sb, DbCommand cmd, DbEntityInfo info, FieldStatement? fieldValueStatement, BuildConditionContext context)
         {
-            if (v is FieldValueStatement f)
+            if (v is FieldStatement f)
             {
                 sb.Append(info.SelectFields[f.Field]);
             }

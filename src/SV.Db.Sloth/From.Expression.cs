@@ -11,11 +11,11 @@ namespace SV.Db.Sloth
             var f = select.statement.Fields.Fields;
             if (f == null)
                 f = select.statement.Fields.Fields = new List<FieldStatement>();
-            foreach (var item in fields.Where(j => !f.Any(i => i.Name.Equals(j, StringComparison.OrdinalIgnoreCase))))
+            foreach (var item in fields.Where(j => !f.Any(i => i.Field.Equals(j, StringComparison.OrdinalIgnoreCase))))
             {
-                f.Add(new FieldStatement() { Name = item });
+                f.Add(new FieldStatement() { Field = item });
             }
-            var fs = f.Count(i => i is FieldStatement) > 1 ? f.FirstOrDefault(i => i.Name.Equals("*", StringComparison.OrdinalIgnoreCase)) : null;
+            var fs = f.Count(i => i is FieldStatement) > 1 ? f.FirstOrDefault(i => i.Field.Equals("*", StringComparison.OrdinalIgnoreCase)) : null;
             if (fs != null)
             {
                 f.Remove(fs);
@@ -40,9 +40,9 @@ namespace SV.Db.Sloth
             var f = select.statement.Fields.Fields;
             if (f == null)
                 f = select.statement.Fields.Fields = new List<FieldStatement>();
-            if (!f.Any(i => i.Name.Equals("count()", StringComparison.OrdinalIgnoreCase)))
+            if (!f.Any(i => i.Field.Equals("count()", StringComparison.OrdinalIgnoreCase)))
             {
-                f.Add(new FuncCallerStatement() { Name = "count()" });
+                f.Add(new FuncCallerStatement() { Field = "count()" });
             }
 
             return select;
@@ -59,10 +59,10 @@ namespace SV.Db.Sloth
             var f = select.statement.Fields.Fields;
             if (f != null)
             {
-                if (f.Any(i => i.Name.Equals("count()", StringComparison.OrdinalIgnoreCase)))
+                if (f.Any(i => i.Field.Equals("count()", StringComparison.OrdinalIgnoreCase)))
                 {
                     f.Clear();
-                    f.Add(new FuncCallerStatement() { Name = "count()" });
+                    f.Add(new FuncCallerStatement() { Field = "count()" });
                 }
                 else
                 {
@@ -117,7 +117,7 @@ namespace SV.Db.Sloth
 
         public static SelectStatementBuilder<T> OrderBy<T>(this SelectStatementBuilder<T> select, params (string, OrderByDirection)[] fields)
         {
-            OrderBy(select as SelectStatementBuilder, fields); 
+            OrderBy(select as SelectStatementBuilder, fields);
             return select;
         }
 
@@ -179,12 +179,12 @@ namespace SV.Db.Sloth
                 {
                     return null;
                 }
-                FieldValueStatement f = null;
+                FieldStatement f = null;
                 if (m.Arguments[0] is MemberExpression me && me.Expression != null)
                 {
                     if (me.Expression.NodeType == ExpressionType.Parameter)
                     {
-                        f = new FieldValueStatement() { Field = me.Member.Name };
+                        f = new FieldStatement() { Field = me.Member.Name };
                     }
                 }
 
@@ -274,7 +274,7 @@ namespace SV.Db.Sloth
                 {
                     if (m.Expression.NodeType == ExpressionType.Parameter)
                     {
-                        return new FieldValueStatement() { Field = m.Member.Name };
+                        return new FieldStatement() { Field = m.Member.Name };
                     }
                     else
                     {

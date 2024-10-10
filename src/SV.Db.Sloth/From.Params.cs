@@ -95,17 +95,17 @@ namespace SV.Db.Sloth
 
         private static readonly FrozenDictionary<string, Func<string, string, ConditionStatement>> operators = new Dictionary<string, Func<string, string, ConditionStatement>>
         {
-            { "{{nl}}", (k, v) => new OperaterStatement() { Operater = "is-null", Left = new FieldValueStatement() { Field = k } } },
-            { "{{eq}}", (k, v) => new OperaterStatement() { Operater = "=", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },
-            { "{{lt}}", (k, v) => new OperaterStatement() { Operater = "<=", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },
-            { "{{le}}", (k, v) => new OperaterStatement() { Operater = "<", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },
-            { "{{gr}}", (k, v) => new OperaterStatement() { Operater = ">", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },
-            { "{{gt}}", (k, v) => new OperaterStatement() { Operater = ">=", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },
-            { "{{nq}}", (k, v) => new OperaterStatement() { Operater = "!=", Left = new FieldValueStatement() { Field = k }, Right = ConvertValueStatement(v) } },
-            { "{{in}}", (k, v) => new InOperaterStatement() { Left = new FieldValueStatement() { Field = k }, Right = ConvertArrayStatement(v) } },
-            { "{{lk}}", (k, v) => new OperaterStatement() { Operater = "prefix-like", Left = new FieldValueStatement() { Field = k }, Right = new StringValueStatement() { Value = v } } },
-            { "{{kk}}", (k, v) => new OperaterStatement() { Operater = "like", Left = new FieldValueStatement() { Field = k }, Right = new StringValueStatement() { Value = v } } },
-            { "{{rk}}", (k, v) => new OperaterStatement() { Operater = "suffix-like", Left = new FieldValueStatement() { Field = k }, Right = new StringValueStatement() { Value = v } } },
+            { "{{nl}}", (k, v) => new OperaterStatement() { Operater = "is-null", Left = new FieldStatement() { Field = k } } },
+            { "{{eq}}", (k, v) => new OperaterStatement() { Operater = "=", Left = new FieldStatement() { Field = k }, Right = ConvertValueStatement(v) } },
+            { "{{lt}}", (k, v) => new OperaterStatement() { Operater = "<=", Left = new FieldStatement() { Field = k }, Right = ConvertValueStatement(v) } },
+            { "{{le}}", (k, v) => new OperaterStatement() { Operater = "<", Left = new FieldStatement() { Field = k }, Right = ConvertValueStatement(v) } },
+            { "{{gr}}", (k, v) => new OperaterStatement() { Operater = ">", Left = new FieldStatement() { Field = k }, Right = ConvertValueStatement(v) } },
+            { "{{gt}}", (k, v) => new OperaterStatement() { Operater = ">=", Left = new FieldStatement() { Field = k }, Right = ConvertValueStatement(v) } },
+            { "{{nq}}", (k, v) => new OperaterStatement() { Operater = "!=", Left = new FieldStatement() { Field = k }, Right = ConvertValueStatement(v) } },
+            { "{{in}}", (k, v) => new InOperaterStatement() { Left = new FieldStatement() { Field = k }, Right = ConvertArrayStatement(v) } },
+            { "{{lk}}", (k, v) => new OperaterStatement() { Operater = "prefix-like", Left = new FieldStatement() { Field = k }, Right = new StringValueStatement() { Value = v } } },
+            { "{{kk}}", (k, v) => new OperaterStatement() { Operater = "like", Left = new FieldStatement() { Field = k }, Right = new StringValueStatement() { Value = v } } },
+            { "{{rk}}", (k, v) => new OperaterStatement() { Operater = "suffix-like", Left = new FieldStatement() { Field = k }, Right = new StringValueStatement() { Value = v } } },
             { "{{no}}", (k, v) => new UnaryOperaterStatement(){ Operater = "not", Right = ParseOperaterStatement(k,v) }}
         }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
@@ -212,7 +212,7 @@ namespace SV.Db.Sloth
             ps.Remove("TotalCount");
             if (hasTotalCount)
             {
-                fields.Fields.Add(new FuncCallerStatement() { Name = "count()" });
+                fields.Fields.Add(new FuncCallerStatement() { Field = "count()" });
             }
             var noRows = ps.TryGetValue("NoRows", out var nr) && bool.TryParse(nr, out var nnr) && nnr;
             ps.Remove("NoRows");
@@ -232,7 +232,7 @@ namespace SV.Db.Sloth
                         //}
                         //else
                         //{
-                        f.Name = item;
+                        f.Field = item;
                         //}
                         fields.Fields.Add(f);
                     }
@@ -240,7 +240,7 @@ namespace SV.Db.Sloth
                 else
                 {
                     var f = new FieldStatement();
-                    f.Name = "*";
+                    f.Field = "*";
                     fields.Fields.Add(f);
                 }
             }

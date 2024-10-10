@@ -37,9 +37,9 @@ namespace SV.Db.Sloth
             if (!options.AllowNotFoundFields)
             {
                 var fs = dbEntityInfo.SelectFields;
-                if (statement is FieldStatement field && field is not FuncCallerStatement && !field.Name.Equals("*") && (fs.IsNullOrEmpty() || !fs.ContainsKey(field.Name)))
+                if (statement is FieldStatement field && field is not FuncCallerStatement && !field.Field.Equals("*") && (fs.IsNullOrEmpty() || !fs.ContainsKey(field.Field)))
                 {
-                    throw new KeyNotFoundException($"Field {field.Name} not found");
+                    throw new KeyNotFoundException($"Field {field.Field} not found");
                 }
 
                 if (statement is OrderByFieldStatement fieldOrderBy && (fs.IsNullOrEmpty() || !fs.ContainsKey(fieldOrderBy.Name)))
@@ -47,7 +47,7 @@ namespace SV.Db.Sloth
                     throw new KeyNotFoundException($"Field {fieldOrderBy.Name} not found");
                 }
 
-                if (statement is FieldValueStatement fieldValue && (fs.IsNullOrEmpty() || !fs.ContainsKey(fieldValue.Field)))
+                if (statement is FieldStatement fieldValue && (fs.IsNullOrEmpty() || !fs.ContainsKey(fieldValue.Field)))
                 {
                     throw new KeyNotFoundException($"Field {fieldValue.Field} not found");
                 }
@@ -56,9 +56,9 @@ namespace SV.Db.Sloth
             {
                 if (statement is OperaterStatement os)
                 {
-                    if (os.Left is FieldValueStatement l && os.Right is FieldValueStatement r)
+                    if (os.Left is FieldStatement l && os.Right is FieldStatement r)
                         throw new NotSupportedException($"{os.Operater} not support two fields: {l.Field},{r.Field}");
-                    if (os.Left is not FieldValueStatement && os.Right is not FieldValueStatement)
+                    if (os.Left is not FieldStatement && os.Right is not FieldStatement)
                         throw new NotSupportedException($"{os.Operater} must has one field");
                 }
             }

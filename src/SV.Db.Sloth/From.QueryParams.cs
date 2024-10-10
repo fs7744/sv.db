@@ -33,14 +33,14 @@ namespace SV.Db.Sloth
                 if (statement.Fields != null && statement.Fields.Fields.IsNotNullOrEmpty())
                 {
                     var fs = statement.Fields.Fields;
-                    if (fs?.Any(i => i is FuncCallerStatement f && f.Name.Equals("count()", StringComparison.OrdinalIgnoreCase)) == true)
+                    if (fs?.Any(i => i is FuncCallerStatement f && f.Field.Equals("count()", StringComparison.OrdinalIgnoreCase)) == true)
                     {
                         dict.Add("TotalCount", "true");
                     }
 
-                    if (fs?.Any(i => i is FieldStatement f && f.Name.Equals("*", StringComparison.OrdinalIgnoreCase)) != true)
+                    if (fs?.Any(i => i is FieldStatement f && f.Field.Equals("*", StringComparison.OrdinalIgnoreCase)) != true)
                     {
-                        dict.Add("Fields", string.Join(",", fs.Where(i => i is FieldStatement && i.Name != "*").Select(i => i.Name)));
+                        dict.Add("Fields", string.Join(",", fs.Where(i => i is FieldStatement && i.Field != "*").Select(i => i.Field)));
                     }
                 }
                 else
@@ -182,7 +182,7 @@ namespace SV.Db.Sloth
 
         private static void ParseBuildValueStatementToQuery(ValueStatement v, StringBuilder sb)
         {
-            if (v is FieldValueStatement f)
+            if (v is FieldStatement f)
             {
                 sb.Append(f.Field);
             }

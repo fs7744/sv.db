@@ -1,8 +1,7 @@
 ﻿namespace SV.Db.Sloth.Statements
 {
-    public class FieldStatement : Statement
+    public class FieldStatement : ValueStatement
     {
-        public string Name { get; set; }
-        //public string? As { get; set; }
+        public string Field { get; set; }
     }
 }

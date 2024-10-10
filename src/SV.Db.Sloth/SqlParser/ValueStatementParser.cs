@@ -6,7 +6,7 @@ namespace SV.Db.Sloth.SqlParser
     {
         public bool TryParse(StatementParserContext context)
         {
-            if (context.HasToken()) 
+            if (context.HasToken())
             {
                 var c = context.Current;
                 switch (c.Type)
@@ -15,23 +15,28 @@ namespace SV.Db.Sloth.SqlParser
                         context.Stack.Push(new NumberValueStatement() { Value = decimal.Parse(c.GetValue()) });
                         context.MoveNext();
                         return true;
+
                     case TokenType.True:
                         context.Stack.Push(new BooleanValueStatement() { Value = true });
-                        context.MoveNext(); 
+                        context.MoveNext();
                         return true;
+
                     case TokenType.False:
                         context.Stack.Push(new BooleanValueStatement() { Value = false });
                         context.MoveNext();
                         return true;
+
                     case TokenType.Word:
                         var v = c.GetValue();
-                        context.Stack.Push(new FieldValueStatement() { Field = v.ToString() });
+                        context.Stack.Push(new FieldStatement() { Field = v.ToString() });
                         context.MoveNext();
                         return true;
+
                     case TokenType.String:
                         context.Stack.Push(new StringValueStatement() { Value = c.GetValue().ToString() });
                         context.MoveNext();
                         break;
+
                     default:
                         return false;
                 }

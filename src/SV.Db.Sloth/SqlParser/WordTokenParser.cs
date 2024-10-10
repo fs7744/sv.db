@@ -36,7 +36,7 @@ namespace SV.Db.Sloth.SqlParser
             }
             t.Count = context.Index - t.StartIndex;
             var r = t.Count > 0;
-            if (r) 
+            if (r)
             {
                 var v = t.GetValue();
                 if (v.Equals("true", StringComparison.OrdinalIgnoreCase))

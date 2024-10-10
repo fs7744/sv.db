@@ -23,7 +23,7 @@ namespace SV.Db.Sloth.SqlParser
                     else if (v.Equals("in", StringComparison.OrdinalIgnoreCase))
                     {
                         var op = new InOperaterStatement();
-                        if (context.MoveNext() && context.Stack.Peek() is FieldValueStatement vs)
+                        if (context.MoveNext() && context.Stack.Peek() is FieldStatement vs)
                         {
                             var index = context.Index;
                             op.Left = vs;
@@ -131,6 +131,10 @@ namespace SV.Db.Sloth.SqlParser
                         }
                         throw new ParserExecption($"Can't parse near by {c.GetValue()} (Line:{c.StartLine},Col:{c.StartColumn})");
                     }
+                    //else if (v.Equals("json", StringComparison.OrdinalIgnoreCase))
+                    //{
+                    //    var op = new JsonFieldValueStatement() { Operater = "not" };
+                    //}
                 }
             }
             return false;
@@ -193,7 +197,7 @@ namespace SV.Db.Sloth.SqlParser
                     context.Parse(context, true);
                     if (context.Stack.TryPop(out var vsss) && vsss is ValueStatement vss)
                     {
-                        if (op.Operater == "=" && vss is FieldValueStatement f && f.Field.Equals("null", StringComparison.OrdinalIgnoreCase))
+                        if (op.Operater == "=" && vss is FieldStatement f && f.Field.Equals("null", StringComparison.OrdinalIgnoreCase))
                         {
                             op.Operater = "is-null";
                         }

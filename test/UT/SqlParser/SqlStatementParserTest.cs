@@ -18,7 +18,7 @@ namespace UT.SqlParser
         [InlineData("'sdd sd'", "sdd sd", typeof(StringValueStatement))]
         [InlineData("true", "tRue", typeof(BooleanValueStatement))]
         [InlineData("false", "false", typeof(BooleanValueStatement))]
-        [InlineData("xx", "xx", typeof(FieldValueStatement))]
+        [InlineData("xx", "xx", typeof(FieldStatement))]
         [InlineData("v in (1)", " v in (1) ", typeof(InOperaterStatement))]
         [InlineData("v in (1,2,3,4)", " v in (1,2,3,4) ", typeof(InOperaterStatement))]
         [InlineData("v in ('1')", " v in ('1') ", typeof(InOperaterStatement))]
@@ -61,7 +61,7 @@ namespace UT.SqlParser
                 {
                     Assert.Equal(bool.Parse(expected), b.Value);
                 }
-                else if (t is FieldValueStatement f)
+                else if (t is FieldStatement f)
                 {
                     Assert.Equal(expected, f.Field);
                 }
