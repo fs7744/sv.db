@@ -11,5 +11,9 @@
 		<PackageProjectUrl>https://git.newegg.org/newegg-college/mis-hub/pikaq</PackageProjectUrl>
 		<RepositoryUrl>https://git.newegg.org/newegg-college/mis-hub/pikaq</RepositoryUrl>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
+	<ItemGroup>
+		<None Include="../../README.md" Pack="true" PackagePath="/" />
+	</ItemGroup>
 </Project>
