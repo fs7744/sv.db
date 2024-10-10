@@ -112,9 +112,10 @@ namespace SV.Db.Sloth.MySql
 
             if (hasRows)
             {
-                if (fs?.Any(i => i is FieldStatement f && f.Name.Equals("*", StringComparison.OrdinalIgnoreCase)) == true)
+                if (fs?.Any(i => i is FieldStatement f && f.Name.Equals("*")) == true)
                 {
-                    table = table.Replace("{Fields}", string.Join(",", info.SelectFields.Select(i => i.Value)), StringComparison.OrdinalIgnoreCase);
+                    var all = info.SelectFields.Where(i => i.Key.Equals("*")).Select(i => i.Value).FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
+                    table = table.Replace("{Fields}", all != null ? all : string.Join(",", info.SelectFields.Select(i => i.Value)), StringComparison.OrdinalIgnoreCase);
                 }
                 else
                 {

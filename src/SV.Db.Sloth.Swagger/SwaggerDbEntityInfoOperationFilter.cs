@@ -93,7 +93,7 @@ namespace SV.Db.Sloth.Swagger
                         Type = DbType.String.ToJsonType(),
                         Format = DbType.String.ToString()
                     },
-                    Example = new OpenApiString(string.Join(",", info.SelectFields.Select(i => i.Key)))
+                    Example = new OpenApiString(string.Join(",", info.SelectFields.Where(i => i.Key != "*").Select(i => i.Key)))
                 });
             }
 

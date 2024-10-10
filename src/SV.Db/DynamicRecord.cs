@@ -34,7 +34,11 @@ namespace SV.Db
             this.fields = fields;
             this.keys = keys;
             values = new object[fields.Length];
-            source.GetValues(values);
+            for (int i = 0; i < fields.Length; i++)
+            {
+                var r = source.GetValue(i);
+                values[i] = r is DBNull ? null : r;
+            }
         }
 
         public override int GetOrdinal(string name)
