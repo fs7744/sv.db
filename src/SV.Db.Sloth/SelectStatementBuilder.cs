@@ -47,9 +47,9 @@ namespace SV.Db.Sloth
                     throw new KeyNotFoundException($"Field {fieldOrderBy.Name} not found");
                 }
 
-                if (statement is FieldStatement fieldValue && (fs.IsNullOrEmpty() || !fs.ContainsKey(fieldValue.Field)))
+                if (statement is WhereStatement where)
                 {
-                    throw new KeyNotFoundException($"Field {fieldValue.Field} not found");
+                    where.Visit(CheckWhereStatement);
                 }
             }
             if (!options.AllowNonStrictCondition)
@@ -61,6 +61,15 @@ namespace SV.Db.Sloth
                     if (os.Left is not FieldStatement && os.Right is not FieldStatement)
                         throw new NotSupportedException($"{os.Operater} must has one field");
                 }
+            }
+        }
+
+        private void CheckWhereStatement(Statement statement)
+        {
+            var fs = dbEntityInfo.SelectFields;
+            if (statement is FieldStatement fieldValue && (fs.IsNullOrEmpty() || !fs.ContainsKey(fieldValue.Field)))
+            {
+                throw new KeyNotFoundException($"Field {fieldValue.Field} not found");
             }
         }
     }
