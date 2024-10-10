@@ -25,6 +25,8 @@ jobs:
       run: dotnet build
     - name: Test
       run: dotnet test --no-build --verbosity normal
+    - name: Clean
+      run: dotnet clean
     - name: Build
       run: dotnet build --configuration Release --no-restore
     - name: push
