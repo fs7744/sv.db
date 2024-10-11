@@ -5,15 +5,17 @@ namespace SV.Db.Sloth.SqlParser
 {
     public class StatementParserContext : IEnumerator<Token>
     {
-        public StatementParserContext(Token[] tokens, Action<StatementParserContext, bool> parser)
+        public StatementParserContext(Token[] tokens, Action<StatementParserContext, bool> parser, bool parseField)
         {
             Stack = new Stack<Statement>();
             Tokens = tokens;
             Parse = parser;
+            ParseField = parseField;
         }
 
         public Token[] Tokens { get; }
         public Action<StatementParserContext, bool> Parse { get; }
+        public bool ParseField { get; }
         public Stack<Statement> Stack { get; }
 
         public int Index { get; set; }

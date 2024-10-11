@@ -207,7 +207,7 @@ namespace SV.Db.Sloth
 
         private static void ParseFields(IDictionary<string, StringValues> ps, SelectStatementBuilder builder)
         {
-            var fields = new SelectFieldsStatement() { Fields = new List<FieldStatement>() };
+            var fields = new SelectFieldsStatement();
             var hasTotalCount = ps.TryGetValue("TotalCount", out var tc) && bool.TryParse(tc, out var htc) && htc;
             ps.Remove("TotalCount");
             if (hasTotalCount)
@@ -221,27 +221,13 @@ namespace SV.Db.Sloth
                 if (ps.TryGetValue("Fields", out var fs))
                 {
                     ps.Remove("Fields");
-                    foreach (var item in fs.ToString().Split(",", StringSplitOptions.RemoveEmptyEntries))
-                    {
-                        var f = new FieldStatement();
-                        //if (item.Contains(":"))
-                        //{
-                        //    var ff = item.Split(':', 2);
-                        //    f.Name = ff[0];
-                        //    f.As = ff[1];
-                        //}
-                        //else
-                        //{
-                        f.Field = item;
-                        //}
-                        fields.Fields.Add(f);
-                    }
+                    fields.Fields = SqlStatementParser.ParseFields(fs).ToList();
                 }
                 else
                 {
                     var f = new FieldStatement();
                     f.Field = "*";
-                    fields.Fields.Add(f);
+                    fields.Fields = new List<FieldStatement>() { f };
                 }
             }
             if (fields.Fields.Count > 0)

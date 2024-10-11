@@ -1,31 +1,42 @@
 ﻿using SV.Db.Sloth.Statements;
+using System.Linq;
 
 namespace SV.Db.Sloth.SqlParser
 {
     public static class SqlStatementParser
     {
         private static readonly ITokenParser[] tokenParsers;
+        private static readonly IStatementParser[] fieldParsers;
         private static readonly IStatementParser[] statementParsers;
 
         static SqlStatementParser()
         {
+            fieldParsers = new IStatementParser[] { new FieldStatementParser() };
             statementParsers = new IStatementParser[] { new OperaterStatementParser(), new ValueStatementParser() };
             tokenParsers = new ITokenParser[] { new IngoreTokenParser(), new StringTokenParser(), new NumberTokenParser(), new WordTokenParser(), new SignTokenParser() };
         }
 
         public static IEnumerable<Statement> ParseStatements(string sql)
         {
-            var context = new StatementParserContext(Tokenize(sql).ToArray(), ParseStatements);
+            var context = new StatementParserContext(Tokenize(sql).ToArray(), ParseStatements, false);
             ParseStatements(context, false);
             return context.Stack;
         }
 
+        public static IEnumerable<FieldStatement> ParseFields(string sql)
+        {
+            var context = new StatementParserContext(Tokenize(sql).ToArray(), ParseStatements, true);
+            ParseStatements(context, false);
+            return context.Stack.Cast<FieldStatement>();
+        }
+
         private static void ParseStatements(StatementParserContext context, bool doOnce)
         {
+            var s = context.ParseField ? fieldParsers : statementParsers;
             while (context.HasToken())
             {
                 bool matched = false;
-                foreach (var parser in statementParsers)
+                foreach (var parser in s)
                 {
                     if (parser.TryParse(context))
                     {

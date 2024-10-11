@@ -40,7 +40,9 @@ namespace SV.Db.Sloth
 
                     if (fs?.Any(i => i is FieldStatement f && f.Field.Equals("*", StringComparison.OrdinalIgnoreCase)) != true)
                     {
-                        dict.Add("Fields", string.Join(",", fs.Where(i => i is FieldStatement && i.Field != "*").Select(i => i.Field)));
+                        StringBuilder sb = new();
+                        ParseFields(fs.Where(i => i is FieldStatement && i.Field != "*"), sb);
+                        dict.Add("Fields", sb.ToString());
                     }
                 }
                 else
@@ -214,6 +216,23 @@ namespace SV.Db.Sloth
             else if (v is NumberValueStatement n)
             {
                 sb.Append(n.Value.ToString());
+            }
+        }
+
+        public static void ParseFields(IEnumerable<FieldStatement> fields, StringBuilder sb)
+        {
+            var notFirst = false;
+            foreach (var item in fields)
+            {
+                if (notFirst)
+                {
+                    sb.Append(",");
+                }
+                else
+                {
+                    notFirst = true;
+                }
+                ParseBuildValueStatementToQuery(item, sb);
             }
         }
     }

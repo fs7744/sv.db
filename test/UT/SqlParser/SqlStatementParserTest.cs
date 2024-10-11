@@ -99,5 +99,19 @@ namespace UT.SqlParser
             var statements = SqlStatementParser.ParseStatements(v).ToArray();
             action(statements);
         }
+
+        [Theory]
+        [InlineData("", "")]
+        [InlineData("*", "*")]
+        [InlineData("a", "a")]
+        [InlineData("a,b", "b,a")]
+        [InlineData("a,b,json(a,'$.s',d)", "json(a,'$.s',d),b,a")]
+        public void ShouldParseFields(string test, string expected)
+        {
+            var statements = SqlStatementParser.ParseFields(test).ToArray();
+            var sb = new StringBuilder();
+            From.ParseFields(statements.ToList(), sb);
+            Assert.Equal(expected, sb.ToString());
+        }
     }
 }
