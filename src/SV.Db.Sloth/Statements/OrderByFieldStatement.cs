@@ -1,9 +1,7 @@
 ﻿namespace SV.Db.Sloth.Statements
 {
-    public class OrderByFieldStatement : Statement
+    public class OrderByFieldStatement : FieldStatement
     {
-        public string Name { get; set; }
-
         public OrderByDirection Direction { get; set; }
     }
 }

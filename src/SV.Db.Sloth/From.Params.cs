@@ -188,12 +188,12 @@ namespace SV.Db.Sloth
                     if (item.Contains(":"))
                     {
                         var ff = item.Split(':', 2);
-                        f.Name = ff[0];
+                        f.Field = ff[0];
                         f.Direction = Enums<OrderByDirection>.Parse(ff[1], true);
                     }
                     else
                     {
-                        f.Name = item;
+                        f.Field = item;
                         f.Direction = OrderByDirection.Asc;
                     }
                     orderBy.Fields.Add(f);

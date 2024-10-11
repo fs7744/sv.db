@@ -42,9 +42,9 @@ namespace SV.Db.Sloth
                     throw new KeyNotFoundException($"Field {field.Field} not found");
                 }
 
-                if (statement is OrderByFieldStatement fieldOrderBy && (fs.IsNullOrEmpty() || !fs.ContainsKey(fieldOrderBy.Name)))
+                if (statement is OrderByFieldStatement fieldOrderBy && (fs.IsNullOrEmpty() || !fs.ContainsKey(fieldOrderBy.Field)))
                 {
-                    throw new KeyNotFoundException($"Field {fieldOrderBy.Name} not found");
+                    throw new KeyNotFoundException($"Field {fieldOrderBy.Field} not found");
                 }
 
                 if (statement is WhereStatement where)

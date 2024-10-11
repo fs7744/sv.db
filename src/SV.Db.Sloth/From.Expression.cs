@@ -96,7 +96,7 @@ namespace SV.Db.Sloth
 
         public static SelectStatementBuilder OrderBy(this SelectStatementBuilder select, params (string, OrderByDirection)[] fields)
         {
-            select.statement.OrderBy = new OrderByStatement() { Fields = fields.Select(i => new OrderByFieldStatement() { Name = i.Item1, Direction = i.Item2 }).ToList() };
+            select.statement.OrderBy = new OrderByStatement() { Fields = fields.Select(i => new OrderByFieldStatement() { Field = i.Item1, Direction = i.Item2 }).ToList() };
             return select;
         }
 

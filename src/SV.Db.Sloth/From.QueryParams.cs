@@ -28,7 +28,7 @@ namespace SV.Db.Sloth
                 if (statement.OrderBy != null && statement.OrderBy.Fields.IsNotNullOrEmpty())
                 {
                     var order = statement.OrderBy;
-                    dict.Add("OrderBy", string.Join(",", order.Fields.Select(i => $"{i.Name}:{Enums<OrderByDirection>.GetName(i.Direction)}")));
+                    dict.Add("OrderBy", string.Join(",", order.Fields.Select(i => $"{i.Field}:{Enums<OrderByDirection>.GetName(i.Direction)}")));
                 }
                 if (statement.Fields != null && statement.Fields.Fields.IsNotNullOrEmpty())
                 {

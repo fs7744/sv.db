@@ -135,7 +135,7 @@ namespace SV.Db.Sloth.SQLite
             }
             else
             {
-                table = table.Replace("{OrderBy}", " order by " + string.Join(",", statement.OrderBy.Fields.Select(i => $"{i.Name} {(i.Direction == OrderByDirection.Asc ? "asc" : "desc")}")) + " {Limit} ");
+                table = table.Replace("{OrderBy}", " order by " + string.Join(",", statement.OrderBy.Fields.Select(i => $"{i.Field} {(i.Direction == OrderByDirection.Asc ? "asc" : "desc")}")) + " {Limit} ");
             }
 
             if (statement.Limit == null)
