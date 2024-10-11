@@ -104,11 +104,24 @@ namespace UT.SqlParser
         [InlineData("", "")]
         [InlineData("*", "*")]
         [InlineData("a", "a")]
-        [InlineData("a,b", "b,a")]
+        [InlineData("a_d,b", "b,a_d")]
         [InlineData("a,b,json(a,'$.s',d)", "json(a,'$.s',d),b,a")]
         public void ShouldParseFields(string test, string expected)
         {
-            var statements = SqlStatementParser.ParseFields(test).ToArray();
+            var statements = SqlStatementParser.ParseStatements(test, ParseType.SelectField).Cast<FieldStatement>().ToArray();
+            var sb = new StringBuilder();
+            From.ParseFields(statements.ToList(), sb);
+            Assert.Equal(expected, sb.ToString());
+        }
+
+        [Theory]
+        [InlineData("", "")]
+        [InlineData("a", "a Asc")]
+        [InlineData("a asc,b", "b Asc,a Asc")]
+        [InlineData("a,b,json(a,'$.s',d) desc", "json(a,'$.s',d) Desc,b Asc,a Asc")]
+        public void ShouldParseOrderByFields(string test, string expected)
+        {
+            var statements = SqlStatementParser.ParseStatements(test, ParseType.OrderByField).Cast<FieldStatement>().ToArray();
             var sb = new StringBuilder();
             From.ParseFields(statements.ToList(), sb);
             Assert.Equal(expected, sb.ToString());

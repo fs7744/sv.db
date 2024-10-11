@@ -181,23 +181,24 @@ namespace SV.Db.Sloth
             if (ps.TryGetValue("OrderBy", out var ob))
             {
                 ps.Remove("OrderBy");
-                var orderBy = new OrderByStatement() { Fields = new List<OrderByFieldStatement>() };
-                foreach (var item in ob.ToString().Split(",", StringSplitOptions.RemoveEmptyEntries))
-                {
-                    var f = new OrderByFieldStatement();
-                    if (item.Contains(":"))
-                    {
-                        var ff = item.Split(':', 2);
-                        f.Field = ff[0];
-                        f.Direction = Enums<OrderByDirection>.Parse(ff[1], true);
-                    }
-                    else
-                    {
-                        f.Field = item;
-                        f.Direction = OrderByDirection.Asc;
-                    }
-                    orderBy.Fields.Add(f);
-                }
+                var orderBy = new OrderByStatement();
+                orderBy.Fields = SqlStatementParser.ParseStatements(ob.ToString(), ParseType.OrderByField).Cast<OrderByFieldStatement>().ToList();
+                //foreach (var item in ob.ToString().Split(",", StringSplitOptions.RemoveEmptyEntries))
+                //{
+                //    var f = new OrderByFieldStatement();
+                //    if (item.Contains(":"))
+                //    {
+                //        var ff = item.Split(':', 2);
+                //        f.Field = ff[0];
+                //        f.Direction = Enums<OrderByDirection>.Parse(ff[1], true);
+                //    }
+                //    else
+                //    {
+                //        f.Field = item;
+                //        f.Direction = OrderByDirection.Asc;
+                //    }
+                //    orderBy.Fields.Add(f);
+                //}
                 if (orderBy.Fields.Count > 0)
                 {
                     builder.statement.OrderBy = orderBy;
@@ -221,7 +222,7 @@ namespace SV.Db.Sloth
                 if (ps.TryGetValue("Fields", out var fs))
                 {
                     ps.Remove("Fields");
-                    fields.Fields = SqlStatementParser.ParseFields(fs).ToList();
+                    fields.Fields = SqlStatementParser.ParseStatements(fs, ParseType.SelectField).Cast<FieldStatement>().ToList();
                 }
                 else
                 {

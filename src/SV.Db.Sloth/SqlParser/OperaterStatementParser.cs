@@ -146,7 +146,7 @@ namespace SV.Db.Sloth.SqlParser
             {
                 if (context.MoveNext())
                 {
-                    var op = new JsonFieldStatement() { };
+                    var op = context.ParseType == ParseType.OrderByField ? new JsonOrderByFieldStatement() : new JsonFieldStatement();
                     var index = context.Index;
                     context.Stack.Push(op);
                     if (ConvertJsonField(context, op) && context.Stack.Peek() == op)
@@ -215,13 +215,36 @@ namespace SV.Db.Sloth.SqlParser
                         return false;
                     }
                 }
-
                 t = context.Current;
                 if (t.Type != TokenType.Sign && !t.GetValue().Equals(")", StringComparison.Ordinal))
                 {
                     return false;
                 }
-                context.MoveNext();
+                if (op is IOrderByField order && context.ParseType == ParseType.OrderByField)
+                {
+                    if (context.MoveNext())
+                    {
+                        t = context.Current;
+                        if (t.Type == TokenType.Word)
+                        {
+                            var v = t.GetValue();
+                            if (v.Equals("asc", StringComparison.OrdinalIgnoreCase) || v.Equals("desc", StringComparison.OrdinalIgnoreCase))
+                            {
+                                order.Direction = Enums<OrderByDirection>.Parse(v.ToString(), true);
+                                context.MoveNext();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        order.Direction = OrderByDirection.Asc;
+                    }
+                }
+                else
+                {
+                    context.MoveNext();
+                }
+                
                 return true;
             }
             return false;

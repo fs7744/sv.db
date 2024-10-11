@@ -5,20 +5,22 @@ namespace SV.Db.Sloth.SqlParser
 {
     public class StatementParserContext : IEnumerator<Token>
     {
-        public StatementParserContext(Token[] tokens, Action<StatementParserContext, bool> parser, bool parseField)
+        public StatementParserContext(Token[] tokens, Action<StatementParserContext, bool> parser, ParseType parseType)
         {
             Stack = new Stack<Statement>();
             Tokens = tokens;
             Parse = parser;
-            ParseField = parseField;
+            ParseType = parseType;
         }
 
         public Token[] Tokens { get; }
         public Action<StatementParserContext, bool> Parse { get; }
-        public bool ParseField { get; }
+        public ParseType ParseType { get; }
         public Stack<Statement> Stack { get; }
 
         public int Index { get; set; }
+
+        public StatementState State { get; set; }
 
         public Token Current => Tokens[Index];
 
@@ -38,7 +40,7 @@ namespace SV.Db.Sloth.SqlParser
             if (HasToken())
             {
                 Index++;
-                return true;
+                return HasToken();
             }
             return false;
         }

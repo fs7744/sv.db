@@ -198,10 +198,20 @@ namespace SV.Db.Sloth
                     sb.Append(js.As);
                 }
                 sb.Append(")");
+                if (v is IOrderByField order)
+                {
+                    sb.Append(" ");
+                    sb.Append(Enums<OrderByDirection>.GetName(order.Direction));
+                }
             }
             else if (v is FieldStatement f)
             {
-                sb.Append(f.Field);
+                sb.Append(f.Field); 
+                if (v is IOrderByField order)
+                {
+                    sb.Append(" ");
+                    sb.Append(Enums<OrderByDirection>.GetName(order.Direction));
+                }
             }
             else if (v is StringValueStatement s)
             {

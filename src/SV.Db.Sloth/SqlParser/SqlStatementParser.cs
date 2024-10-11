@@ -16,23 +16,16 @@ namespace SV.Db.Sloth.SqlParser
             tokenParsers = new ITokenParser[] { new IngoreTokenParser(), new StringTokenParser(), new NumberTokenParser(), new WordTokenParser(), new SignTokenParser() };
         }
 
-        public static IEnumerable<Statement> ParseStatements(string sql)
+        public static IEnumerable<Statement> ParseStatements(string sql, ParseType type = ParseType.Condition)
         {
-            var context = new StatementParserContext(Tokenize(sql).ToArray(), ParseStatements, false);
+            var context = new StatementParserContext(Tokenize(sql).ToArray(), ParseStatements, type);
             ParseStatements(context, false);
             return context.Stack;
         }
 
-        public static IEnumerable<FieldStatement> ParseFields(string sql)
-        {
-            var context = new StatementParserContext(Tokenize(sql).ToArray(), ParseStatements, true);
-            ParseStatements(context, false);
-            return context.Stack.Cast<FieldStatement>();
-        }
-
         private static void ParseStatements(StatementParserContext context, bool doOnce)
         {
-            var s = context.ParseField ? fieldParsers : statementParsers;
+            var s = context.ParseType != ParseType.Condition ? fieldParsers : statementParsers;
             while (context.HasToken())
             {
                 bool matched = false;

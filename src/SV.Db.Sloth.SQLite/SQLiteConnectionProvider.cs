@@ -164,12 +164,12 @@ namespace SV.Db.Sloth.SQLite
                 {
                     notFirst = true;
                 }
-                ConvertField(item, info, sb);
+                ConvertField(item, info, sb, true);
             }
             return sb.ToString();
         }
 
-        private static bool ConvertField(Statement v, DbEntityInfo info, StringBuilder sb)
+        private static bool ConvertField(Statement v, DbEntityInfo info, StringBuilder sb, bool allowAs)
         {
             if (v is JsonFieldStatement js)
             {
@@ -180,6 +180,11 @@ namespace SV.Db.Sloth.SQLite
                 sb.Append(js.Path.Replace("'", "\\'"));
                 sb.Append("'");
                 sb.Append(")");
+                if (allowAs && !string.IsNullOrWhiteSpace(js.As))
+                {
+                    sb.Append(" as ");
+                    sb.Append(js.As);
+                }
                 return true;
             }
             else if (v is FieldStatement f)
@@ -359,7 +364,7 @@ namespace SV.Db.Sloth.SQLite
 
         private static void BuildValueStatement(ValueStatement v, StringBuilder sb, DbCommand cmd, DbEntityInfo info, FieldStatement? fieldValueStatement, BuildConditionContext context)
         {
-            if (ConvertField(v, info, sb))
+            if (ConvertField(v, info, sb, false))
             {
             }
             else if (v is StringValueStatement s)

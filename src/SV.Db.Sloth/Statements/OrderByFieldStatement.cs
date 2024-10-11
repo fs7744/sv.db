@@ -1,6 +1,11 @@
 ﻿namespace SV.Db.Sloth.Statements
 {
-    public class OrderByFieldStatement : FieldStatement
+    public interface IOrderByField
+    {
+        public OrderByDirection Direction { get; set; }
+    }
+
+    public class OrderByFieldStatement : FieldStatement, IOrderByField
     {
         public OrderByDirection Direction { get; set; }
     }

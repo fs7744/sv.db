@@ -5,6 +5,7 @@ Accept: application/json
 Content-Type: application/json
 
 {
+  "fields":"Value,json(Value,\"$.c\",ddd)",
   "where":"not (name like '%e%')"
 }
 
