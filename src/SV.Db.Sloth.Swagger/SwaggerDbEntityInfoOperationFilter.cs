@@ -112,17 +112,15 @@ namespace SV.Db.Sloth.Swagger
                 });
                 foreach (var field in info.WhereFields)
                 {
-                    //var dp = info.Columns.TryGetValue(field.Key, out var c) ? c.Type : DbType.Object;
+                    var dp = info.Columns.TryGetValue(field.Key, out var c) ? c.Type : DbType.String;
                     p.Add(new OpenApiParameter()
                     {
                         In = ParameterLocation.Query,
                         Name = field.Key,
                         Schema = new OpenApiSchema()
                         {
-                            Type = DbType.String.ToJsonType(),
-                            Format = DbType.String.ToString()
-                            //Type = dp.ToJsonType(),
-                            //Format = dp.ToString()
+                            Type = dp.ToJsonType(),
+                            Format = dp.ToString()
                         },
                         Example = new OpenApiString("{{eq}}?")
                     });
