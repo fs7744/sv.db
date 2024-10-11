@@ -111,12 +111,11 @@ namespace SV.Db.Sloth.SQLite
             {
                 if (fs?.Any(i => i is FieldStatement f && f.Field.Equals("*")) == true)
                 {
-                    var all = info.SelectFields.Where(i => i.Key.Equals("*")).Select(i => i.Value).FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
-                    table = table.Replace("{Fields}", all != null ? all : string.Join(",", info.SelectFields.Select(i => i.Value)), StringComparison.OrdinalIgnoreCase);
+                    table = table.Replace("{Fields}", info.SelectAll, StringComparison.OrdinalIgnoreCase);
                 }
                 else
                 {
-                    table = table.Replace("{Fields}", string.Join(",", fs.Select(i => info.SelectFields.TryGetValue(i.Field, out var v) ? v : null).Where(i => !string.IsNullOrWhiteSpace(i))), StringComparison.OrdinalIgnoreCase);
+                    table = table.Replace("{Fields}", ConvertFields(info, fs), StringComparison.OrdinalIgnoreCase);
                 }
             }
 
@@ -149,6 +148,46 @@ namespace SV.Db.Sloth.SQLite
             table = table.Replace("{Limit}", $"Limit {statement.Limit.Offset},{statement.Limit.Rows} ");
 
             cmd.CommandText = table;
+        }
+
+        private string? ConvertFields(DbEntityInfo info, IEnumerable<FieldStatement>? fs)
+        {
+            var sb = new StringBuilder();
+            var notFirst = false;
+            foreach (var item in fs)
+            {
+                if (notFirst)
+                {
+                    sb.Append(",");
+                }
+                else
+                {
+                    notFirst = true;
+                }
+                ConvertField(item, info, sb);
+            }
+            return sb.ToString();
+        }
+
+        private static bool ConvertField(Statement v, DbEntityInfo info, StringBuilder sb)
+        {
+            if (v is JsonFieldStatement js)
+            {
+                sb.Append("json_extract(");
+                sb.Append(info.SelectFields[js.Field]);
+                sb.Append(",");
+                sb.Append("'");
+                sb.Append(js.Path.Replace("'", "\\'"));
+                sb.Append("'");
+                sb.Append(")");
+                return true;
+            }
+            else if (v is FieldStatement f)
+            {
+                sb.Append(info.SelectFields[f.Field]);
+                return true;
+            }
+            return false;
         }
 
         public class BuildConditionContext
@@ -320,19 +359,8 @@ namespace SV.Db.Sloth.SQLite
 
         private static void BuildValueStatement(ValueStatement v, StringBuilder sb, DbCommand cmd, DbEntityInfo info, FieldStatement? fieldValueStatement, BuildConditionContext context)
         {
-            if (v is JsonFieldStatement js)
+            if (ConvertField(v, info, sb))
             {
-                sb.Append("json_extract(");
-                sb.Append(js.Field);
-                sb.Append(",");
-                sb.Append("'");
-                sb.Append(js.Path.Replace("'", "\\'"));
-                sb.Append("'");
-                sb.Append(")");
-            }
-            else if (v is FieldStatement f)
-            {
-                sb.Append(info.SelectFields[f.Field]);
             }
             else if (v is StringValueStatement s)
             {

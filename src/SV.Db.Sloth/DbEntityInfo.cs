@@ -14,6 +14,7 @@ namespace SV.Db
         public FrozenDictionary<string, string> WhereFields { get; set; }
         public FrozenDictionary<string, string> OrderByFields { get; set; }
         public FrozenDictionary<string, ColumnAttribute> Columns { get; set; }
+        public string SelectAll { get; set; }
 
         internal static (string Name, string Field)? ConvertSelectMember(MemberInfo info)
         {
@@ -80,6 +81,8 @@ namespace SV.Db
                     .Where(i => i.HasValue)
                     .Select(i => i.Value)
                     .ToFrozenDictionary(i => i.Name, i => i.Field, StringComparer.OrdinalIgnoreCase);
+                var all = c.SelectFields.Where(i => i.Key.Equals("*")).Select(i => i.Value).FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
+                c.SelectAll = all != null ? all : string.Join(",", c.SelectFields.Select(i => i.Value));
                 c.WhereFields = fields.Select(DbEntityInfo.ConvertWhereMember)
                     .Where(i => i.HasValue)
                     .Select(i => i.Value)
