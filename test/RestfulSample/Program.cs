@@ -30,7 +30,7 @@ a.ExecuteNonQuery("""
 a.ExecuteNonQuery("""
     INSERT INTO Weather
     (name, value)
-    VALUES ('Hello', 'memory!'),('H', 'mery!')
+    VALUES ('Hello', '{"a":2}'),('H', '{"a":3,"c":[4,5,{"f":7}]}')
     """);
 var dd = a.ExecuteQuery<string>("""
     SELECT *

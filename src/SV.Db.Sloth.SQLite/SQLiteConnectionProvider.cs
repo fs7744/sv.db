@@ -320,7 +320,17 @@ namespace SV.Db.Sloth.SQLite
 
         private static void BuildValueStatement(ValueStatement v, StringBuilder sb, DbCommand cmd, DbEntityInfo info, FieldStatement? fieldValueStatement, BuildConditionContext context)
         {
-            if (v is FieldStatement f)
+            if (v is JsonFieldStatement js)
+            {
+                sb.Append("json_extract(");
+                sb.Append(js.Field);
+                sb.Append(",");
+                sb.Append("'");
+                sb.Append(js.Path.Replace("'", "\\'"));
+                sb.Append("'");
+                sb.Append(")");
+            }
+            else if (v is FieldStatement f)
             {
                 sb.Append(info.SelectFields[f.Field]);
             }

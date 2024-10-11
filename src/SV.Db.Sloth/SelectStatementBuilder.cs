@@ -42,14 +42,13 @@ namespace SV.Db.Sloth
                     throw new KeyNotFoundException($"Field {field.Field} not found");
                 }
 
-                if (statement is OrderByFieldStatement fieldOrderBy && (fs.IsNullOrEmpty() || !fs.ContainsKey(fieldOrderBy.Field)))
+                if (statement is JsonFieldStatement js)
                 {
-                    throw new KeyNotFoundException($"Field {fieldOrderBy.Field} not found");
-                }
-
-                if (statement is WhereStatement where)
-                {
-                    where.Visit(CheckWhereStatement);
+                    if (!dbEntityInfo.Columns.TryGetValue(js.Field, out var column)
+                        || !column.IsJson)
+                    {
+                        throw new NotSupportedException($"Field {js.Field} not support json");
+                    }
                 }
             }
             if (!options.AllowNonStrictCondition)
@@ -61,15 +60,6 @@ namespace SV.Db.Sloth
                     if (os.Left is not FieldStatement && os.Right is not FieldStatement)
                         throw new NotSupportedException($"{os.Operater} must has one field");
                 }
-            }
-        }
-
-        private void CheckWhereStatement(Statement statement)
-        {
-            var fs = dbEntityInfo.SelectFields;
-            if (statement is FieldStatement fieldValue && (fs.IsNullOrEmpty() || !fs.ContainsKey(fieldValue.Field)))
-            {
-                throw new KeyNotFoundException($"Field {fieldValue.Field} not found");
             }
         }
     }

@@ -201,11 +201,12 @@ namespace SV.Db.Sloth.SqlParser
                         return false;
                     }
                     op.As = t.GetValue().ToString();
+                    if (!context.MoveNext())
+                    {
+                        return false;
+                    }
                 }
-                if (!context.MoveNext())
-                {
-                    return false;
-                }
+
                 t = context.Current;
                 if (t.Type != TokenType.Sign && !t.GetValue().Equals(")", StringComparison.Ordinal))
                 {

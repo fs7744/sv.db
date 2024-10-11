@@ -71,7 +71,7 @@ namespace RestfulSample.Controllers
         [Select, Where, OrderBy]
         public string Name { get; set; }
 
-        [Select(Field = "Value as v"), Where, OrderBy]
+        [Select(Field = "Value as v"), Where, OrderBy, Column(IsJson = true)]
         public string V { get; set; }
 
         [Select(NotAllow = true)]
