@@ -1,5 +1,7 @@
-﻿using SV.Db.Sloth.Statements;
+﻿using SV.Db.Sloth.SqlParser;
+using SV.Db.Sloth.Statements;
 using System.Collections;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace SV.Db.Sloth
@@ -11,9 +13,9 @@ namespace SV.Db.Sloth
             var f = select.statement.Fields.Fields;
             if (f == null)
                 f = select.statement.Fields.Fields = new List<FieldStatement>();
-            foreach (var item in fields.Where(j => !f.Any(i => i.Field.Equals(j, StringComparison.OrdinalIgnoreCase))))
+            foreach (var item in SqlStatementParser.ParseStatements(string.Join(",", fields), ParseType.SelectField).Cast<FieldStatement>())
             {
-                f.Add(new FieldStatement() { Field = item });
+                f.Add(item);
             }
             var fs = f.Count(i => i is FieldStatement) > 1 ? f.FirstOrDefault(i => i.Field.Equals("*", StringComparison.OrdinalIgnoreCase)) : null;
             if (fs != null)
@@ -94,21 +96,20 @@ namespace SV.Db.Sloth
             return select;
         }
 
-        public static SelectStatementBuilder OrderBy(this SelectStatementBuilder select, params (string, OrderByDirection)[] fields)
+        public static SelectStatementBuilder OrderBy(this SelectStatementBuilder select, params string[] fields)
         {
-            select.statement.OrderBy = new OrderByStatement() { Fields = fields.Select(i => new OrderByFieldStatement() { Field = i.Item1, Direction = i.Item2 }).ToList<FieldStatement>() };
+            var fs = SqlStatementParser.ParseStatements(string.Join(",", fields), ParseType.OrderByField).Cast<FieldStatement>().ToList();
+            select.statement.OrderBy = new OrderByStatement()
+            {
+                Fields = fs
+            };
             return select;
         }
 
-        public static SelectStatementBuilder<T> OrderBy<T>(this SelectStatementBuilder<T> select, params (string, OrderByDirection)[] fields)
+        public static SelectStatementBuilder<T> OrderBy<T>(this SelectStatementBuilder<T> select, params Expression<Func<T, object>>[] fields)
         {
-            OrderBy(select as SelectStatementBuilder, fields);
+            OrderBy(select, fields.Select(i => i.GetMemberName()).ToArray());
             return select;
-        }
-
-        public static SelectStatementBuilder<T> OrderBy<T>(this SelectStatementBuilder<T> select, params (Expression<Func<T, object>>, OrderByDirection)[] fields)
-        {
-            return select.OrderBy<T>(fields.Select(i => (i.Item1.GetMemberName(), i.Item2)).ToArray());
         }
 
         private static ConditionStatement ConvertConditionStatement(Expression expr)

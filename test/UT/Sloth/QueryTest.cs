@@ -21,7 +21,17 @@ namespace UT.Sloth
         {
             var a = new ConnectionStringProviders(null, null).From<QueryTest>();
             a.Select(nameof(QueryTest.A), nameof(QueryTest.B));
-            a.Select(i => i.A, i => i.B);
+            a.Select(i => i.A, i => i.B, i => i.A.JsonExtract("$.s"), i => i.B.JsonExtract("$.sdd", "d"));
+            Assert.Equal("B,A,json(B,'$.sdd',d),json(A,'$.s'),B,A", From.ParseToQueryParams(a.Build(new SelectStatementOptions() { AllowNotFoundFields = true, AllowNonStrictCondition = true }))["fields"]);
+        }
+
+        [Fact]
+        public void SelectOrderByFields()
+        {
+            var a = new ConnectionStringProviders(null, null).From<QueryTest>();
+            a.OrderBy(nameof(QueryTest.A), nameof(QueryTest.B));
+            a.OrderBy(i => i.A, i => i.B, i => i.A.JsonExtract("$.s"), i => i.B.JsonExtract("$.sdd", "d").Desc());
+            Assert.Equal("json(B,'$.sdd',d) Desc,json(A,'$.s') Asc,B Asc,A Asc", From.ParseToQueryParams(a.Build(new SelectStatementOptions() { AllowNotFoundFields = true, AllowNonStrictCondition = true }))["orderby"]);
         }
 
         [Fact]

@@ -7,7 +7,7 @@ namespace SV.Db.Sloth
     {
         public static IDictionary<string, string> ParseToQueryParams(this SelectStatement statement)
         {
-            var dict = new Dictionary<string, string>();
+            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             if (statement != null)
             {
                 if (statement.Where != null && statement.Where.Condition != null)

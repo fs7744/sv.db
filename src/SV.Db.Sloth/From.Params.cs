@@ -183,22 +183,6 @@ namespace SV.Db.Sloth
                 ps.Remove("OrderBy");
                 var orderBy = new OrderByStatement();
                 orderBy.Fields = SqlStatementParser.ParseStatements(ob.ToString(), ParseType.OrderByField).Cast<FieldStatement>().ToList();
-                //foreach (var item in ob.ToString().Split(",", StringSplitOptions.RemoveEmptyEntries))
-                //{
-                //    var f = new OrderByFieldStatement();
-                //    if (item.Contains(":"))
-                //    {
-                //        var ff = item.Split(':', 2);
-                //        f.Field = ff[0];
-                //        f.Direction = Enums<OrderByDirection>.Parse(ff[1], true);
-                //    }
-                //    else
-                //    {
-                //        f.Field = item;
-                //        f.Direction = OrderByDirection.Asc;
-                //    }
-                //    orderBy.Fields.Add(f);
-                //}
                 if (orderBy.Fields.Count > 0)
                 {
                     builder.statement.OrderBy = orderBy;
