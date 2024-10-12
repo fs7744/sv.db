@@ -28,6 +28,13 @@ namespace SV.Db.Sloth.Swagger
                 operation.Parameters = new List<OpenApiParameter>();
                 p = operation.Parameters;
             }
+            var resp = operation.Responses;
+            if (resp == null)
+            {
+                operation.Responses = new OpenApiResponses();
+                resp = operation.Responses;
+            }
+
             p.Add(new OpenApiParameter()
             {
                 In = ParameterLocation.Query,
@@ -95,6 +102,17 @@ namespace SV.Db.Sloth.Swagger
                     },
                     Example = new OpenApiString(string.Join(",", info.SelectFields.Where(i => i.Key != "*").Select(i => i.Key)))
                 });
+                resp["200"] = new OpenApiResponse()
+                {
+                    Content = new Dictionary<string, OpenApiMediaType>()
+                     {
+                         { "application/json", new OpenApiMediaType() { Example = new OpenApiString($"{{\"totalCount\":1,\"rows\":[{{{string.Join(",",info.SelectFields.Where(i => i.Key != "*").Select(i =>
+                         {
+                             var dp = info.Columns.TryGetValue(i.Key, out var c) ? c.Type : DbType.String;
+                             return $"\"{i.Key}\":\"{dp.ToJsonType()}\"";
+                         }))}}}]}}") } }
+                     }
+                };
             }
 
             if (info.WhereFields.Count > 0)
@@ -120,7 +138,7 @@ namespace SV.Db.Sloth.Swagger
                         Schema = new OpenApiSchema()
                         {
                             Type = dp.ToJsonType(),
-                            Format = dp.ToString()
+                            Format = c != null && c.IsJson ? "json" : dp.ToString()
                         },
                         Example = new OpenApiString("{{eq}}?")
                     });
