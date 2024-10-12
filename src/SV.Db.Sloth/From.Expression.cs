@@ -274,6 +274,14 @@ namespace SV.Db.Sloth
                 }
                 else if (v.NodeType == ExpressionType.Call)
                 {
+                    if (v is MethodCallExpression mc && mc.Method.Name == nameof(ExpressionExtensions.JsonExtract))
+                    {
+                        var f = new JsonFieldStatement();
+                        f.Field = ExpressionExtensions.GetMemberName(mc.Arguments[0]);
+                        f.Path = Expression.Lambda(mc.Arguments[1]).Compile().DynamicInvoke().ToString();
+                        f.As = mc.Arguments.Count > 2 ? "," + Expression.Lambda(mc.Arguments[2]).Compile().DynamicInvoke().ToString() : string.Empty;
+                        return f;
+                    }
                     var o = Expression.Lambda(v).Compile().DynamicInvoke();
                     return ConvertConstantStatement(o);
                 }

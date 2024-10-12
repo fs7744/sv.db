@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 namespace SV.Db
 {
@@ -63,12 +62,12 @@ namespace SV.Db
             throw new NotImplementedException();
         }
 
-        public static object JsonExtract(this object o, string path)
+        public static Any JsonExtract(this object o, string path)
         {
             throw new NotImplementedException();
         }
 
-        public static object JsonExtract(this object o, string path, string aS)
+        public static Any JsonExtract(this object o, string path, string aS)
         {
             throw new NotImplementedException();
         }
@@ -77,5 +76,36 @@ namespace SV.Db
         {
             throw new NotImplementedException();
         }
+    }
+
+    public class Any
+    {
+        public static bool operator ==(Any obj1, Any obj2) => throw new NotImplementedException();
+
+        public static bool operator !=(Any obj1, Any obj2) => throw new NotImplementedException();
+
+        public static bool operator >=(Any obj1, Any obj2) => throw new NotImplementedException();
+
+        public static bool operator <=(Any obj1, Any obj2) => throw new NotImplementedException();
+
+        public static bool operator >(Any obj1, Any obj2) => throw new NotImplementedException();
+
+        public static bool operator <(Any obj1, Any obj2) => throw new NotImplementedException();
+
+        public static implicit operator int(Any d) => throw new NotImplementedException();
+
+        public static implicit operator decimal(Any d) => throw new NotImplementedException();
+
+        public static implicit operator double(Any d) => throw new NotImplementedException();
+
+        public static implicit operator string(Any d) => throw new NotImplementedException();
+
+        public static implicit operator float(Any d) => throw new NotImplementedException();
+
+        public static implicit operator long(Any d) => throw new NotImplementedException();
+
+        public static implicit operator bool(Any d) => throw new NotImplementedException();
+
+        //public static explicit operator Any(byte b) => new Digit(b);
     }
 }

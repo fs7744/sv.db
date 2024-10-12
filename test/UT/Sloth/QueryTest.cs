@@ -37,6 +37,17 @@ namespace UT.Sloth
         [Fact]
         public void Where()
         {
+            AssertWhere<QueryTest, OperaterStatement>(i => i.A.JsonExtract("$.a") == 1, o =>
+            {
+                Assert.Equal("=", o.Operater);
+                var f = Assert.IsType<JsonFieldStatement>(o.Left);
+                Assert.Equal("A", f.Field);
+                Assert.Equal("$.a", f.Path);
+                Assert.Empty(f.As);
+                var v = Assert.IsType<NumberValueStatement>(o.Right);
+                Assert.Equal(1, v.Value);
+            });
+
             AssertWhere<QueryTest, OperaterStatement>(i => i.A > 1, o =>
             {
                 Assert.Equal(">", o.Operater);

@@ -161,8 +161,8 @@ such filter operater just make api more restful (`Where=urlencode(complex condit
 #### Func Fields:
 
 - `Fields`   return some Fields , no Fields or `Fields=*` is return all
-    - query string `?Fields=name,age`
-    - body `{"Fields":"name,age"}`
+    - query string `?Fields=name,age,json(data,'$.age')`
+    - body `{"Fields":"name,age,json(data,'$.age')"}`
 - `TotalCount`   return total count
     - query string `?TotalCount=true`
     - body `{"TotalCount":"true"}`
@@ -176,8 +176,8 @@ such filter operater just make api more restful (`Where=urlencode(complex condit
     - query string `?Rows=100`
     - body `{"Rows":100}`
 - `OrderBy` sort result
-    - query string `?OrderBy=name:asc,age:desc`
-    - body `{"OrderBy":"name:asc,age:desc"}`
+    - query string `?OrderBy=name asc,age desc,json(data,'$.age') desc`
+    - body `{"OrderBy":"name asc,age desc,json(data,'$.age') desc"}`
 - `Where`   complex condition filter
     - query string `?Where=urlencode( not(name like 'H%') or name like '%v%' )`
     - body `{"Where":"not(name like 'H%') or name like '%v%'"}`
@@ -218,3 +218,5 @@ such filter operater just make api more restful (`Where=urlencode(complex condit
             - example ` age <= 30 or age > 60`
         - `()`
             - example ` (age <= 30 or age > 60) and name = 'killer'`
+     - support json
+        - example ` json(data,'$.age') > 60` 
