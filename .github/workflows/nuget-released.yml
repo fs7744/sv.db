@@ -33,7 +33,4 @@ jobs:
       env: 
         nugetkey: ${{ secrets.nugetkey }}
       run: for x in  $(find . -name "*.nupkg" -print); do dotnet nuget push -k $nugetkey -s https://api.nuget.org/v3/index.json $x; done
-    - name: pushSymbols
-      env: 
-        nugetkey: ${{ secrets.nugetkey }}
-      run: for x in  $(find . -name "*.snupkg" -print); do dotnet nuget push -k $nugetkey -s https://api.nuget.org/v3/index.json $x; done
+  
