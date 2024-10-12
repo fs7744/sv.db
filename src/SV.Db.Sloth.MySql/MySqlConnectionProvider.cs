@@ -196,6 +196,11 @@ namespace SV.Db.Sloth.MySql
             else if (v is FieldStatement f)
             {
                 sb.Append(info.SelectFields[f.Field]);
+                if (allowAs)
+                {
+                    sb.Append(" as ");
+                    sb.Append(f.Field);
+                }
                 if (v is IOrderByField orderBy)
                 {
                     sb.Append(" ");

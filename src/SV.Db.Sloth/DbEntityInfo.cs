@@ -94,6 +94,7 @@ namespace SV.Db
                 c.Columns = fields.Select(DbEntityInfo.ConvertColumnMember)
                     .Where(i => i != null)
                     .ToFrozenDictionary(i => i.Name, i => i, StringComparer.OrdinalIgnoreCase);
+
                 Cache = c;
             }
 

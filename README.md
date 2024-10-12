@@ -60,7 +60,7 @@ public class Weather
     [Select]
     public string Name { get; set; }
 
-    [Select(Field = "Value as v")]
+    [Select(Field = "Value")]
     public string V { get; set; }
 }
 ```

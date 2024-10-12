@@ -72,7 +72,7 @@ namespace RestfulSample.Controllers
         public string Name { get; set; }
 
         [Select(Field = "Value"), Where, OrderBy, Column(IsJson = true)]
-        public string Value { get; set; }
+        public string V { get; set; }
 
         [Select(NotAllow = true)]
         public string Test { get; set; }

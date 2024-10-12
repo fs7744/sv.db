@@ -8,6 +8,6 @@
 
     public class JsonOrderByFieldStatement : JsonFieldStatement, IOrderByField
     {
-        public OrderByDirection Direction { get ; set ; }
+        public OrderByDirection Direction { get; set; }
     }
 }
