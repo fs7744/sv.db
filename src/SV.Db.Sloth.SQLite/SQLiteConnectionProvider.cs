@@ -115,7 +115,7 @@ namespace SV.Db.Sloth.SQLite
                 }
                 else
                 {
-                    table = table.Replace("{Fields}", ConvertFields(info, fs), StringComparison.OrdinalIgnoreCase);
+                    table = table.Replace("{Fields}", ConvertFields(info, fs, true), StringComparison.OrdinalIgnoreCase);
                 }
             }
 
@@ -134,7 +134,7 @@ namespace SV.Db.Sloth.SQLite
             }
             else
             {
-                table = table.Replace("{OrderBy}", " order by " + string.Join(",", statement.OrderBy.Fields.Select(i => $"{i.Field} {(i.Direction == OrderByDirection.Asc ? "asc" : "desc")}")) + " {Limit} ");
+                table = table.Replace("{OrderBy}", " order by " + ConvertFields(info, statement.OrderBy.Fields, false) + " {Limit} ");
             }
 
             if (statement.Limit == null)
@@ -150,7 +150,7 @@ namespace SV.Db.Sloth.SQLite
             cmd.CommandText = table;
         }
 
-        private string? ConvertFields(DbEntityInfo info, IEnumerable<FieldStatement>? fs)
+        private string? ConvertFields(DbEntityInfo info, IEnumerable<FieldStatement>? fs, bool allowAs)
         {
             var sb = new StringBuilder();
             var notFirst = false;
@@ -164,7 +164,7 @@ namespace SV.Db.Sloth.SQLite
                 {
                     notFirst = true;
                 }
-                ConvertField(item, info, sb, true);
+                ConvertField(item, info, sb, allowAs);
             }
             return sb.ToString();
         }
@@ -185,11 +185,21 @@ namespace SV.Db.Sloth.SQLite
                     sb.Append(" as ");
                     sb.Append(js.As);
                 }
+                if (v is IOrderByField orderBy)
+                {
+                    sb.Append(" ");
+                    sb.Append(Enums<OrderByDirection>.GetName(orderBy.Direction));
+                }
                 return true;
             }
             else if (v is FieldStatement f)
             {
                 sb.Append(info.SelectFields[f.Field]);
+                if (v is IOrderByField orderBy)
+                {
+                    sb.Append(" ");
+                    sb.Append(Enums<OrderByDirection>.GetName(orderBy.Direction));
+                }
                 return true;
             }
             return false;

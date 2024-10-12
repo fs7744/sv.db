@@ -28,7 +28,9 @@ namespace SV.Db.Sloth
                 if (statement.OrderBy != null && statement.OrderBy.Fields.IsNotNullOrEmpty())
                 {
                     var order = statement.OrderBy;
-                    dict.Add("OrderBy", string.Join(",", order.Fields.Select(i => $"{i.Field}:{Enums<OrderByDirection>.GetName(i.Direction)}")));
+                    StringBuilder sb = new();
+                    ParseFields(order.Fields, sb);
+                    dict.Add("OrderBy", sb.ToString());
                 }
                 if (statement.Fields != null && statement.Fields.Fields.IsNotNullOrEmpty())
                 {
@@ -206,7 +208,7 @@ namespace SV.Db.Sloth
             }
             else if (v is FieldStatement f)
             {
-                sb.Append(f.Field); 
+                sb.Append(f.Field);
                 if (v is IOrderByField order)
                 {
                     sb.Append(" ");

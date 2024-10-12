@@ -182,7 +182,7 @@ namespace SV.Db.Sloth
             {
                 ps.Remove("OrderBy");
                 var orderBy = new OrderByStatement();
-                orderBy.Fields = SqlStatementParser.ParseStatements(ob.ToString(), ParseType.OrderByField).Cast<OrderByFieldStatement>().ToList();
+                orderBy.Fields = SqlStatementParser.ParseStatements(ob.ToString(), ParseType.OrderByField).Cast<FieldStatement>().ToList();
                 //foreach (var item in ob.ToString().Split(",", StringSplitOptions.RemoveEmptyEntries))
                 //{
                 //    var f = new OrderByFieldStatement();

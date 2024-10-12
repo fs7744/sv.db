@@ -112,12 +112,11 @@ namespace SV.Db.Sloth.MySql
             {
                 if (fs?.Any(i => i is FieldStatement f && f.Field.Equals("*")) == true)
                 {
-                    var all = info.SelectFields.Where(i => i.Key.Equals("*")).Select(i => i.Value).FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
-                    table = table.Replace("{Fields}", all != null ? all : string.Join(",", info.SelectFields.Select(i => i.Value)), StringComparison.OrdinalIgnoreCase);
+                    table = table.Replace("{Fields}", info.SelectAll, StringComparison.OrdinalIgnoreCase);
                 }
                 else
                 {
-                    table = table.Replace("{Fields}", string.Join(",", fs.Select(i => info.SelectFields.TryGetValue(i.Field, out var v) ? v : null).Where(i => !string.IsNullOrWhiteSpace(i))), StringComparison.OrdinalIgnoreCase);
+                    table = table.Replace("{Fields}", ConvertFields(info, fs, true), StringComparison.OrdinalIgnoreCase);
                 }
             }
 
@@ -136,7 +135,7 @@ namespace SV.Db.Sloth.MySql
             }
             else
             {
-                table = table.Replace("{OrderBy}", " order by " + string.Join(",", statement.OrderBy.Fields.Select(i => $"{i.Field} {(i.Direction == OrderByDirection.Asc ? "asc" : "desc")}")) + " {Limit} ");
+                table = table.Replace("{OrderBy}", " order by " + ConvertFields(info, statement.OrderBy.Fields, false) + " {Limit} ");
             }
 
             if (statement.Limit == null)
@@ -150,6 +149,61 @@ namespace SV.Db.Sloth.MySql
             table = table.Replace("{Limit}", $"Limit {statement.Limit.Offset},{statement.Limit.Rows} ");
 
             cmd.CommandText = table;
+        }
+
+        private string? ConvertFields(DbEntityInfo info, IEnumerable<FieldStatement>? fs, bool allowAs)
+        {
+            var sb = new StringBuilder();
+            var notFirst = false;
+            foreach (var item in fs)
+            {
+                if (notFirst)
+                {
+                    sb.Append(",");
+                }
+                else
+                {
+                    notFirst = true;
+                }
+                ConvertField(item, info, sb, allowAs);
+            }
+            return sb.ToString();
+        }
+
+        private static bool ConvertField(Statement v, DbEntityInfo info, StringBuilder sb, bool allowAs)
+        {
+            if (v is JsonFieldStatement js)
+            {
+                sb.Append("json_unquote(json_extract(");
+                sb.Append(info.SelectFields[js.Field]);
+                sb.Append(",");
+                sb.Append("'");
+                sb.Append(js.Path.Replace("'", "\\'"));
+                sb.Append("'");
+                sb.Append("))");
+                if (allowAs && !string.IsNullOrWhiteSpace(js.As))
+                {
+                    sb.Append(" as ");
+                    sb.Append(js.As);
+                }
+                if (v is IOrderByField orderBy)
+                {
+                    sb.Append(" ");
+                    sb.Append(Enums<OrderByDirection>.GetName(orderBy.Direction));
+                }
+                return true;
+            }
+            else if (v is FieldStatement f)
+            {
+                sb.Append(info.SelectFields[f.Field]);
+                if (v is IOrderByField orderBy)
+                {
+                    sb.Append(" ");
+                    sb.Append(Enums<OrderByDirection>.GetName(orderBy.Direction));
+                }
+                return true;
+            }
+            return false;
         }
 
         public class BuildConditionContext
@@ -321,9 +375,8 @@ namespace SV.Db.Sloth.MySql
 
         private static void BuildValueStatement(ValueStatement v, StringBuilder sb, DbCommand cmd, DbEntityInfo info, FieldStatement? fieldValueStatement, BuildConditionContext context)
         {
-            if (v is FieldStatement f)
+            if (ConvertField(v, info, sb, false))
             {
-                sb.Append(info.SelectFields[f.Field]);
             }
             else if (v is StringValueStatement s)
             {
