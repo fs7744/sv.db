@@ -244,7 +244,12 @@ namespace SV.Db.Sloth
                     return new OperaterStatement() { Operater = "<=", Left = ConvertValueStatement(bExpr.Left), Right = ConvertValueStatement(bExpr.Right) };
 
                 case ExpressionType.NotEqual:
-                    return new OperaterStatement() { Operater = "!=", Left = ConvertValueStatement(bExpr.Left), Right = ConvertValueStatement(bExpr.Right) };
+                    var rr = new OperaterStatement() { Operater = "!=", Left = ConvertValueStatement(bExpr.Left), Right = ConvertValueStatement(bExpr.Right) };
+                    if (rr.Right is NullValueStatement)
+                    {
+                        rr.Operater = "not-null";
+                    }
+                    return rr;
 
                 default:
                     return null;

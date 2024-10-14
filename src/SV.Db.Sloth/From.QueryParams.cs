@@ -156,6 +156,10 @@ namespace SV.Db.Sloth
                     sb.Append("= null");
                     break;
 
+                case "not-null":
+                    sb.Append("!= null");
+                    break;
+
                 case "like":
                     sb.Append("like ");
                     var rf = os.Right as StringValueStatement;

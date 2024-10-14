@@ -350,6 +350,10 @@ namespace SV.Db.Sloth.MySql
                     sb.Append("IS NULL");
                     break;
 
+                case "not-null":
+                    sb.Append("IS NOT NULL");
+                    break;
+
                 case "like":
                     sb.Append("like ");
                     var rf = os.Right as StringValueStatement;

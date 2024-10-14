@@ -307,9 +307,9 @@ namespace SV.Db.Sloth.SqlParser
                     context.Parse(context, true);
                     if (context.Stack.TryPop(out var vsss) && vsss is ValueStatement vss)
                     {
-                        if (op.Operater == "=" && vss is FieldStatement f && f.Field.Equals("null", StringComparison.OrdinalIgnoreCase))
+                        if ((op.Operater == "=" || op.Operater == "!=") && vss is FieldStatement f && f.Field.Equals("null", StringComparison.OrdinalIgnoreCase))
                         {
-                            op.Operater = "is-null";
+                            op.Operater = op.Operater == "=" ? "is-null" : "not-null";
                         }
                         else
                         {

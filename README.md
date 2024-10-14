@@ -190,6 +190,8 @@ such filter operater just make api more restful (`Where=urlencode(complex condit
             - example  `'sdsdfa'` or `'sds\'dfa'` or `"dsdsdsd"` or `"fs\"dsf"`
         - ` = null`  is null
             - example ` name = null`
+        - ` != null`  is not null
+            - example ` name != null`
         - `=`  Equal
             - example ` name = 'sky'`
         - `<=`  LessThan or Equal 
