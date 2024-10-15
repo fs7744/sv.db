@@ -2,7 +2,7 @@
 {
     public class SelectStatement : Statement
     {
-        public SelectFieldsStatement Fields { get; set; }
+        public List<FieldStatement>? Fields { get; set; }
         public FromStatement From { get; set; }
 
         public WhereStatement Where { get; set; }
@@ -19,7 +19,13 @@
         public override void Visit(Action<Statement> visitor)
         {
             visitor(this);
-            Fields?.Visit(visitor);
+            if (Fields != null)
+            {
+                foreach (var item in Fields)
+                {
+                    visitor(item);
+                }
+            }
             From?.Visit(visitor);
             Where?.Visit(visitor);
             if (OrderBy != null)

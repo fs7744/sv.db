@@ -10,9 +10,9 @@ namespace SV.Db.Sloth
     {
         public static SelectStatementBuilder Select(this SelectStatementBuilder select, params string[] fields)
         {
-            var f = select.statement.Fields.Fields;
+            var f = select.statement.Fields;
             if (f == null)
-                f = select.statement.Fields.Fields = new List<FieldStatement>();
+                f = select.statement.Fields = new List<FieldStatement>();
             foreach (var item in SqlStatementParser.ParseStatements(string.Join(",", fields), ParseType.SelectField).Cast<FieldStatement>())
             {
                 f.Add(item);
@@ -51,7 +51,7 @@ namespace SV.Db.Sloth
 
         public static SelectStatementBuilder NoRows(this SelectStatementBuilder select)
         {
-            var f = select.statement.Fields.Fields;
+            var f = select.statement.Fields;
             if (f != null)
             {
                 f.Clear();

@@ -28,9 +28,9 @@ namespace SV.Db.Sloth
                     ParseFields(order, sb);
                     dict.Add("OrderBy", sb.ToString());
                 }
-                if (statement.Fields != null && statement.Fields.Fields.IsNotNullOrEmpty())
+                if (statement.Fields != null && statement.Fields.IsNotNullOrEmpty())
                 {
-                    var fs = statement.Fields.Fields;
+                    var fs = statement.Fields;
                     if (statement.HasTotalCount)
                     {
                         dict.Add("TotalCount", "true");

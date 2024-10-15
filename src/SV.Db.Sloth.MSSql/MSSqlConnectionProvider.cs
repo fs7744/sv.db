@@ -56,7 +56,7 @@ namespace SV.Db.Sloth.MSSql
         private void BuildSelectStatement(DbCommand cmd, DbEntityInfo info, SelectStatement statement, out bool hasTotalCount, out bool hasRows)
         {
             cmd.CommandTimeout = info.Timeout;
-            var fs = statement.Fields?.Fields;
+            var fs = statement.Fields;
 
             string table = info.Table;
             if (!table.Contains("{Where}", StringComparison.OrdinalIgnoreCase))
