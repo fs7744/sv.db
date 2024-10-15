@@ -131,7 +131,7 @@ namespace SV.Db.Sloth.SqlParser
                         }
                         throw new ParserExecption($"Can't parse near by {c.GetValue()} (Line:{c.StartLine},Col:{c.StartColumn})");
                     }
-                    else if (TryConvertJsonField(v, context, c))
+                    else if (TryConvertJsonField(v, context))
                     {
                         return true;
                     }
@@ -140,33 +140,35 @@ namespace SV.Db.Sloth.SqlParser
             return false;
         }
 
-        internal static bool TryConvertJsonField(ReadOnlySpan<char> v, StatementParserContext context, Token c)
+        internal static bool TryConvertJsonField(ReadOnlySpan<char> v, StatementParserContext context)
         {
             if (v.Equals("json", StringComparison.OrdinalIgnoreCase))
             {
+                var index = context.Index;
                 if (context.MoveNext())
                 {
-                    var op = context.ParseType == ParseType.OrderByField ? new JsonOrderByFieldStatement() : new JsonFieldStatement();
-                    var index = context.Index;
-                    context.Stack.Push(op);
-                    if (ConvertJsonField(context, op) && context.Stack.Peek() == op)
+                    var t = context.Current;
+                    if (t.Type == TokenType.Sign
+                        && t.GetValue().Equals("(", StringComparison.Ordinal))
                     {
-                        return true;
+                        var op = context.ParseType == ParseType.OrderByField ? new JsonOrderByFieldStatement() : new JsonFieldStatement();
+                        context.Stack.Push(op);
+                        if (ConvertJsonField(context, op) && context.Stack.Peek() == op)
+                        {
+                            return true;
+                        }
+                        throw new ParserExecption($"Can't parse near by {t.GetValue()} (Line:{t.StartLine},Col:{t.StartColumn})");
                     }
-                    context.Index = index;
-                    c = context.Current;
                 }
-                throw new ParserExecption($"Can't parse near by {c.GetValue()} (Line:{c.StartLine},Col:{c.StartColumn})");
+                context.Index = index;
             }
             return false;
         }
 
         private static bool ConvertJsonField(StatementParserContext context, JsonFieldStatement op)
         {
-            var t = context.Current;
-            if (t.Type == TokenType.Sign
-                && t.GetValue().Equals("(", StringComparison.Ordinal)
-                && context.MoveNext())
+            Token t;
+            if (context.MoveNext())
             {
                 t = context.Current;
                 if (t.Type != TokenType.Word)
@@ -244,7 +246,7 @@ namespace SV.Db.Sloth.SqlParser
                 {
                     context.MoveNext();
                 }
-                
+
                 return true;
             }
             return false;

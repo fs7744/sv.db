@@ -26,17 +26,16 @@ namespace SV.Db.Sloth.SqlParser
                         {
                             return false;
                         }
-
                     }
                     else
-                    { 
+                    {
                         return false;
                     }
                 }
                 if (c.Type == TokenType.Word)
                 {
                     var v = c.GetValue();
-                    if (OperaterStatementParser.TryConvertJsonField(v, context, c))
+                    if (OperaterStatementParser.TryConvertJsonField(v, context))
                     {
                         context.State = StatementState.Fields;
                         return true;

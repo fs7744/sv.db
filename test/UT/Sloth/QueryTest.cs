@@ -20,18 +20,18 @@ namespace UT.Sloth
         public void SelectFields()
         {
             var a = new ConnectionStringProviders(null, null).From<QueryTest>();
-            a.Select(nameof(QueryTest.A), nameof(QueryTest.B));
+            a.Select(nameof(QueryTest.A), nameof(QueryTest.B), "json");
             a.Select(i => i.A, i => i.B, i => i.A.JsonExtract("$.s"), i => i.B.JsonExtract("$.sdd", "d"));
-            Assert.Equal("B,A,json(B,'$.sdd',d),json(A,'$.s'),B,A", From.ParseToQueryParams(a.Build(new SelectStatementOptions() { AllowNotFoundFields = true, AllowNonStrictCondition = true }))["fields"]);
+            Assert.Equal("json,B,A,json(B,'$.sdd',d),json(A,'$.s'),B,A", From.ParseToQueryParams(a.Build(new SelectStatementOptions() { AllowNotFoundFields = true, AllowNonStrictCondition = true }))["fields"]);
         }
 
         [Fact]
         public void SelectOrderByFields()
         {
             var a = new ConnectionStringProviders(null, null).From<QueryTest>();
-            a.OrderBy(nameof(QueryTest.A), nameof(QueryTest.B));
+            a.OrderBy(nameof(QueryTest.A), nameof(QueryTest.B), "json");
             a.OrderBy(i => i.A, i => i.B, i => i.A.JsonExtract("$.s"), i => i.B.JsonExtract("$.sdd", "d").Desc());
-            Assert.Equal("json(B,'$.sdd',d) Desc,json(A,'$.s') Asc,B Asc,A Asc", From.ParseToQueryParams(a.Build(new SelectStatementOptions() { AllowNotFoundFields = true, AllowNonStrictCondition = true }))["orderby"]);
+            Assert.Equal("json Asc,B Asc,A Asc,json(B,'$.sdd',d) Desc,json(A,'$.s') Asc,B Asc,A Asc", From.ParseToQueryParams(a.Build(new SelectStatementOptions() { AllowNotFoundFields = true, AllowNonStrictCondition = true }))["orderby"]);
         }
 
         [Fact]
