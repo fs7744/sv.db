@@ -181,9 +181,8 @@ namespace SV.Db.Sloth
             if (ps.TryGetValue("OrderBy", out var ob))
             {
                 ps.Remove("OrderBy");
-                var orderBy = new OrderByStatement();
-                orderBy.Fields = SqlStatementParser.ParseStatements(ob.ToString(), ParseType.OrderByField).Cast<FieldStatement>().ToList();
-                if (orderBy.Fields.Count > 0)
+                var orderBy = SqlStatementParser.ParseStatements(ob.ToString(), ParseType.OrderByField).Cast<FieldStatement>().ToList();
+                if (orderBy.Count > 0)
                 {
                     builder.statement.OrderBy = orderBy;
                 }

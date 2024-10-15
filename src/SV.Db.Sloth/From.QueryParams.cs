@@ -21,11 +21,11 @@ namespace SV.Db.Sloth
                 {
                     dict.Add("Offset", statement.Offset.ToString());
                 }
-                if (statement.OrderBy != null && statement.OrderBy.Fields.IsNotNullOrEmpty())
+                if (statement.OrderBy != null && statement.OrderBy.IsNotNullOrEmpty())
                 {
                     var order = statement.OrderBy;
                     StringBuilder sb = new();
-                    ParseFields(order.Fields, sb);
+                    ParseFields(order, sb);
                     dict.Add("OrderBy", sb.ToString());
                 }
                 if (statement.Fields != null && statement.Fields.Fields.IsNotNullOrEmpty())

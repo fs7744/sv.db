@@ -7,8 +7,7 @@
 
         public WhereStatement Where { get; set; }
 
-        public OrderByStatement OrderBy { get; set; }
-        //public LimitStatement Limit { get; set; }
+        public List<FieldStatement>? OrderBy { get; set; }
 
         public int Rows { get; set; } = 10;
         public int? Offset { get; set; }
@@ -23,8 +22,13 @@
             Fields?.Visit(visitor);
             From?.Visit(visitor);
             Where?.Visit(visitor);
-            OrderBy?.Visit(visitor);
-            //Limit?.Visit(visitor);
+            if (OrderBy != null)
+            {
+                foreach (var item in OrderBy)
+                {
+                    visitor(item);
+                }
+            }
         }
     }
 }

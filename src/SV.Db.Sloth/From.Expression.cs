@@ -98,13 +98,9 @@ namespace SV.Db.Sloth
 
         public static SelectStatementBuilder OrderBy(this SelectStatementBuilder select, params string[] fields)
         {
-            if (select.statement.OrderBy == null)
-            {
-                select.statement.OrderBy = new OrderByStatement();
-            }
-            var f = select.statement.OrderBy.Fields;
+            var f = select.statement.OrderBy;
             if (f == null)
-                f = select.statement.OrderBy.Fields = new List<FieldStatement>();
+                f = select.statement.OrderBy = new List<FieldStatement>();
             foreach (var item in SqlStatementParser.ParseStatements(string.Join(",", fields), ParseType.OrderByField).Cast<FieldStatement>().ToList())
             {
                 f.Add(item);

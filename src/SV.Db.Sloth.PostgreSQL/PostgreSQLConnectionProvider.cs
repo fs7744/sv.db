@@ -128,13 +128,13 @@ namespace SV.Db.Sloth.PostgreSQL
                 table = table.Replace("{Where}", BuildCondition(cmd, info, statement.Where.Condition), StringComparison.OrdinalIgnoreCase);
             }
 
-            if (statement.OrderBy == null || statement.OrderBy.Fields.IsNullOrEmpty())
+            if (statement.OrderBy == null || statement.OrderBy.IsNullOrEmpty())
             {
                 table = table.Replace("{OrderBy}", " {Limit} ", StringComparison.OrdinalIgnoreCase);
             }
             else
             {
-                table = table.Replace("{OrderBy}", " order by " + ConvertFields(info, statement.OrderBy.Fields, false) + " {Limit} ");
+                table = table.Replace("{OrderBy}", " order by " + ConvertFields(info, statement.OrderBy, false) + " {Limit} ");
             }
 
             if (!statement.Offset.HasValue)
