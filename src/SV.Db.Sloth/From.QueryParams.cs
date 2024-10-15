@@ -16,14 +16,10 @@ namespace SV.Db.Sloth
                     ParseConditionStatementToQuery(sb, statement.Where.Condition);
                     dict.Add("Where", sb.ToString());
                 }
-                if (statement.Limit != null)
+                dict.Add("Rows", statement.Rows.ToString());
+                if (statement.Offset > 0)
                 {
-                    var limit = statement.Limit;
-                    dict.Add("Rows", limit.Rows.ToString());
-                    if (limit.Offset > 0)
-                    {
-                        dict.Add("Offset", limit.Offset.ToString());
-                    }
+                    dict.Add("Offset", statement.Offset.ToString());
                 }
                 if (statement.OrderBy != null && statement.OrderBy.Fields.IsNotNullOrEmpty())
                 {

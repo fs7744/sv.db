@@ -167,12 +167,12 @@ namespace SV.Db.Sloth
             if (ps.TryGetValue("Rows", out var psize) && int.TryParse(psize, out var ipsize))
             {
                 ps.Remove("Rows");
-                builder.statement.Limit.Rows = ipsize;
+                builder.statement.Rows = ipsize;
             }
             if (ps.TryGetValue("Offset", out var offset) && int.TryParse(offset, out var ioffset))
             {
                 ps.Remove("Offset");
-                builder.statement.Limit.Offset = ioffset;
+                builder.statement.Offset = ioffset;
             }
         }
 

@@ -84,7 +84,7 @@ namespace SV.Db.Sloth
 
         public static SelectStatementBuilder Limit(this SelectStatementBuilder select, int rows, int? offset = null)
         {
-            var l = select.statement.Limit;
+            var l = select.statement;
             l.Offset = offset;
             l.Rows = rows;
             return select;

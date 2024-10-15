@@ -137,15 +137,11 @@ namespace SV.Db.Sloth.PostgreSQL
                 table = table.Replace("{OrderBy}", " order by " + ConvertFields(info, statement.OrderBy.Fields, false) + " {Limit} ");
             }
 
-            if (statement.Limit == null)
+            if (!statement.Offset.HasValue)
             {
-                statement.Limit = new LimitStatement() { Rows = 10 };
+                statement.Offset = 0;
             }
-            if (!statement.Limit.Offset.HasValue)
-            {
-                statement.Limit.Offset = 0;
-            }
-            table = table.Replace("{Limit}", $"Limit {statement.Limit.Offset},{statement.Limit.Rows} ");
+            table = table.Replace("{Limit}", $"Limit {statement.Offset},{statement.Rows} ");
 
             cmd.CommandText = table;
         }

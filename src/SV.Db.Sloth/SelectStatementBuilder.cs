@@ -8,7 +8,7 @@ namespace SV.Db.Sloth
 
     public class SelectStatementBuilder
     {
-        internal readonly SelectStatement statement = new SelectStatement() { Limit = new LimitStatement() { Rows = 10 } };
+        internal readonly SelectStatement statement = new SelectStatement();
         internal DbEntityInfo dbEntityInfo;
         internal IConnectionFactory factory;
         internal SelectStatementOptions options;
