@@ -120,6 +120,15 @@ namespace SV.Db.Sloth.MySql
                 }
             }
 
+            if (statement.Where == null || statement.Where.Condition == null)
+            {
+                table = table.Replace("{Where}", string.Empty, StringComparison.OrdinalIgnoreCase);
+            }
+            else
+            {
+                table = table.Replace("{Where}", BuildCondition(cmd, info, statement.Where.Condition), StringComparison.OrdinalIgnoreCase);
+            }
+
             if (statement.GroupBy.IsNotNullOrEmpty())
             {
                 table = table.Replace("{OrderBy}", $"group by {ConvertFields(info, statement.GroupBy, false)} ");
