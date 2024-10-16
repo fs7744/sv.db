@@ -262,11 +262,24 @@ namespace SV.Db.Sloth.SQLite
 
         private static void BuildInOperaterStatement(StringBuilder sb, InOperaterStatement io, DbCommand cmd, DbEntityInfo info, BuildConditionContext context)
         {
-            sb.Append(' ');
-            BuildValueStatement(io.Left, sb, cmd, info, null, context, ParseType.Condition);
-            sb.Append(" in (");
-            BuildArrayValueStatement(io.Right, sb, cmd, info, io.Left as FieldStatement, context);
-            sb.Append(") ");
+            var f = io.Left as FieldStatement;
+            if (f != null && info.WhereFields.TryGetValue(f.Field, out var w) && w.Contains("{field}", StringComparison.OrdinalIgnoreCase))
+            {
+                var ssb = new StringBuilder();
+                ssb.Append(" in (");
+                BuildArrayValueStatement(io.Right, ssb, cmd, info, io.Left as FieldStatement, context);
+                ssb.Append(") ");
+                sb.Append(' ');
+                sb.Append(w.Replace("{field}", ssb.ToString(), StringComparison.OrdinalIgnoreCase));
+            }
+            else
+            {
+                sb.Append(' ');
+                BuildValueStatement(io.Left, sb, cmd, info, null, context, ParseType.Condition);
+                sb.Append(" in (");
+                BuildArrayValueStatement(io.Right, sb, cmd, info, io.Left as FieldStatement, context);
+                sb.Append(") ");
+            }
         }
 
         private static void BuildArrayValueStatement(ArrayValueStatement array, StringBuilder sb, DbCommand cmd, DbEntityInfo info, FieldStatement? fieldValueStatement, BuildConditionContext context)
@@ -341,9 +354,29 @@ namespace SV.Db.Sloth.SQLite
 
         private static void BuildOperaterStatement(StringBuilder sb, OperaterStatement os, DbCommand cmd, DbEntityInfo info, BuildConditionContext context)
         {
-            sb.Append(' ');
-            BuildValueStatement(os.Left, sb, cmd, info, os.Left as FieldStatement, context, ParseType.Condition);
-            sb.Append(' ');
+            var f = os.Left as FieldStatement;
+            if (f == null)
+            {
+                f = os.Right as FieldStatement;
+            }
+            if (f != null && info.WhereFields.TryGetValue(f.Field, out var w) && w.Contains("{field}", StringComparison.OrdinalIgnoreCase))
+            {
+                var ssb = new StringBuilder();
+                BuildOperaterStatementStr(ssb, os, cmd, info, context, os.Left == f ? os.Right : os.Left, f);
+                sb.Append(' ');
+                sb.Append(w.Replace("{field}", ssb.ToString(), StringComparison.OrdinalIgnoreCase));
+            }
+            else
+            {
+                sb.Append(' ');
+                BuildValueStatement(os.Left, sb, cmd, info, f, context, ParseType.Condition);
+                sb.Append(' ');
+                BuildOperaterStatementStr(sb, os, cmd, info, context, os.Right, f);
+            }
+        }
+
+        private static void BuildOperaterStatementStr(StringBuilder sb, OperaterStatement os, DbCommand cmd, DbEntityInfo info, BuildConditionContext context, ValueStatement right, FieldStatement? f)
+        {
             switch (os.Operater)
             {
                 case "is-null":
@@ -356,26 +389,26 @@ namespace SV.Db.Sloth.SQLite
 
                 case "like":
                     sb.Append("like ");
-                    var rf = os.Right as StringValueStatement;
+                    var rf = right as StringValueStatement;
                     sb.Append($"'%{ReplaceLikeValue(rf.Value)}%'");
                     break;
 
                 case "prefix-like":
                     sb.Append("like ");
-                    var lrf = os.Right as StringValueStatement;
+                    var lrf = right as StringValueStatement;
                     sb.Append($"'{ReplaceLikeValue(lrf.Value)}%'");
                     break;
 
                 case "suffix-like":
                     sb.Append("like ");
-                    var srf = os.Right as StringValueStatement;
+                    var srf = right as StringValueStatement;
                     sb.Append($"'%{ReplaceLikeValue(srf.Value)}'");
                     break;
 
                 default:
                     sb.Append(os.Operater);
                     sb.Append(' ');
-                    BuildValueStatement(os.Right, sb, cmd, info, os.Right as FieldStatement, context, ParseType.Condition);
+                    BuildValueStatement(right, sb, cmd, info, f, context, ParseType.Condition);
                     break;
             }
 

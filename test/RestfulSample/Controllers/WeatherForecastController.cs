@@ -65,7 +65,7 @@ namespace RestfulSample.Controllers
     }
 
     [Db(StaticInfo.Demo)]
-    [Table(nameof(Weather))]
+    [Table("select {Fields} from Weather a")]
     public class Weather
     {
         [Select, Where, OrderBy]
@@ -78,7 +78,7 @@ namespace RestfulSample.Controllers
         public string Test { get; set; }
 
         [Where(Field = """
-            {{not}} EXISTS(SELECT 1 FROM Weather e WHERE e.name @SKU LIMIT 1)
+            EXISTS(SELECT 1 FROM Weather e WHERE e.name = a.name and e.name {field} LIMIT 1)
             """)]
         public string SKU { get; set; }
     }
