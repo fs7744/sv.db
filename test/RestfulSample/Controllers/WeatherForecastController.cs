@@ -74,6 +74,9 @@ namespace RestfulSample.Controllers
         [Select(Field = "Value"), Where, OrderBy, Column(IsJson = true)]
         public string V { get; set; }
 
+        [Select(Field = "json_extract(Value,'$.a')")]
+        public string Vv { get; set; }
+
         [Select(NotAllow = true)]
         public string Test { get; set; }
 

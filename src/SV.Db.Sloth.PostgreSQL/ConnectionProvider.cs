@@ -106,7 +106,7 @@ namespace SV.Db.Sloth.PostgreSQL
             {
                 if (fs?.Any(i => i is FieldStatement f && f.Field.Equals("*")) == true)
                 {
-                    table = table.Replace("{Fields}", info.SelectAll, StringComparison.OrdinalIgnoreCase);
+                    table = table.Replace("{Fields}", info.SelectAll((x, y) => $"{y} as {x}", ","), StringComparison.OrdinalIgnoreCase);
                 }
                 else
                 {

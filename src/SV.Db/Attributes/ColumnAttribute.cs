@@ -7,9 +7,9 @@ namespace SV.Db
     {
         public string? Name { get; set; }
 
-        public DbType Type { get; set; }
+        public DbType Type { get; set; } = DbType.String;
 
-        public ParameterDirection Direction { get; set; }
+        public ParameterDirection Direction { get; set; } = ParameterDirection.Input;
 
         public byte Precision { get; set; }
 
