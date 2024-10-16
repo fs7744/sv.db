@@ -179,6 +179,7 @@ such filter operater just make api more restful (`Where=urlencode(complex condit
     - query string `?OrderBy=name asc,age desc,json(data,'$.age') desc`
     - body `{"OrderBy":"name asc,age desc,json(data,'$.age') desc"}`
 - `GroupBy` GroupBy result, it will ingore OrderBy/Offset/Rows
+    - func support : `count(field,as)` `min(field,as)` `max(field,as)` `sum(field,as)`
     - query string `?&groupby=name&fields=count(name,count),name`
     - body `{"GroupBy":"name","Fields":"count(name,count),name"}`
 - `Where`   complex condition filter
