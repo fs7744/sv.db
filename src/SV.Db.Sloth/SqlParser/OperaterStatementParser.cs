@@ -151,7 +151,7 @@ namespace SV.Db.Sloth.SqlParser
                     if (t.Type == TokenType.Sign
                         && t.GetValue().Equals("(", StringComparison.Ordinal))
                     {
-                        var op = context.ParseType == ParseType.OrderByField ? new JsonOrderByFieldStatement() : new JsonFieldStatement();
+                        var op = (context.ParseType & ParseType.OrderByField) == ParseType.OrderByField ? new JsonOrderByFieldStatement() : new JsonFieldStatement();
                         context.Stack.Push(op);
                         if (ConvertJsonField(context, op) && context.Stack.Peek() == op)
                         {
@@ -222,7 +222,7 @@ namespace SV.Db.Sloth.SqlParser
                 {
                     return false;
                 }
-                if (op is IOrderByField order && context.ParseType == ParseType.OrderByField)
+                if (op is IOrderByField order && (context.ParseType & ParseType.OrderByField) == ParseType.OrderByField)
                 {
                     if (context.MoveNext())
                     {

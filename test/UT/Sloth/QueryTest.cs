@@ -27,6 +27,27 @@ namespace UT.Sloth
         }
 
         [Fact]
+        public void GroupByFuncFields()
+        {
+            var a = new ConnectionStringProviders(null, null).From<QueryTest>();
+            a.Select(i => i.A.Count("ac"), i => i.A.Min("ac"), i => i.A.Max("ac"), i => i.A.Sum("ac"));
+            a.Select("count", "min", "max", "sum");
+            a.Select("count(a,ac)", "min(a,ac)", "max(a,ac)", "sum(a,ac)");
+            a.Select("count(a)", "min(a)", "max(a)", "sum(a)");
+            Assert.Equal("Sum(A,ac),Max(A,ac),Min(A,ac),Count(A,ac),sum,max,min,count,sum(a,ac),max(a,ac),min(a,ac),count(a,ac),sum(a),max(a),min(a),count(a)", From.ParseToQueryParams(a.Build(new SelectStatementOptions() { AllowNotFoundFields = true, AllowNonStrictCondition = true }))["fields"]);
+        }
+
+        [Fact]
+        public void GroupByFields()
+        {
+            var a = new ConnectionStringProviders(null, null).From<QueryTest>();
+            a.GroupBy("json", nameof(QueryTest.A), nameof(QueryTest.B));
+            a.GroupBy(nameof(QueryTest.A), nameof(QueryTest.B), "json");
+            a.GroupBy(i => i.A, i => i.B, i => i.A.JsonExtract("$.s"), i => i.B.JsonExtract("$.sdd", "d"));
+            Assert.Equal("B,A,json,json,B,A,json(B,'$.sdd',d),json(A,'$.s'),B,A", From.ParseToQueryParams(a.Build(new SelectStatementOptions() { AllowNotFoundFields = true, AllowNonStrictCondition = true }))["GroupBy"]);
+        }
+
+        [Fact]
         public void SelectOrderByFields()
         {
             var a = new ConnectionStringProviders(null, null).From<QueryTest>();

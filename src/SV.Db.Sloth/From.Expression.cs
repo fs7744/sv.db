@@ -13,7 +13,7 @@ namespace SV.Db.Sloth
             var f = select.statement.Fields;
             if (f == null)
                 f = select.statement.Fields = new List<FieldStatement>();
-            foreach (var item in SqlStatementParser.ParseStatements(string.Join(",", fields), ParseType.SelectField).Cast<FieldStatement>())
+            foreach (var item in SqlStatementParser.ParseStatements(string.Join(",", fields), ParseType.SelectField | ParseType.GrGroupByFuncField).Cast<FieldStatement>())
             {
                 f.Add(item);
             }
@@ -111,6 +111,24 @@ namespace SV.Db.Sloth
         public static SelectStatementBuilder<T> OrderBy<T>(this SelectStatementBuilder<T> select, params Expression<Func<T, object>>[] fields)
         {
             OrderBy(select, fields.Select(i => i.GetMemberName()).ToArray());
+            return select;
+        }
+
+        public static SelectStatementBuilder GroupBy(this SelectStatementBuilder select, params string[] fields)
+        {
+            var f = select.statement.GroupBy;
+            if (f == null)
+                f = select.statement.GroupBy = new List<FieldStatement>();
+            foreach (var item in SqlStatementParser.ParseStatements(string.Join(",", fields), ParseType.SelectField).Cast<FieldStatement>().ToList())
+            {
+                f.Add(item);
+            }
+            return select;
+        }
+
+        public static SelectStatementBuilder<T> GroupBy<T>(this SelectStatementBuilder<T> select, params Expression<Func<T, object>>[] fields)
+        {
+            GroupBy(select, fields.Select(i => i.GetMemberName()).ToArray());
             return select;
         }
 

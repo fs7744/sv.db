@@ -3,7 +3,6 @@
     public class SelectStatement : Statement
     {
         public List<FieldStatement>? Fields { get; set; }
-        public FromStatement From { get; set; }
 
         public WhereStatement Where { get; set; }
 
@@ -26,11 +25,17 @@
                     visitor(item);
                 }
             }
-            From?.Visit(visitor);
             Where?.Visit(visitor);
             if (OrderBy != null)
             {
                 foreach (var item in OrderBy)
+                {
+                    visitor(item);
+                }
+            }
+            if (GroupBy != null)
+            {
+                foreach (var item in GroupBy)
                 {
                     visitor(item);
                 }

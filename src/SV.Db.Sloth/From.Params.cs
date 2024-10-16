@@ -25,6 +25,7 @@ namespace SV.Db.Sloth
             var builder = factory.From<T>();
             ParseFields(ps, builder);
             ParseOrderBy(ps, builder);
+            ParseGroupBy(ps, builder);
             ParsePage(ps, builder);
             ParseWhere(ps, builder);
             info = builder.dbEntityInfo;
@@ -36,6 +37,7 @@ namespace SV.Db.Sloth
             var builder = factory.From(key);
             ParseFields(ps, builder);
             ParseOrderBy(ps, builder);
+            ParseGroupBy(ps, builder);
             ParsePage(ps, builder);
             ParseWhere(ps, builder);
             info = builder.dbEntityInfo;
@@ -189,6 +191,19 @@ namespace SV.Db.Sloth
             }
         }
 
+        private static void ParseGroupBy(IDictionary<string, StringValues> ps, SelectStatementBuilder builder)
+        {
+            if (ps.TryGetValue("GroupBy", out var ob))
+            {
+                ps.Remove("GroupBy");
+                var orderBy = SqlStatementParser.ParseStatements(ob.ToString(), ParseType.SelectField).Cast<FieldStatement>().ToList();
+                if (orderBy.Count > 0)
+                {
+                    builder.statement.GroupBy = orderBy;
+                }
+            }
+        }
+
         private static void ParseFields(IDictionary<string, StringValues> ps, SelectStatementBuilder builder)
         {
             List<FieldStatement> fields = null;
@@ -205,7 +220,7 @@ namespace SV.Db.Sloth
                 if (ps.TryGetValue("Fields", out var fs))
                 {
                     ps.Remove("Fields");
-                    fields = SqlStatementParser.ParseStatements(fs, ParseType.SelectField).Cast<FieldStatement>().ToList();
+                    fields = SqlStatementParser.ParseStatements(fs, ParseType.SelectField | ParseType.GrGroupByFuncField).Cast<FieldStatement>().ToList();
                 }
                 else
                 {

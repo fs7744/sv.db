@@ -25,7 +25,7 @@ namespace SV.Db.Sloth.SqlParser
 
         private static void ParseStatements(StatementParserContext context, bool doOnce)
         {
-            var s = context.ParseType != ParseType.Condition ? fieldParsers : statementParsers;
+            var s = (context.ParseType & ParseType.Condition) == ParseType.Condition ? statementParsers : fieldParsers;
             while (context.HasToken())
             {
                 bool matched = false;

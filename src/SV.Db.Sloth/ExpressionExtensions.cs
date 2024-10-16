@@ -25,7 +25,13 @@ namespace SV.Db
             switch (expression.Method.Name)
             {
                 case nameof(JsonExtract):
-                    return GetMemberName(expression);
+                    return GetJsonMemberName(expression);
+
+                case nameof(Min):
+                case nameof(Max):
+                case nameof(Sum):
+                case nameof(Count):
+                    return GetFuncMemberName(expression);
 
                 case nameof(Desc):
                     return $"{GetMemberName(expression.Arguments[0])} desc";
@@ -35,11 +41,17 @@ namespace SV.Db
             }
         }
 
-        public static string GetMemberName(MethodCallExpression expression)
+        public static string GetJsonMemberName(MethodCallExpression expression)
         {
             var path = Expression.Lambda(expression.Arguments[1]).Compile().DynamicInvoke().ToString().Replace("'", "\\'");
             var aS = expression.Arguments.Count > 2 ? "," + Expression.Lambda(expression.Arguments[2]).Compile().DynamicInvoke().ToString() : string.Empty;
             return $"json({GetMemberName(expression.Arguments[0])},'{path}'{aS})";
+        }
+
+        public static string GetFuncMemberName(MethodCallExpression expression)
+        {
+            var aS = expression.Arguments.Count > 1 ? "," + Expression.Lambda(expression.Arguments[1]).Compile().DynamicInvoke().ToString() : string.Empty;
+            return $"{expression.Method.Name}({GetMemberName(expression.Arguments[0])}{aS})";
         }
 
         public static bool Like<T>(this T o, string s)
@@ -73,6 +85,26 @@ namespace SV.Db
         }
 
         public static object Desc(this object o)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static Any Count(this object o, string aS)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static Any Min(this object o, string aS)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static Any Max(this object o, string aS)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static Any Sum(this object o, string aS)
         {
             throw new NotImplementedException();
         }

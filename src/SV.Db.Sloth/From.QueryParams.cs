@@ -21,14 +21,21 @@ namespace SV.Db.Sloth
                 {
                     dict.Add("Offset", statement.Offset.ToString());
                 }
-                if (statement.OrderBy != null && statement.OrderBy.IsNotNullOrEmpty())
+                if (statement.OrderBy.IsNotNullOrEmpty())
                 {
                     var order = statement.OrderBy;
                     StringBuilder sb = new();
                     ParseFields(order, sb);
                     dict.Add("OrderBy", sb.ToString());
                 }
-                if (statement.Fields != null && statement.Fields.IsNotNullOrEmpty())
+                if (statement.GroupBy.IsNotNullOrEmpty())
+                {
+                    var order = statement.GroupBy;
+                    StringBuilder sb = new();
+                    ParseFields(order, sb);
+                    dict.Add("GroupBy", sb.ToString());
+                }
+                if (statement.Fields.IsNotNullOrEmpty())
                 {
                     var fs = statement.Fields;
                     if (statement.HasTotalCount)
@@ -205,6 +212,18 @@ namespace SV.Db.Sloth
                     sb.Append(" ");
                     sb.Append(Enums<OrderByDirection>.GetName(order.Direction));
                 }
+            }
+            else if (v is GroupByFuncFieldStatement g)
+            {
+                sb.Append(g.Func);
+                sb.Append("(");
+                sb.Append(g.Field);
+                if (!string.IsNullOrWhiteSpace(g.As))
+                {
+                    sb.Append(",");
+                    sb.Append(g.As);
+                }
+                sb.Append(")");
             }
             else if (v is FieldStatement f)
             {

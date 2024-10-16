@@ -120,28 +120,27 @@ namespace SV.Db.Sloth.MySql
                 }
             }
 
-            if (statement.Where == null || statement.Where.Condition == null)
+            if (statement.GroupBy.IsNotNullOrEmpty())
             {
-                table = table.Replace("{Where}", string.Empty, StringComparison.OrdinalIgnoreCase);
+                table = table.Replace("{OrderBy}", $"group by {ConvertFields(info, statement.GroupBy, false)} ");
             }
             else
             {
-                table = table.Replace("{Where}", BuildCondition(cmd, info, statement.Where.Condition), StringComparison.OrdinalIgnoreCase);
-            }
+                if (statement.OrderBy == null || statement.OrderBy.IsNullOrEmpty())
+                {
+                    table = table.Replace("{OrderBy}", " {Limit} ", StringComparison.OrdinalIgnoreCase);
+                }
+                else
+                {
+                    table = table.Replace("{OrderBy}", " order by " + ConvertFields(info, statement.OrderBy, false) + " {Limit} ");
+                }
 
-            if (statement.OrderBy == null || statement.OrderBy.IsNullOrEmpty())
-            {
-                table = table.Replace("{OrderBy}", " {Limit} ", StringComparison.OrdinalIgnoreCase);
+                if (!statement.Offset.HasValue)
+                {
+                    statement.Offset = 0;
+                }
+                table = table.Replace("{Limit}", $"Limit {statement.Offset},{statement.Rows} ");
             }
-            else
-            {
-                table = table.Replace("{OrderBy}", " order by " + ConvertFields(info, statement.OrderBy, false) + " {Limit} ");
-            }
-            if (!statement.Offset.HasValue)
-            {
-                statement.Offset = 0;
-            }
-            table = table.Replace("{Limit}", $"Limit {statement.Offset},{statement.Rows} ");
 
             cmd.CommandText = table;
         }
@@ -185,6 +184,19 @@ namespace SV.Db.Sloth.MySql
                 {
                     sb.Append(" ");
                     sb.Append(Enums<OrderByDirection>.GetName(orderBy.Direction));
+                }
+                return true;
+            }
+            else if (v is GroupByFuncFieldStatement g)
+            {
+                sb.Append(g.Func);
+                sb.Append("(");
+                sb.Append(info.SelectFields[g.Field]);
+                sb.Append(")");
+                if (allowAs && !string.IsNullOrWhiteSpace(g.As))
+                {
+                    sb.Append(" as ");
+                    sb.Append(g.As);
                 }
                 return true;
             }
