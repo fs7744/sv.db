@@ -226,3 +226,28 @@ such filter operater just make api more restful (`Where=urlencode(complex condit
             - example ` (age <= 30 or age > 60) and name = 'killer'`
      - support json
         - example ` json(data,'$.age') > 60` 
+
+####
+
+support sub query filter, filter will be replace by `{field}`, like this:
+
+``` csharp
+[Db(StaticInfo.Demo)]
+[Table("select {Fields} from Weather a")]
+public class Weather
+{
+    [Select, Where, OrderBy]
+    public string Name { get; set; }
+
+    [Select(Field = "Value"), Where, OrderBy, Column(IsJson = true)]
+    public string V { get; set; }
+
+    [Select(NotAllow = true)]
+    public string Test { get; set; }
+
+    [Where(Field = """
+        EXISTS(SELECT 1 FROM Weather e WHERE e.name = a.name and e.name {field} LIMIT 1)
+        """)]
+    public string SKU { get; set; }
+}
+```
