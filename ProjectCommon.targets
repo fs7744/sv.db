@@ -8,8 +8,8 @@
 		<Authors>Victor.x.qu</Authors>
 		<Company>Victor.x.qu</Company>
 		<Copyright>@2024 Victor.x.qu</Copyright>
-		<PackageProjectUrl>https://git.newegg.org/newegg-college/mis-hub/pikaq</PackageProjectUrl>
-		<RepositoryUrl>https://git.newegg.org/newegg-college/mis-hub/pikaq</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/fs7744/sv.db</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/fs7744/sv.db</RepositoryUrl>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
