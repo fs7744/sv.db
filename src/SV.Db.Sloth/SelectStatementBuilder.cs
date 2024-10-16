@@ -32,14 +32,61 @@ namespace SV.Db.Sloth
             return !options.AllowNotFoundFields || !options.AllowNonStrictCondition;
         }
 
+        private void CheckWhereFields(Statement statement)
+        {
+            var fs = dbEntityInfo.WhereFields;
+            if (statement is FieldStatement field && (fs.IsNullOrEmpty() || !fs.ContainsKey(field.Field)))
+            {
+                throw new KeyNotFoundException($"Field {field.Field} not found");
+            }
+        }
+
         private void CheckStatement(Statement statement)
         {
             if (!options.AllowNotFoundFields)
             {
-                var fs = dbEntityInfo.SelectFields;
-                if (statement is FieldStatement field && !field.Field.Equals("*") && (fs.IsNullOrEmpty() || !fs.ContainsKey(field.Field)))
+                if (statement is SelectStatement s)
                 {
-                    throw new KeyNotFoundException($"Field {field.Field} not found");
+                    if (s.Fields.IsNotNullOrEmpty())
+                    {
+                        var fs = dbEntityInfo.SelectFields;
+                        foreach (var field in s.Fields)
+                        {
+                            if (!field.Field.Equals("*") && (fs.IsNullOrEmpty() || !fs.ContainsKey(field.Field)))
+                            {
+                                throw new KeyNotFoundException($"Field {field.Field} not found");
+                            }
+                        }
+                    }
+
+                    if (s.OrderBy.IsNotNullOrEmpty())
+                    {
+                        var fs = dbEntityInfo.OrderByFields;
+                        foreach (var field in s.OrderBy)
+                        {
+                            if (fs.IsNullOrEmpty() || !fs.ContainsKey(field.Field))
+                            {
+                                throw new KeyNotFoundException($"Field {field.Field} not found");
+                            }
+                        }
+                    }
+
+                    if (s.GroupBy.IsNotNullOrEmpty())
+                    {
+                        var fs = dbEntityInfo.SelectFields;
+                        foreach (var field in s.GroupBy)
+                        {
+                            if (fs.IsNullOrEmpty() || !fs.ContainsKey(field.Field))
+                            {
+                                throw new KeyNotFoundException($"Field {field.Field} not found");
+                            }
+                        }
+                    }
+
+                    if (s.Where != null)
+                    {
+                        s.Where.Visit(CheckWhereFields);
+                    }
                 }
 
                 if (statement is JsonFieldStatement js)
