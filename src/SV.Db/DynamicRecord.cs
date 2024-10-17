@@ -6,6 +6,7 @@ using System.Dynamic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 
 namespace SV.Db
 {
@@ -69,7 +70,7 @@ namespace SV.Db
         object? IDictionary<string, object?>.this[string key]
         {
             get => this[key];
-            set => throw new NotSupportedException();
+            set => values[keys[key]] = value;
         }
 
         public override string GetName(int i) => fields[i].Name;

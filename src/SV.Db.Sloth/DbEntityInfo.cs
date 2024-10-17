@@ -76,6 +76,18 @@ namespace SV.Db
 
             return selectAll;
         }
+
+        private FrozenSet<string> jsonFields;
+
+        public FrozenSet<string> GetJsonFields()
+        {
+            if (jsonFields == null)
+            {
+                jsonFields = Columns.Where(i => i.Value.IsJson).Select(i => i.Key).Distinct(StringComparer.OrdinalIgnoreCase).ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+            }
+
+            return jsonFields;
+        }
     }
 
     public static class DbEntityInfo<T>

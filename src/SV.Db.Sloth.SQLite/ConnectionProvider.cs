@@ -12,7 +12,7 @@ namespace SV.Db.Sloth.SQLite
         {
             using var connection = Create(connectionString);
             var cmd = connection.CreateCommand();
-            BuildSelectStatement(cmd, info, statement, out var hasTotal, out var hasRows);
+            var jsonFields = BuildSelectStatement(cmd, info, statement, out var hasTotal, out var hasRows);
             if (connection.State != ConnectionState.Open)
             {
                 connection.Open();
@@ -25,7 +25,33 @@ namespace SV.Db.Sloth.SQLite
             }
             if (hasRows)
             {
-                result.Rows = reader.Query<T>().AsList();
+                if (jsonFields != null && typeof(T) == typeof(object))
+                {
+                    result.Rows = reader.Query<T>().Select(i =>
+                    {
+                        if (i is IDictionary<string, object?> dict)
+                        {
+                            foreach (var item in jsonFields)
+                            {
+                                if (dict.ContainsKey(item) && dict[item] is string str && !string.IsNullOrWhiteSpace(str))
+                                {
+                                    try
+                                    {
+                                        dict[item] = ConnectionFactory.ParseJsonToken(str);
+                                    }
+                                    catch (Exception)
+                                    {
+                                    }
+                                }
+                            }
+                        }
+                        return i;
+                    }).AsList();
+                }
+                else
+                {
+                    result.Rows = reader.Query<T>().AsList();
+                }
             }
             return result;
         }
@@ -34,7 +60,7 @@ namespace SV.Db.Sloth.SQLite
         {
             using var connection = Create(connectionString);
             var cmd = connection.CreateCommand();
-            BuildSelectStatement(cmd, info, statement, out var hasTotal, out var hasRows);
+            var jsonFields = BuildSelectStatement(cmd, info, statement, out var hasTotal, out var hasRows);
             using var reader = await CommandExtensions.DbDataReaderAsync(cmd, CommandBehavior.CloseConnection, cancellationToken);
             var result = new PageResult<T>();
             if (hasTotal)
@@ -43,15 +69,42 @@ namespace SV.Db.Sloth.SQLite
             }
             if (hasRows)
             {
-                result.Rows = await reader.QueryAsync<T>(cancellationToken).ToListAsync(cancellationToken);
+                if (jsonFields != null && typeof(T) == typeof(object))
+                {
+                    result.Rows = await reader.QueryAsync<T>(cancellationToken).ToListAsync(i =>
+                    {
+                        if (i is IDictionary<string, object?> dict)
+                        {
+                            foreach (var item in jsonFields)
+                            {
+                                if (dict.ContainsKey(item) && dict[item] is string str && !string.IsNullOrWhiteSpace(str))
+                                {
+                                    try
+                                    {
+                                        dict[item] = ConnectionFactory.ParseJsonToken(str);
+                                    }
+                                    catch (Exception)
+                                    {
+                                    }
+                                }
+                            }
+                        }
+                        return i;
+                    }, cancellationToken);
+                }
+                else
+                {
+                    result.Rows = await reader.QueryAsync<T>(cancellationToken).ToListAsync(cancellationToken);
+                }
             }
             return result;
         }
 
-        private void BuildSelectStatement(DbCommand cmd, DbEntityInfo info, SelectStatement statement, out bool hasTotalCount, out bool hasRows)
+        private ISet<string> BuildSelectStatement(DbCommand cmd, DbEntityInfo info, SelectStatement statement, out bool hasTotalCount, out bool hasRows)
         {
             cmd.CommandTimeout = info.Timeout;
             var fs = statement.Fields;
+            ISet<string> jf = null;
 
             string table = info.Table;
             if (!table.Contains("{Where}", StringComparison.OrdinalIgnoreCase))
@@ -104,13 +157,15 @@ namespace SV.Db.Sloth.SQLite
 
             if (hasRows)
             {
+                jf = info.GetJsonFields();
                 if (fs?.Any(i => i is FieldStatement f && f.Field.Equals("*")) == true)
                 {
                     table = table.Replace("{Fields}", info.SelectAll((x, y) => $"{y} as {x}", ","), StringComparison.OrdinalIgnoreCase);
                 }
                 else
                 {
-                    table = table.Replace("{Fields}", ConvertFields(info, fs, true, ParseType.SelectField), StringComparison.OrdinalIgnoreCase);
+                    jf = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    table = table.Replace("{Fields}", ConvertFields(info, fs, true, ParseType.SelectField, jf), StringComparison.OrdinalIgnoreCase);
                 }
             }
 
@@ -125,7 +180,7 @@ namespace SV.Db.Sloth.SQLite
 
             if (statement.GroupBy.IsNotNullOrEmpty())
             {
-                table = table.Replace("{OrderBy}", $"group by {ConvertFields(info, statement.GroupBy, false, ParseType.OrderByField)} ");
+                table = table.Replace("{OrderBy}", $"group by {ConvertFields(info, statement.GroupBy, false, ParseType.OrderByField, null)} ");
             }
             else
             {
@@ -135,7 +190,7 @@ namespace SV.Db.Sloth.SQLite
                 }
                 else
                 {
-                    table = table.Replace("{OrderBy}", " order by " + ConvertFields(info, statement.OrderBy, false, ParseType.OrderByField) + " {Limit} ");
+                    table = table.Replace("{OrderBy}", " order by " + ConvertFields(info, statement.OrderBy, false, ParseType.OrderByField, null) + " {Limit} ");
                 }
 
                 if (!statement.Offset.HasValue)
@@ -146,9 +201,10 @@ namespace SV.Db.Sloth.SQLite
             }
 
             cmd.CommandText = table;
+            return jf;
         }
 
-        private string? ConvertFields(DbEntityInfo info, IEnumerable<FieldStatement>? fs, bool allowAs, ParseType parseType)
+        private string? ConvertFields(DbEntityInfo info, IEnumerable<FieldStatement>? fs, bool allowAs, ParseType parseType, ISet<string> jsonFields)
         {
             var sb = new StringBuilder();
             var notFirst = false;
@@ -162,12 +218,12 @@ namespace SV.Db.Sloth.SQLite
                 {
                     notFirst = true;
                 }
-                ConvertField(item, info, sb, allowAs, parseType);
+                ConvertField(item, info, sb, allowAs, parseType, jsonFields);
             }
             return sb.ToString();
         }
 
-        private static bool ConvertField(Statement v, DbEntityInfo info, StringBuilder sb, bool allowAs, ParseType parseType)
+        private static bool ConvertField(Statement v, DbEntityInfo info, StringBuilder sb, bool allowAs, ParseType parseType, ISet<string> jsonFields)
         {
             var fs = parseType switch
             {
@@ -178,6 +234,10 @@ namespace SV.Db.Sloth.SQLite
             if (v is JsonFieldStatement js)
             {
                 ConvertJsonField(v, sb, allowAs, fs, js);
+                if (jsonFields != null && parseType == ParseType.SelectField && !string.IsNullOrWhiteSpace(js.As) && !jsonFields.Contains(js.As))
+                {
+                    jsonFields.Add(js.As);
+                }
                 return true;
             }
             else if (v is GroupByFuncFieldStatement g)
@@ -205,6 +265,14 @@ namespace SV.Db.Sloth.SQLite
                 {
                     sb.Append(" ");
                     sb.Append(Enums<OrderByDirection>.GetName(orderBy.Direction));
+                }
+                if (jsonFields != null && parseType == ParseType.SelectField && !jsonFields.Contains(f.Field))
+                {
+                    var all = info.GetJsonFields();
+                    if (all != null && all.Contains(f.Field))
+                    {
+                        jsonFields.Add(f.Field);
+                    }
                 }
                 return true;
             }
@@ -417,7 +485,7 @@ namespace SV.Db.Sloth.SQLite
 
         private static void BuildValueStatement(ValueStatement v, StringBuilder sb, DbCommand cmd, DbEntityInfo info, FieldStatement? fieldValueStatement, BuildConditionContext context, ParseType parseType)
         {
-            if (ConvertField(v, info, sb, false, parseType))
+            if (ConvertField(v, info, sb, false, parseType, null))
             {
             }
             else if (v is StringValueStatement s)
