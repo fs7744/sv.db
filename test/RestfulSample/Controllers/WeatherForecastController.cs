@@ -68,6 +68,12 @@ namespace RestfulSample.Controllers
         {
             return await factory.ExecuteInsertAsync<Weather>(weather);
         }
+
+        [HttpPost("new-batch")]
+        public async Task<object> Insert([FromBody] Weather[] weather)
+        {
+            return await factory.ExecuteInsertAsync<Weather>(weather);
+        }
     }
 
     [Db(StaticInfo.Demo)]

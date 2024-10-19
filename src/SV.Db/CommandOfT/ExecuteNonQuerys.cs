@@ -19,7 +19,7 @@ namespace SV.Db
         }
 
         [MethodImpl(DBUtils.Optimization)]
-        public static int DbConnectionExecuteNonQuerys<T>(this IParamsSetter<T> factory , DbConnection connection, string sql, IEnumerable<T> args, int batchSize = 100, CommandType commandType = CommandType.Text)
+        public static int DbConnectionExecuteNonQuerys<T>(this IParamsSetter<T> factory, DbConnection connection, string sql, IEnumerable<T> args, int batchSize = 100, CommandType commandType = CommandType.Text)
         {
             if (args == null)
             {
@@ -37,18 +37,32 @@ namespace SV.Db
                     connection.Open();
                 }
                 var total = 0;
-                foreach (var item in args.Page(batchSize))
+                if (connection.CanCreateBatch)
                 {
-                    var batch = connection.CreateBatch();
-                    foreach (var i in item)
+                    foreach (var item in args.Page(batchSize))
                     {
-                        var cmd = batch.CreateBatchCommand();
+                        var batch = connection.CreateBatch();
+                        foreach (var i in item)
+                        {
+                            var cmd = batch.CreateBatchCommand();
+                            cmd.CommandText = sql;
+                            cmd.CommandType = commandType;
+                            factory.SetParams(cmd, i);
+                            batch.BatchCommands.Add(cmd);
+                        }
+                        total += batch.ExecuteNonQuery();
+                    }
+                }
+                else
+                {
+                    foreach (var item in args)
+                    {
+                        var cmd = connection.CreateCommand();
                         cmd.CommandText = sql;
                         cmd.CommandType = commandType;
-                        factory.SetParams(cmd, i);
-                        batch.BatchCommands.Add(cmd);
+                        factory.SetParams(cmd, item);
+                        total += cmd.ExecuteNonQuery();
                     }
-                    total += batch.ExecuteNonQuery();
                 }
                 return total;
             }
@@ -101,18 +115,32 @@ namespace SV.Db
                     await connection.OpenAsync(cancellationToken);
                 }
                 var total = 0;
-                foreach (var item in args.Page(batchSize))
+                if (connection.CanCreateBatch)
                 {
-                    var batch = connection.CreateBatch();
-                    foreach (var i in item)
+                    foreach (var item in args.Page(batchSize))
                     {
-                        var cmd = batch.CreateBatchCommand();
+                        var batch = connection.CreateBatch();
+                        foreach (var i in item)
+                        {
+                            var cmd = batch.CreateBatchCommand();
+                            cmd.CommandText = sql;
+                            cmd.CommandType = commandType;
+                            factory.SetParams(cmd, i);
+                            batch.BatchCommands.Add(cmd);
+                        }
+                        total += await batch.ExecuteNonQueryAsync(cancellationToken);
+                    }
+                }
+                else
+                {
+                    foreach (var item in args)
+                    {
+                        var cmd = connection.CreateCommand();
                         cmd.CommandText = sql;
                         cmd.CommandType = commandType;
-                        factory.SetParams(cmd, i);
-                        batch.BatchCommands.Add(cmd);
+                        factory.SetParams(cmd, item);
+                        total += await cmd.ExecuteNonQueryAsync(cancellationToken);
                     }
-                    total += await batch.ExecuteNonQueryAsync(cancellationToken);
                 }
                 return total;
             }
