@@ -1,13 +1,63 @@
 ﻿using SV.Db.Sloth.SqlParser;
 using SV.Db.Sloth.Statements;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SV.Db.Sloth.SQLite
 {
     public partial class SQLiteConnectionProvider : IConnectionProvider
     {
+        public Task<int> ExecuteInsertAsync<T>(DbConnection dbConnection, DbEntityInfo info, T data, CancellationToken cancellationToken)
+        {
+            return dbConnection.ExecuteNonQueryAsync(info.GetInsertSql(CreateInsertSql), data, cancellationToken);
+        }
+
+        public Task<int> ExecuteInsertAsync<T>(DbConnection dbConnection, DbEntityInfo info, IEnumerable<T> data, int batchSize, CancellationToken cancellationToken)
+        {
+            return dbConnection.ExecuteNonQuerysAsync(info.GetInsertSql(CreateInsertSql), data, batchSize, cancellationToken);
+        }
+
+        private string CreateInsertSql(DbEntityInfo info)
+        {
+            var sb = new StringBuilder();
+            sb.Append("INSERT INTO ");
+            sb.AppendLine(info.UpdateTable);
+            sb.Append("(");
+            var first = true;
+            foreach (var item in info.UpdateColumns.Where(i => !i.Value.NotAllowInsert))
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    sb.Append(",");
+                }
+                sb.Append(item.Value.Field);
+            }
+            sb.Append(") VALUES(");
+            first = true;
+            foreach (var item in info.UpdateColumns.Where(i => !i.Value.NotAllowInsert))
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    sb.Append(",");
+                }
+                sb.Append("@");
+                sb.Append(item.Key);
+            }
+            sb.Append(")");
+            return sb.ToString();
+        }
+
         public PageResult<T> ExecuteQuery<T>(string connectionString, DbEntityInfo info, SelectStatement statement)
         {
             using var connection = Create(connectionString);

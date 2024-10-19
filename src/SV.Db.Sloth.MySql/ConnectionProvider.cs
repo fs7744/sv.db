@@ -8,6 +8,21 @@ namespace SV.Db.Sloth.MySql
 {
     public partial class MySqlConnectionProvider : IConnectionProvider
     {
+        public Task<int> ExecuteInsertAsync<T>(DbConnection dbConnection, DbEntityInfo info, T data, CancellationToken cancellationToken)
+        {
+            return dbConnection.ExecuteNonQueryAsync(CreateInsertSql(info), data, cancellationToken);
+        }
+
+        public Task<int> ExecuteInsertAsync<T>(DbConnection dbConnection, DbEntityInfo info, IEnumerable<T> data, int batchSize, CancellationToken cancellationToken)
+        {
+            return dbConnection.ExecuteNonQuerysAsync(CreateInsertSql(info), data, batchSize, cancellationToken);
+        }
+
+        private string CreateInsertSql(DbEntityInfo info)
+        {
+            throw new NotImplementedException();
+        }
+
         public PageResult<T> ExecuteQuery<T>(string connectionString, DbEntityInfo info, SelectStatement statement)
         {
             using var connection = Create(connectionString);

@@ -18,6 +18,11 @@ namespace RestfulSample.Controllers
     {
         private readonly IConnectionFactory factory;
 
+        public WeatherForecastController(IConnectionFactory factory)
+        {
+            this.factory = factory;
+        }
+
         [DbSwaggerByType(typeof(Weather))]
         [HttpGet] //todo [QueryByParamsSwagger(typeof(Weather))]
         public async Task<object> Selects()//[FromQuery, Required] string name)
@@ -43,41 +48,42 @@ namespace RestfulSample.Controllers
             return factory.From<Weather>().Where(i => !i.Name.Like("e")).WithTotalCount().ParseToQueryString();
         }
 
-        public WeatherForecastController(IConnectionFactory factory)
-        {
-            this.factory = factory;
-        }
-
         [HttpGet("old")]
         public async Task<object> OldWay()
         {
             var a = factory.GetConnection(StaticInfo.Demo);
             using var dd = await a.ExecuteReaderAsync("""
-    SELECT count(1)
-    FROM Weather;
-    SELECT *
-    FROM Weather;
-    """);
+        SELECT count(1)
+        FROM Weather;
+        SELECT *
+        FROM Weather;
+        """);
             var t = await dd.QueryFirstOrDefaultAsync<int>();
             var r = await dd.QueryAsync<string>().ToListAsync();
             return new { TotalCount = t, Rows = r };
         }
+
+        [HttpPost("new")]
+        public async Task<object> Insert([FromBody] Weather weather)
+        {
+            return await factory.ExecuteInsertAsync<Weather>(weather);
+        }
     }
 
     [Db(StaticInfo.Demo)]
-    [Table("select {Fields} from Weather a")]
+    [Table("select {Fields} from Weather a", UpdateTable = "Weather")]
     public class Weather
     {
-        [Select, Where, OrderBy]
+        [Select("Name"), Where, OrderBy, Update]
         public string Name { get; set; }
 
-        [Select(Field = "Value"), Where, OrderBy, Column(IsJson = true)]
+        [Select("Value"), Where, OrderBy, Column(IsJson = true), Update(Field = "Value")]
         public string V { get; set; }
 
-        [Select(Field = "json_extract(Value,'$.a')")]
+        [Select("json_extract(Value,'$.a')")]
         public string Vv { get; set; }
 
-        [Select(NotAllow = true)]
+        [Select("Test", NotAllow = true)]
         public string Test { get; set; }
 
         [Where(Field = """

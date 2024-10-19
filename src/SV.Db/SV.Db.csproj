@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SV.Enums" Version="0.0.1.2" />
+    <PackageReference Include="SV.Enums" Version="0.0.1.3" />
   </ItemGroup>
 
 </Project>

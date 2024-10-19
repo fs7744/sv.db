@@ -9,5 +9,7 @@
         }
 
         public string Table { get; }
+
+        public string UpdateTable { get; set; }
     }
 }

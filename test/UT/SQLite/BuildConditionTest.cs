@@ -48,10 +48,10 @@ namespace UT.SQLite
     [Table(nameof(BuildConditionTestData))]
     public class BuildConditionTestData
     {
-        [Select, Where]
+        [Select("Name"), Where]
         public string Name { get; set; }
 
-        [Select(Field = "Value as v")]
+        [Select("Value")]
         public string V { get; set; }
     }
 }

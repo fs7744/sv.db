@@ -9,41 +9,42 @@ namespace SV.Db
     {
         public int Timeout { get; set; } = 30;
         public string? DbKey { get; set; }
-
         public string Table { get; set; }
+        public string UpdateTable { get; set; }
         public FrozenDictionary<string, string> SelectFields { get; set; }
         public FrozenDictionary<string, string> WhereFields { get; set; }
         public FrozenDictionary<string, string> OrderByFields { get; set; }
         public FrozenDictionary<string, ColumnAttribute> Columns { get; set; }
+        public FrozenDictionary<string, UpdateAttribute> UpdateColumns { get; set; }
 
-        internal static (string Name, string Field)? ConvertSelectMember(MemberInfo info, FrozenDictionary<string, ColumnAttribute> columns)
+        internal static (string Name, string Field)? ConvertSelectMember(MemberInfo info)
         {
             var select = info.GetCustomAttribute<SelectAttribute>();
             if (select == null || select.NotAllow)
             {
                 return null;
             }
-            return (info.Name, string.IsNullOrWhiteSpace(select.Field) ? (columns.TryGetValue(info.Name, out var c) ? c.Name : info.Name) : select.Field);
+            return (info.Name, string.IsNullOrWhiteSpace(select.Field) ? info.Name : select.Field);
         }
 
-        internal static (string Name, string Field)? ConvertWhereMember(MemberInfo info, FrozenDictionary<string, ColumnAttribute> columns)
+        internal static (string Name, string Field)? ConvertWhereMember(MemberInfo info, FrozenDictionary<string, string> selectFields)
         {
             var select = info.GetCustomAttribute<WhereAttribute>();
             if (select == null || select.NotAllow)
             {
                 return null;
             }
-            return (info.Name, string.IsNullOrWhiteSpace(select.Field) ? (columns.TryGetValue(info.Name, out var c) ? c.Name : info.Name) : select.Field);
+            return (info.Name, string.IsNullOrWhiteSpace(select.Field) ? (selectFields.TryGetValue(info.Name, out var c) ? c : info.Name) : select.Field);
         }
 
-        internal static (string Name, string Field)? ConvertOrderByMember(MemberInfo info, FrozenDictionary<string, ColumnAttribute> columns)
+        internal static (string Name, string Field)? ConvertOrderByMember(MemberInfo info, FrozenDictionary<string, string> selectFields)
         {
             var select = info.GetCustomAttribute<OrderByAttribute>();
             if (select == null || select.NotAllow)
             {
                 return null;
             }
-            return (info.Name, string.IsNullOrWhiteSpace(select.Field) ? (columns.TryGetValue(info.Name, out var c) ? c.Name : info.Name) : select.Field);
+            return (info.Name, string.IsNullOrWhiteSpace(select.Field) ? (selectFields.TryGetValue(info.Name, out var c) ? c : info.Name) : select.Field);
         }
 
         internal static readonly FrozenDictionary<TypeCode, DbType> DbTypeMapping = new Dictionary<TypeCode, DbType>()
@@ -88,6 +89,18 @@ namespace SV.Db
 
             return jsonFields;
         }
+
+        private string insertSql;
+
+        public string GetInsertSql(Func<DbEntityInfo, string> func)
+        {
+            if (insertSql == null)
+            {
+                insertSql = func(this);
+            }
+
+            return insertSql;
+        }
     }
 
     public static class DbEntityInfo<T>
@@ -106,13 +119,19 @@ namespace SV.Db
                 if (string.IsNullOrWhiteSpace(c.DbKey))
                     throw new KeyNotFoundException("DbAttribute");
                 c.Timeout = d.Timeout;
-                c.Table = t.GetCustomAttribute<TableAttribute>()?.Table;
+                var table = t.GetCustomAttribute<TableAttribute>();
+                if (table != null)
+                {
+                    c.Table = table.Table;
+                    c.UpdateTable = string.IsNullOrWhiteSpace(table.UpdateTable) ? table.Table : table.UpdateTable;
+                }
+
                 var fields = t.GetMembers(BindingFlags.Public | BindingFlags.Instance).Where(i => i.MemberType == MemberTypes.Property || i.MemberType == MemberTypes.Field).ToList();
-                c.Columns = fields.Select(i => (i.Name, i.GetCustomAttribute<ColumnAttribute>() ?? new ColumnAttribute()
+                c.Columns = fields.Select(i => (i.Name, i.GetCustomAttribute<ColumnAttribute>() ?? (i.GetCustomAttribute<NotColumnAttribute>() == null ? new ColumnAttribute()
                 {
                     Name = i.Name,
                     Type = DbEntityInfo.DbTypeMapping.TryGetValue(Type.GetTypeCode(i.GetType()), out var d) ? d : DbType.String
-                }))
+                } : null)))
                     .Where(i => i.Item2 != null)
                     .ToFrozenDictionary(i => i.Name, i =>
                     {
@@ -122,15 +141,29 @@ namespace SV.Db
                         }
                         return i.Item2;
                     }, StringComparer.OrdinalIgnoreCase);
-                c.SelectFields = fields.Select(i => DbEntityInfo.ConvertSelectMember(i, c.Columns))
+                c.UpdateColumns = fields.Select(i => (i.Name, i.GetCustomAttribute<UpdateAttribute>()))
+                    .Where(i =>
+                    {
+                        if (i.Item2 == null) return false;
+                        if (!string.IsNullOrWhiteSpace(i.Item2.Field)) return true;
+                        if (c.Columns.TryGetValue(i.Name, out var cc))
+                        {
+                            i.Item2.Field = cc.Name;
+                        }
+                        if (string.IsNullOrWhiteSpace(i.Item2.Field))
+                            i.Item2.Field = i.Name;
+                        return true;
+                    })
+                    .ToFrozenDictionary(i => i.Name, i => i.Item2, StringComparer.OrdinalIgnoreCase);
+                c.SelectFields = fields.Select(DbEntityInfo.ConvertSelectMember)
                     .Where(i => i.HasValue)
                     .Select(i => i.Value)
                     .ToFrozenDictionary(i => i.Name, i => i.Field, StringComparer.OrdinalIgnoreCase);
-                c.WhereFields = fields.Select(i => DbEntityInfo.ConvertWhereMember(i, c.Columns))
+                c.WhereFields = fields.Select(i => DbEntityInfo.ConvertWhereMember(i, c.SelectFields))
                     .Where(i => i.HasValue)
                     .Select(i => i.Value)
                     .ToFrozenDictionary(i => i.Name, i => i.Field, StringComparer.OrdinalIgnoreCase);
-                c.OrderByFields = fields.Select(i => DbEntityInfo.ConvertOrderByMember(i, c.Columns))
+                c.OrderByFields = fields.Select(i => DbEntityInfo.ConvertOrderByMember(i, c.SelectFields))
                     .Where(i => i.HasValue)
                     .Select(i => i.Value)
                     .ToFrozenDictionary(i => i.Name, i => i.Field, StringComparer.OrdinalIgnoreCase);

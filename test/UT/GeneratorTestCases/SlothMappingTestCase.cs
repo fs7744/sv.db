@@ -15,12 +15,14 @@ namespace UT.GeneratorTestCases
         public void TestCase()
         {
             IConnectionFactory factory = null;
+            factory.ExecuteInsertAsync(new Weather2());
             factory.From<Weather>().Where(i => !i.Name.Like("e")).WithTotalCount().ExecuteQueryAsync<Weather>();
         }
 
         public void Check(string generatedCode)
         {
             Assert.Contains("RecordFactory.RegisterRecordFactory<global::UT.GeneratorTestCases.Weather>(new Weather_", generatedCode);
+            Assert.Contains("RecordFactory.RegisterRecordFactory<global::UT.GeneratorTestCases.Weather2>(new Weather2_", generatedCode);
         }
     }
 
@@ -28,13 +30,27 @@ namespace UT.GeneratorTestCases
     [Table(nameof(Weather))]
     public class Weather
     {
-        [Select, Where, OrderBy]
+        [Select("Name"), Where, OrderBy]
         public string Name { get; set; }
 
-        [Select(Field = "Value as v"), Where, OrderBy]
+        [Select("Value as v"), Where, OrderBy]
         public string V { get; set; }
 
-        [Select(NotAllow = true)]
+        [Select("Test", NotAllow = true)]
+        public string Test { get; set; }
+    }
+
+    [Db("Demo")]
+    [Table(nameof(Weather))]
+    public class Weather2
+    {
+        [Select("Name"), Where, OrderBy]
+        public string Name { get; set; }
+
+        [Select("Value as v"), Where, OrderBy]
+        public string V { get; set; }
+
+        [Select("Test", NotAllow = true)]
         public string Test { get; set; }
     }
 }

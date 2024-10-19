@@ -19,5 +19,7 @@ namespace SV.Db
         public SelectStatementBuilder<T> From<T>();
 
         public SelectStatementBuilder From(string key);
+
+        (string dbType, string connectionString) Get(string key);
     }
 }

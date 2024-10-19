@@ -106,6 +106,7 @@ namespace SV.Db.Analyzers
                     case "QueryFirstOrDefaultAsync":
                     case "Query":
                     case "QueryAsync":
+                    case "ExecuteInsertAsync":
                         hasResultType = true;
                         break;
 

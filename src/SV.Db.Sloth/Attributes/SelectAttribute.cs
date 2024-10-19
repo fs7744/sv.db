@@ -3,7 +3,12 @@
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public class SelectAttribute : Attribute
     {
-        public string Field { get; set; }
+        public SelectAttribute(string field)
+        {
+            Field = field;
+        }
+
+        public string Field { get; }
 
         public bool NotAllow { get; set; }
     }

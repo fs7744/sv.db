@@ -16,7 +16,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" Pack="false" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.10.0" Pack="false" PrivateAssets="all" />
-		<PackageReference Include="SV.Enums" Version="0.0.1.2" PrivateAssets="all" GeneratePathProperty="true"/>
+		<PackageReference Include="SV.Enums" Version="0.0.1.3" PrivateAssets="all" GeneratePathProperty="true" />
 	</ItemGroup>
 
 	<ItemGroup>
