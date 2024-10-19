@@ -3,7 +3,6 @@ using SV.Db;
 using SV.Db.Sloth;
 using SV.Db.Sloth.Attributes;
 using SV.Db.Sloth.Swagger;
-using System.ComponentModel.DataAnnotations;
 
 namespace RestfulSample.Controllers
 {
@@ -74,28 +73,37 @@ namespace RestfulSample.Controllers
         {
             return await factory.ExecuteInsertAsync<Weather>(weather);
         }
+
+        [HttpPost("update")]
+        public async Task<object> Update([FromBody] Weather[] weather)
+        {
+            return await factory.ExecuteUpdateAsync<Weather>(weather);
+        }
     }
 
     [Db(StaticInfo.Demo)]
     [Table("select {Fields} from Weather a", UpdateTable = "Weather")]
     public class Weather
     {
+        [Select("id"), Where, OrderBy, Update(Field = "Id", PrimaryKey = true, NotAllowInsert = true)]
+        public int Id { get; set; }
+
         [Select("Name"), Where, OrderBy, Update]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [Select("Value"), Where, OrderBy, Column(IsJson = true, Type = System.Data.DbType.String, CustomConvertToDbMethod = "RestfulSample.Controllers.Weather.C"), Update(Field = "Value")]
-        public object V { get; set; }
+        public object? V { get; set; }
 
         [Select("json_extract(Value,'$.a')")]
-        public string Vv { get; set; }
+        public string? Vv { get; set; }
 
         [Select("Test", NotAllow = true)]
-        public string Test { get; set; }
+        public string? Test { get; set; }
 
         [Where(Field = """
             EXISTS(SELECT 1 FROM Weather e WHERE e.name = a.name and e.name {field} LIMIT 1)
             """)]
-        public string SKU { get; set; }
+        public string? SKU { get; set; }
 
         public static object C(object c)
         {

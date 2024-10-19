@@ -1,15 +1,58 @@
 ﻿using SV.Db.Sloth.SqlParser;
 using SV.Db.Sloth.Statements;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Text;
-using System.Xml.Linq;
 
 namespace SV.Db.Sloth.SQLite
 {
     public partial class SQLiteConnectionProvider : IConnectionProvider
     {
+        public Task<int> ExecuteUpdateAsync<T>(DbConnection dbConnection, DbEntityInfo info, T data, CancellationToken cancellationToken)
+        {
+            return dbConnection.ExecuteNonQueryAsync(CreateUpdateSql(info, data), data, cancellationToken);
+        }
+
+        private string CreateUpdateSql<T>(DbEntityInfo info, T? data)
+        {
+            var sb = new StringBuilder();
+            sb.Append("UPDATE ");
+            sb.AppendLine(info.UpdateTable);
+            sb.Append("SET ");
+            var first = true;
+            foreach (var item in info.GetUpdateFields(data))
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    sb.Append(",");
+                }
+                sb.Append(item.Value);
+                sb.Append(" = @");
+                sb.Append(item.Key);
+            }
+            sb.Append(" WHERE ");
+            first = true;
+            foreach (var item in info.UpdateColumns.Where(i => i.Value.PrimaryKey))
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    sb.Append(" and ");
+                }
+                sb.Append(item.Value.Field);
+                sb.Append(" = @");
+                sb.Append(item.Key);
+            }
+            return sb.ToString();
+        }
+
         public Task<int> ExecuteInsertAsync<T>(DbConnection dbConnection, DbEntityInfo info, T data, CancellationToken cancellationToken)
         {
             return dbConnection.ExecuteNonQueryAsync(info.GetInsertSql(CreateInsertSql), data, cancellationToken);

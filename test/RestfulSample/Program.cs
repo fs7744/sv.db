@@ -23,6 +23,7 @@ o.Open();
 var a = f.GetConnection(StaticInfo.Demo);
 a.ExecuteNonQuery("""
     CREATE TABLE Weather (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
         value text
     )

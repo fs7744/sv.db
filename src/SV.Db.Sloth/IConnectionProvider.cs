@@ -15,5 +15,7 @@ namespace SV.Db
         Task<int> ExecuteInsertAsync<T>(DbConnection dbConnection, DbEntityInfo info, T data, CancellationToken cancellationToken);
 
         Task<int> ExecuteInsertAsync<T>(DbConnection dbConnection, DbEntityInfo info, IEnumerable<T> data, int batchSize, CancellationToken cancellationToken);
+
+        Task<int> ExecuteUpdateAsync<T>(DbConnection dbConnection, DbEntityInfo info, T data, CancellationToken cancellationToken);
     }
 }

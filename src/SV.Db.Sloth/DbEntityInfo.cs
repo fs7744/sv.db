@@ -1,6 +1,7 @@
 ﻿using SV.Db.Sloth.Attributes;
 using System.Collections.Frozen;
 using System.Data;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace SV.Db
@@ -101,6 +102,8 @@ namespace SV.Db
 
             return insertSql;
         }
+
+        public Func<object, IEnumerable<KeyValuePair<string, string>>> GetUpdateFields { get; set; }
     }
 
     public static class DbEntityInfo<T>
@@ -168,6 +171,37 @@ namespace SV.Db
                     .Select(i => i.Value)
                     .ToFrozenDictionary(i => i.Name, i => i.Field, StringComparer.OrdinalIgnoreCase);
 
+                var ups = c.UpdateColumns.Where(i => !i.Value.PrimaryKey).ToArray();
+                var structFields = ups.Where(i =>
+                {
+                    var f = fields.First(x => x.Name.Equals(i.Key, StringComparison.OrdinalIgnoreCase));
+                    return f.DeclaringType.IsValueType && Nullable.GetUnderlyingType(f.DeclaringType) is null;
+                }).Select(i => new KeyValuePair<string, string>(i.Key, i.Value.Field)).ToArray();
+                var checkUps = ups.Select(i =>
+                {
+                    var f = fields.First(x => x.Name.Equals(i.Key, StringComparison.OrdinalIgnoreCase));
+                    if (f.DeclaringType.IsValueType && Nullable.GetUnderlyingType(f.DeclaringType) is null)
+                    {
+                        return null;
+                    }
+
+                    var o = Expression.Parameter(typeof(object), "o");
+                    Expression fg;
+
+                    if (f.MemberType == MemberTypes.Property)
+                    {
+                        fg = Expression.Property(Expression.Convert(o, f.DeclaringType), f as PropertyInfo);
+                    }
+                    else
+                    {
+                        fg = Expression.Field(Expression.Convert(o, f.DeclaringType), f as FieldInfo);
+                    }
+                    var check = Expression.Lambda<Func<object, bool>>(Expression.Block(new Expression[] { Expression.Equal(fg, Expression.Constant(null)) }), o).Compile();
+                    var rr = new KeyValuePair<string, string>(i.Key, i.Value.Field);
+                    Func<object, KeyValuePair<string, string>?> r = o => check(o) ? null : rr;
+                    return r;
+                }).Where(i => i != null).ToArray();
+                c.GetUpdateFields = o => structFields.Union(checkUps.Select(x => x(o)).Where(x => x.HasValue).Select(x => x.Value));
                 Cache = c;
             }
 
