@@ -77,8 +77,8 @@ namespace RestfulSample.Controllers
         [Select("Name"), Where, OrderBy, Update]
         public string Name { get; set; }
 
-        [Select("Value"), Where, OrderBy, Column(IsJson = true), Update(Field = "Value")]
-        public string V { get; set; }
+        [Select("Value"), Where, OrderBy, Column(IsJson = true, Type = System.Data.DbType.String, CustomConvertToDbMethod = "RestfulSample.Controllers.Weather.C"), Update(Field = "Value")]
+        public object V { get; set; }
 
         [Select("json_extract(Value,'$.a')")]
         public string Vv { get; set; }
@@ -90,5 +90,10 @@ namespace RestfulSample.Controllers
             EXISTS(SELECT 1 FROM Weather e WHERE e.name = a.name and e.name {field} LIMIT 1)
             """)]
         public string SKU { get; set; }
+
+        public static object C(object c)
+        {
+            return System.Text.Json.JsonSerializer.Serialize(c);
+        }
     }
 }
