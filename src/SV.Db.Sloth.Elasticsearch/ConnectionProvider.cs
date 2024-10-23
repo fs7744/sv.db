@@ -45,6 +45,10 @@ namespace SV.Db.Sloth.Elasticsearch
                 query.from = statement.Offset.Value;
             }
             query.size = statement.Rows;
+            if (statement.OrderBy.IsNotNullOrEmpty())
+            {
+                query.sort = statement.OrderBy.Select(i => new KeyValuePair<string, string>(i.Field, (i is IOrderByField orderBy ? orderBy.Direction : OrderByDirection.Asc) == OrderByDirection.Asc ? "asc" : "desc")).ToDictionary();
+            }
             var resp = await client.PostAsJsonAsync($"{info.Table}/_search", query, options, cancellationToken);
             resp.EnsureSuccessStatusCode();
             var r = await resp.Content.ReadFromJsonAsync<ESResult<T>>(cancellationToken);
@@ -74,6 +78,7 @@ namespace SV.Db.Sloth.Elasticsearch
         public int? from { get; set; }
 
         public int size { get; set; }
+        public Dictionary<string, string> sort { get; set; }
     }
 
     public class ESResultRow<T>

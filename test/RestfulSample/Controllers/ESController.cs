@@ -28,7 +28,10 @@ namespace RestfulSample.Controllers
     [Db("es")]
     public class TestLog
     {
-        [Select("verb")]
+        [Select("verb"), Where]
         public string? Verb { get; set; }
+
+        [Select("xhost"), OrderBy, Where]
+        public string? Xhost { get; set; }
     }
 }
