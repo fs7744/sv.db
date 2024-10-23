@@ -40,6 +40,11 @@ namespace SV.Db.Sloth.Elasticsearch
             {
                 query.fields = fs.Select(i => i.Field).ToArray();
             }
+            if (statement.Offset.HasValue)
+            {
+                query.from = statement.Offset.Value;
+            }
+            query.size = statement.Rows;
             var resp = await client.PostAsJsonAsync($"{info.Table}/_search", query, options, cancellationToken);
             resp.EnsureSuccessStatusCode();
             var r = await resp.Content.ReadFromJsonAsync<ESResult<T>>(cancellationToken);
@@ -65,6 +70,10 @@ namespace SV.Db.Sloth.Elasticsearch
         public bool track_total_hits { get; set; } = true;
 
         public object query { get; set; }
+
+        public int? from { get; set; }
+
+        public int size { get; set; }
     }
 
     public class ESResultRow<T>
