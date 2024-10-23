@@ -37,7 +37,7 @@ namespace UT.SQLite
 
         public string Build<T>(Dictionary<string, StringValues> ps)
         {
-            var factory = new ConnectionStringProviders(new IConnectionStringProvider[] { DictionaryConnectionStringProvider.Instance }, null);
+            var factory = new ConnectionStringProviders(new IConnectionStringProvider[] { DictionaryConnectionStringProvider.Instance }, null, null);
             var statement = factory.ParseByParams<T>(ps, out var info);
             var cmd = new TestDbCommand();
             return SQLiteConnectionProvider.BuildCondition(cmd, info, statement.Where.Condition);

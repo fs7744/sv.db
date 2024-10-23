@@ -8,11 +8,11 @@ using System.Text;
 
 namespace SV.Db.Sloth.MySql
 {
-    public partial class MySqlConnectionProvider : IConnectionProvider
+    public partial class MySqlConnectionProvider : IDbConnectionProvider
     {
         public DbConnection Create(string connectionString)
         {
-            return new MySqlConnection(connectionString);
+            return TransactionConnectionFactory.GetOrAdd(connectionString, s => new MySqlConnection(s));
         }
 
         private static void ConvertJsonField(Statement v, StringBuilder sb, bool allowAs, FrozenDictionary<string, string> fs, JsonFieldStatement js)

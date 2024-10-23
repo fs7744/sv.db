@@ -5,7 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 DictionaryConnectionStringProvider.Instance.Add("demo", ConnectionStringProvider.SQLite, "Data Source=InMemorySample;Mode=Memory;Cache=Shared");
-builder.Services.AddSQLite().AddConnectionStringProvider(i => DictionaryConnectionStringProvider.Instance);
+DictionaryConnectionStringProvider.Instance.Add("es", ConnectionStringProvider.Elasticsearch, "http://xxx");
+builder.Services.AddSQLite().AddElasticsearch().AddConnectionStringProvider(i => DictionaryConnectionStringProvider.Instance);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

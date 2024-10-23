@@ -27,9 +27,9 @@ namespace SV.Db
 
         public static DbConnection Get(string type, string connectionString)
         {
-            if (!connectionProviders.TryGetValue(type, out var conn))
+            if (!connectionProviders.TryGetValue(type, out var conn) || conn is not IDbConnectionProvider p)
                 throw new KeyNotFoundException(type);
-            return TransactionConnectionFactory.GetOrAdd(connectionString, conn.Create);
+            return p.Create(connectionString);
         }
 
         public static void ReplaceJsonTokenParse(Func<string, object> func)
@@ -41,6 +41,14 @@ namespace SV.Db
         public static object ParseJsonToken(string str)
         {
             return JsonTokenParse(str);
+        }
+
+        public static void Init(IServiceProvider provider)
+        {
+            foreach (var item in connectionProviders.Values)
+            {
+                item.Init(provider);
+            }
         }
     }
 }

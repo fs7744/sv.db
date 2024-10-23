@@ -6,11 +6,11 @@ using System.Text;
 
 namespace SV.Db.Sloth.SQLite
 {
-    public partial class SQLiteConnectionProvider : IConnectionProvider
+    public partial class SQLiteConnectionProvider : IDbConnectionProvider
     {
         public DbConnection Create(string connectionString)
         {
-            return new SqliteConnection(connectionString);
+            return TransactionConnectionFactory.GetOrAdd(connectionString, s => new SqliteConnection(s));
         }
 
         private static void ConvertJsonField(Statement v, StringBuilder sb, bool allowAs, FrozenDictionary<string, string> fs, JsonFieldStatement js)

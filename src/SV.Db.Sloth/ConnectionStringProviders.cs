@@ -8,10 +8,11 @@ namespace SV.Db
         private readonly IConnectionStringProvider[] providers;
         private readonly IDbEntityInfoProvider entityInfoProvider;
 
-        public ConnectionStringProviders(IConnectionStringProvider[] providers, IDbEntityInfoProvider entityInfoProvider)
+        public ConnectionStringProviders(IConnectionStringProvider[] providers, IDbEntityInfoProvider entityInfoProvider, IServiceProvider serviceProvider)
         {
             this.providers = providers;
             this.entityInfoProvider = entityInfoProvider;
+            ConnectionFactory.Init(serviceProvider);
         }
 
         public override bool ContainsKey(string key)

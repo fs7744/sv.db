@@ -10,6 +10,7 @@ namespace SV.Db
         public const string PostgreSQL = nameof(PostgreSQL);
         public const string MySql = nameof(MySql);
         public const string MSSql = nameof(MSSql);
+        public const string Elasticsearch = nameof(Elasticsearch);
 
         public abstract bool ContainsKey(string key);
 
@@ -33,6 +34,11 @@ namespace SV.Db
         {
             (string dbType, string connectionString) = Get(key);
             return ConnectionFactory.Get(dbType, connectionString);
+        }
+
+        public void Init(IServiceProvider provider)
+        {
+            throw new NotImplementedException();
         }
     }
 }

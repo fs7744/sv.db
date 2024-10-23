@@ -6,11 +6,11 @@ using System.Text;
 
 namespace SV.Db.Sloth.MSSql
 {
-    public partial class MSSqlConnectionProvider : IConnectionProvider
+    public partial class MSSqlConnectionProvider : IDbConnectionProvider
     {
         public DbConnection Create(string connectionString)
         {
-            return new SqlConnection(connectionString);
+            return TransactionConnectionFactory.GetOrAdd(connectionString, s => new SqlConnection(s));
         }
 
         private static void ConvertJsonField(Statement v, StringBuilder sb, bool allowAs, FrozenDictionary<string, string> fs, JsonFieldStatement js)

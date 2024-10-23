@@ -19,7 +19,7 @@ namespace UT.Sloth
         [Fact]
         public void SelectFields()
         {
-            var a = new ConnectionStringProviders(null, null).From<QueryTest>();
+            var a = new ConnectionStringProviders(null, null, null).From<QueryTest>();
             a.Select("json", nameof(QueryTest.A), nameof(QueryTest.B));
             a.Select(nameof(QueryTest.A), nameof(QueryTest.B), "json");
             a.Select(i => i.A, i => i.B, i => i.A.JsonExtract("$.s"), i => i.B.JsonExtract("$.sdd", "d"));
@@ -29,7 +29,7 @@ namespace UT.Sloth
         [Fact]
         public void GroupByFuncFields()
         {
-            var a = new ConnectionStringProviders(null, null).From<QueryTest>();
+            var a = new ConnectionStringProviders(null, null, null).From<QueryTest>();
             a.Select(i => i.A.Count("ac"), i => i.A.Min("ac"), i => i.A.Max("ac"), i => i.A.Sum("ac"));
             a.Select("count", "min", "max", "sum");
             a.Select("count(a,ac)", "min(a,ac)", "max(a,ac)", "sum(a,ac)");
@@ -40,7 +40,7 @@ namespace UT.Sloth
         [Fact]
         public void GroupByFields()
         {
-            var a = new ConnectionStringProviders(null, null).From<QueryTest>();
+            var a = new ConnectionStringProviders(null, null, null).From<QueryTest>();
             a.GroupBy("json", nameof(QueryTest.A), nameof(QueryTest.B));
             a.GroupBy(nameof(QueryTest.A), nameof(QueryTest.B), "json");
             a.GroupBy(i => i.A, i => i.B, i => i.A.JsonExtract("$.s"), i => i.B.JsonExtract("$.sdd", "d"));
@@ -50,7 +50,7 @@ namespace UT.Sloth
         [Fact]
         public void SelectOrderByFields()
         {
-            var a = new ConnectionStringProviders(null, null).From<QueryTest>();
+            var a = new ConnectionStringProviders(null, null, null).From<QueryTest>();
             a.OrderBy("json", nameof(QueryTest.A), nameof(QueryTest.B));
             a.OrderBy(nameof(QueryTest.A), nameof(QueryTest.B), "json");
             a.OrderBy(i => i.A, i => i.B, i => i.A.JsonExtract("$.s"), i => i.B.JsonExtract("$.sdd", "d").Desc());
@@ -335,7 +335,7 @@ namespace UT.Sloth
 
         public void AssertWhere<T, O>(Expression<Func<T, bool>> expr, Action<O> action)
         {
-            var a = new ConnectionStringProviders(null, null).From<T>();
+            var a = new ConnectionStringProviders(null, null, null).From<T>();
             var s = a.Where(expr).Build(new SelectStatementOptions() { AllowNotFoundFields = true });
             Assert.NotNull(s);
             Assert.NotNull(s.Where);
@@ -346,7 +346,7 @@ namespace UT.Sloth
 
         public void AssertWhere<T, O>(string expr, Action<O> action)
         {
-            var a = new ConnectionStringProviders(null, null).From<T>();
+            var a = new ConnectionStringProviders(null, null, null).From<T>();
             var s = a.Where(expr).Build(new SelectStatementOptions() { AllowNotFoundFields = true, AllowNonStrictCondition = true });
             Assert.NotNull(s);
             Assert.NotNull(s.Where);

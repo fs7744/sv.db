@@ -8,9 +8,13 @@ namespace SV.Db.Sloth.MySql
 {
     public partial class MySqlConnectionProvider : IConnectionProvider
     {
-        public Task<int> ExecuteUpdateAsync<T>(DbConnection dbConnection, DbEntityInfo info, T data, CancellationToken cancellationToken)
+        public void Init(IServiceProvider provider)
         {
-            return dbConnection.ExecuteNonQueryAsync(CreateUpdateSql(info, data), data, cancellationToken);
+        }
+
+        public Task<int> ExecuteUpdateAsync<T>(string connectionString, DbEntityInfo info, T data, CancellationToken cancellationToken)
+        {
+            return Create(connectionString).ExecuteNonQueryAsync(CreateUpdateSql(info, data), data, cancellationToken);
         }
 
         private string CreateUpdateSql<T>(DbEntityInfo info, T? data)
@@ -53,19 +57,52 @@ namespace SV.Db.Sloth.MySql
             return sb.ToString();
         }
 
-        public Task<int> ExecuteInsertAsync<T>(DbConnection dbConnection, DbEntityInfo info, T data, CancellationToken cancellationToken)
+        public Task<int> ExecuteInsertAsync<T>(string connectionString, DbEntityInfo info, T data, CancellationToken cancellationToken)
         {
-            return dbConnection.ExecuteNonQueryAsync(CreateInsertSql(info), data, cancellationToken);
+            return Create(connectionString).ExecuteNonQueryAsync(CreateInsertSql(info), data, cancellationToken);
         }
 
-        public Task<int> ExecuteInsertAsync<T>(DbConnection dbConnection, DbEntityInfo info, IEnumerable<T> data, int batchSize, CancellationToken cancellationToken)
+        public Task<int> ExecuteInsertAsync<T>(string connectionString, DbEntityInfo info, IEnumerable<T> data, int batchSize, CancellationToken cancellationToken)
         {
-            return dbConnection.ExecuteNonQuerysAsync(CreateInsertSql(info), data, batchSize, cancellationToken);
+            return Create(connectionString).ExecuteNonQuerysAsync(CreateInsertSql(info), data, batchSize, cancellationToken);
         }
 
         private string CreateInsertSql(DbEntityInfo info)
         {
-            throw new NotImplementedException();
+            var sb = new StringBuilder();
+            sb.Append("INSERT INTO ");
+            sb.AppendLine(info.UpdateTable);
+            sb.Append("(");
+            var first = true;
+            foreach (var item in info.UpdateColumns.Where(i => !i.Value.NotAllowInsert))
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    sb.Append(",");
+                }
+                sb.Append(item.Value.Field);
+            }
+            sb.Append(") VALUES(");
+            first = true;
+            foreach (var item in info.UpdateColumns.Where(i => !i.Value.NotAllowInsert))
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    sb.Append(",");
+                }
+                sb.Append("@");
+                sb.Append(item.Key);
+            }
+            sb.Append(")");
+            return sb.ToString();
         }
 
         public PageResult<T> ExecuteQuery<T>(string connectionString, DbEntityInfo info, SelectStatement statement)

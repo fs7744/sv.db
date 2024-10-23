@@ -6,11 +6,11 @@ using System.Text;
 
 namespace SV.Db.Sloth.PostgreSQL
 {
-    public partial class PostgreSQLConnectionProvider : IConnectionProvider
+    public partial class PostgreSQLConnectionProvider : IDbConnectionProvider
     {
         public DbConnection Create(string connectionString)
         {
-            return new NpgsqlConnection(connectionString);
+            return TransactionConnectionFactory.GetOrAdd(connectionString, s => new NpgsqlConnection(s));
         }
 
         private static void ConvertJsonField(Statement v, StringBuilder sb, bool allowAs, FrozenDictionary<string, string> fs, JsonFieldStatement js)
