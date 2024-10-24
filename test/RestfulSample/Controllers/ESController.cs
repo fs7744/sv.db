@@ -33,5 +33,8 @@ namespace RestfulSample.Controllers
 
         [Select("xhost"), OrderBy, Where]
         public string? Xhost { get; set; }
+
+        [Select("xluatime"), OrderBy, Where]
+        public long? xluatime { get; set; }
     }
 }
