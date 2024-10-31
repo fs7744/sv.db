@@ -153,7 +153,7 @@ namespace SV.Db.Sloth
                 throw new NotSupportedException($"Field {key} can not be empty");
             var op = v.Length < OperatorLength || !v.StartsWith("{{") ? "{{eq}}" : v[0..OperatorLength];
             var vv = v;
-            if (op.StartsWith("{{") && v.Length >= OperatorLength)
+            if (v.StartsWith("{{") && v.Length >= OperatorLength)
             {
                 vv = v[OperatorLength..];
             }

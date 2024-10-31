@@ -20,26 +20,33 @@ namespace UT.SQLite
                 Build<BuildConditionTestData>(new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)
                 {
                     { "NAME", "33" }
-                }));
+                }, out var cmd));
 
             Assert.Equal("where Name = false ",
                 Build<BuildConditionTestData>(new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)
                 {
                     { "NAME", "false" }
-                }));
+                }, out cmd));
 
             Assert.Equal("where Name = @P_0 ",
                 Build<BuildConditionTestData>(new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)
                 {
                     { "NAME", "fsse" }
-                }));
+                }, out cmd));
+
+            Assert.Equal("where Name = @P_0 ",
+            Build<BuildConditionTestData>(new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)
+            {
+                    { "NAME", "Pending" }
+            }, out cmd));
+            Assert.Equal("Pending", cmd.Parameters[0].Value);
         }
 
-        public string Build<T>(Dictionary<string, StringValues> ps)
+        public string Build<T>(Dictionary<string, StringValues> ps, out TestDbCommand cmd)
         {
             var factory = new ConnectionStringProviders(new IConnectionStringProvider[] { DictionaryConnectionStringProvider.Instance }, null, null);
             var statement = factory.ParseByParams<T>(ps, out var info);
-            var cmd = new TestDbCommand();
+            cmd = new TestDbCommand();
             return SQLiteConnectionProvider.BuildCondition(cmd, info, statement.Where.Condition);
         }
     }

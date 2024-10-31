@@ -162,7 +162,7 @@ namespace UT
 
         protected override DbParameter GetParameter(int index)
         {
-            throw new NotImplementedException();
+            return Params[index] as DbParameter;
         }
 
         protected override DbParameter GetParameter(string parameterName)
