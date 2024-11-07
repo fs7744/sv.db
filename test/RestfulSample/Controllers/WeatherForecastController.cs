@@ -3,6 +3,7 @@ using SV.Db;
 using SV.Db.Sloth;
 using SV.Db.Sloth.Attributes;
 using SV.Db.Sloth.Swagger;
+using System.Data;
 
 namespace RestfulSample.Controllers
 {
@@ -79,6 +80,13 @@ namespace RestfulSample.Controllers
         {
             return await factory.ExecuteUpdateAsync<Weather>(weather);
         }
+
+        [HttpGet("TEST")]
+        [DbSwaggerByType(typeof(UserInfo))]
+        public async Task<object> QueryUserInfo()
+        {
+            return await this.QueryByParamsAsync<UserInfo>();
+        }
     }
 
     [Db(StaticInfo.Demo)]
@@ -105,9 +113,39 @@ namespace RestfulSample.Controllers
             """)]
         public string? SKU { get; set; }
 
+        [Select("a.LastLoginDate"), OrderBy, Where, Column(Name = "LastLoginDate", Type = DbType.Int64), Update]
+        public long? LastLoginDate { get; set; }
+
         public static object C(object c)
         {
             return System.Text.Json.JsonSerializer.Serialize(c);
         }
+    }
+
+    [Db(StaticInfo.Demo)]
+    [Table("""
+        select {Fields}
+        FROM users a
+        {where}
+        """, UpdateTable = "users")]
+    public class UserInfo
+    {
+        [Select("a.Id"), OrderBy, Where, Column(Name = "Id", Type = DbType.Int32), Update(PrimaryKey = true, NotAllowInsert = true)]
+        public int? Id { get; set; }
+
+        [Select("a.DisplayName"), OrderBy, Where, Column(Name = "DisplayName"), Update]
+        public string? DisplayName { get; set; }
+
+        [Select("a.Password"), OrderBy, Where, Column(Name = "Password"), Update]
+        public string? Password { get; set; }
+
+        [Select("a.Email"), OrderBy, Where, Column(Name = "Email"), Update]
+        public string? Email { get; set; }
+
+        [Select("a.LastLoginDate"), OrderBy, Column(Name = "LastLoginDate", Type = DbType.Int64), Update]
+        public long? LastLoginDate { get; set; }
+
+        [Select("a.InDate"), OrderBy, Where, Column(Name = "InDate", Type = DbType.Int64), Update]
+        public long InDate { get; set; }
     }
 }

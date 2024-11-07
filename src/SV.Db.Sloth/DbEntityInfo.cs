@@ -179,8 +179,21 @@ namespace SV.Db
                 }).Select(i => new KeyValuePair<string, string>(i.Key, i.Value.Field)).ToArray();
                 var checkUps = ups.Select(i =>
                 {
+                    Type t;
                     var f = fields.First(x => x.Name.Equals(i.Key, StringComparison.OrdinalIgnoreCase));
-                    if (f.DeclaringType.IsValueType && Nullable.GetUnderlyingType(f.DeclaringType) is null)
+                    if (f is PropertyInfo p)
+                    {
+                        t = p.PropertyType;
+                    }
+                    else if (f is FieldInfo field)
+                    {
+                        t = field.FieldType;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                    if (t.IsValueType && Nullable.GetUnderlyingType(t) is null)
                     {
                         return null;
                     }
