@@ -3,7 +3,9 @@ using SV.Db;
 using SV.Db.Sloth;
 using SV.Db.Sloth.Attributes;
 using SV.Db.Sloth.Swagger;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Text.Json;
 
 namespace RestfulSample.Controllers
 {
@@ -87,6 +89,21 @@ namespace RestfulSample.Controllers
         {
             return await this.QueryByParamsAsync<UserInfo>();
         }
+
+        [HttpPost("account/profile")]
+        public async Task<object> UpdateAccountProfile([FromBody, Required] AccountProfile accountProfile)
+        {
+            return await factory.ExecuteUpdateAsync<AccountProfile>(accountProfile);
+            //return await factory.ExecuteInsertAsync(accountProfile);
+            //var has = (await factory.From<AccountProfile>().Where(i => i.AccountId == accountProfile.AccountId && i.Key == accountProfile.Key).Select(nameof(AccountProfile.AccountId)).Limit(1).ExecuteQueryAsync<int>()).Rows?.Count > 0;
+            //if (has)
+            //{
+            //    return await factory.ExecuteUpdateAsync(accountProfile);
+            //}
+            //else
+            //{
+            //}
+        }
     }
 
     [Db(StaticInfo.Demo)]
@@ -147,5 +164,31 @@ namespace RestfulSample.Controllers
 
         [Select("a.InDate"), OrderBy, Where, Column(Name = "InDate", Type = DbType.Int64), Update]
         public long InDate { get; set; }
+    }
+
+    [Db(StaticInfo.Demo)]
+    [Table("""
+        select {Fields}
+        FROM account_profile a
+        {where}
+        """, UpdateTable = "account_profile")]
+    public class AccountProfile
+    {
+        [Select("a.AccountId"), OrderBy, Where, Column(Name = "AccountId", Type = DbType.Int32), Update(PrimaryKey = true)]
+        public int AccountId { get; set; }
+
+        [Select("a.Key"), OrderBy, Where, Column(Name = "Key"), Update(PrimaryKey = true)]
+        public string Key { get; set; }
+
+        [Select("a.Value"), OrderBy, Where, Column(Name = "Value", Type = DbType.String, IsJson = true, CustomConvertToDbMethod = "RestfulSample.Controllers.AccountProfile.ToJsonString"), Update]
+        public object Value { get; set; }
+
+        [Select("a.LastEditDate"), OrderBy, Where, Column(Name = "LastEditDate", Type = DbType.Int64), Update]
+        public long LastEditDate { get; set; }
+
+        public static string? ToJsonString(object? v)
+        {
+            return v == null ? null : JsonSerializer.Serialize(v);
+        }
     }
 }

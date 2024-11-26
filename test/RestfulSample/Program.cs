@@ -27,7 +27,14 @@ a.ExecuteNonQuery("""
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
         value text
-    )
+    );
+
+    CREATE TABLE account_profile (
+        AccountId INTEGER,
+        Key TEXT,
+        Value text,
+    LastEditDate INTEGER
+    );
     """);
 a.ExecuteNonQuery("""
     INSERT INTO Weather
