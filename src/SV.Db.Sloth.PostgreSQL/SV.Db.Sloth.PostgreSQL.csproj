@@ -9,7 +9,7 @@
 	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Npgsql" Version="8.0.5" />
+		<PackageReference Include="Npgsql" Version="9.0.1" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\SV.Db.Sloth\SV.Db.Sloth.csproj" />
