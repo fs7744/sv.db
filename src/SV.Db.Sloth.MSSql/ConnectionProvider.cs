@@ -410,9 +410,11 @@ namespace SV.Db.Sloth.MSSql
             {
                 if (conditions.Condition == Condition.And)
                 {
+                    sb.Append(" (");
                     BuildCondition(sb, cmd, info, conditions.Left, context);
                     sb.Append(" AND ");
                     BuildCondition(sb, cmd, info, conditions.Right, context);
+                    sb.Append(") ");
                 }
                 else
                 {
