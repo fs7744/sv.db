@@ -68,7 +68,7 @@ namespace RestfulSample.Controllers
         [HttpPost("new")]
         public async Task<object> Insert([FromBody] Weather weather)
         {
-            return await factory.ExecuteInsertAsync<Weather>(weather);
+            return await factory.ExecuteInsertRowAsync<Weather, int>(weather);
         }
 
         [HttpPost("new-batch")]
@@ -130,8 +130,8 @@ namespace RestfulSample.Controllers
             """)]
         public string? SKU { get; set; }
 
-        [Select("a.LastLoginDate"), OrderBy, Where, Column(Name = "LastLoginDate", Type = DbType.Int64), Update]
-        public long? LastLoginDate { get; set; }
+        //[Select("a.LastLoginDate"), OrderBy, Where, Column(Name = "LastLoginDate", Type = DbType.Int64), Update]
+        //public long? LastLoginDate { get; set; }
 
         public static object C(object c)
         {

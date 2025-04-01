@@ -17,6 +17,11 @@ namespace SV.Db.Sloth.SQLite
             return Create(connectionString).ExecuteNonQueryAsync(CreateUpdateSql(info, data), data, cancellationToken);
         }
 
+        public Task<R> ExecuteInsertRowAsync<T, R>(string connectionString, DbEntityInfo info, T data, CancellationToken cancellationToken)
+        {
+            return Create(connectionString).ExecuteScalarAsync<R>(info.GetInsertSql(CreateInsertSql), data, cancellationToken);
+        }
+
         private string CreateUpdateSql<T>(DbEntityInfo info, T? data)
         {
             var sb = new StringBuilder();
@@ -101,7 +106,7 @@ namespace SV.Db.Sloth.SQLite
                 sb.Append("@");
                 sb.Append(item.Key);
             }
-            sb.Append(")");
+            sb.Append(");SELECT last_insert_rowid();");
             return sb.ToString();
         }
 

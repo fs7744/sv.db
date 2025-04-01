@@ -62,6 +62,11 @@ namespace SV.Db.Sloth.MySql
             return Create(connectionString).ExecuteNonQueryAsync(CreateInsertSql(info), data, cancellationToken);
         }
 
+        public Task<R> ExecuteInsertRowAsync<T, R>(string connectionString, DbEntityInfo info, T data, CancellationToken cancellationToken)
+        {
+            return Create(connectionString).ExecuteScalarAsync<R>(info.GetInsertSql(CreateInsertSql), data, cancellationToken);
+        }
+
         public Task<int> ExecuteInsertAsync<T>(string connectionString, DbEntityInfo info, IEnumerable<T> data, int batchSize, CancellationToken cancellationToken)
         {
             return Create(connectionString).ExecuteNonQuerysAsync(CreateInsertSql(info), data, batchSize, cancellationToken);
@@ -101,7 +106,7 @@ namespace SV.Db.Sloth.MySql
                 sb.Append("@");
                 sb.Append(item.Key);
             }
-            sb.Append(")");
+            sb.Append("); SELECT LAST_INSERT_ID();");
             return sb.ToString();
         }
 
