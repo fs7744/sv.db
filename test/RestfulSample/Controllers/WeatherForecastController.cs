@@ -1,11 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using SV.Db;
 using SV.Db.Sloth;
 using SV.Db.Sloth.Attributes;
+using SV.Db.Sloth.Statements;
 using SV.Db.Sloth.Swagger;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Text.Json;
+using System.Threading;
 
 namespace RestfulSample.Controllers
 {
@@ -83,11 +87,25 @@ namespace RestfulSample.Controllers
             return await factory.ExecuteUpdateAsync<Weather>(weather);
         }
 
-        [HttpGet("TEST")]
-        [DbSwaggerByType(typeof(UserInfo))]
-        public async Task<object> QueryUserInfo()
+        [HttpPut("TEST")]
+        [DbSwaggerByType(typeof(UpdateOrderTransaction))]
+        public async Task<object> QueryUserInfo(UpdateOrderTransaction[] transactions)
         {
-            return await this.QueryByParamsAsync<UserInfo>();
+            var masterNumber = transactions.First().MasterNumber;
+            var ids = transactions.Select(i => i.TransactionNumber).ToArray();
+            //var statement = factory.ParseByParams<UpdateOrderTransaction>(new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)
+            //{
+            //    { "MasterNumber", masterNumber.ToString() },
+            //    { "TransactionNumber", $"{{{{in}}}}{System.Text.Json.JsonSerializer.Serialize(ids)}" },
+            //    { "Fields", "TransactionNumber"},
+            //    { "Rows", ids.Length.ToString()}
+            //}, out var info);
+            //return await factory.ExecuteQueryAsync<UpdateOrderTransaction>(info, statement);
+            return await factory.From<UpdateOrderTransaction>().Where(i => i.MasterNumber == masterNumber && i.TransactionNumber.In(ids))
+               .Limit(ids.Length)
+               .Select(nameof(UpdateOrderTransaction.TransactionNumber))
+               .ExecuteQueryAsync<UpdateOrderTransaction>();
+            return await this.QueryByParamsAsync<UpdateOrderTransaction>();
         }
 
         [HttpPost("account/profile")]
@@ -189,6 +207,103 @@ namespace RestfulSample.Controllers
         public static string? ToJsonString(object? v)
         {
             return v == null ? null : JsonSerializer.Serialize(v);
+        }
+    }
+
+    [Db(StaticInfo.Demo)]
+    [Table("""
+        select {Fields}
+        FROM ci_order_transaction
+        {where}
+        """, UpdateTable = "ci_order_transaction")]
+    public class UpdateOrderTransaction
+    {
+        [Select("TransactionNumber"), Where, OrderBy, Column(Type = System.Data.DbType.Int32), Update(Field = "TransactionNumber", PrimaryKey = true, NotAllowInsert = true)]
+        public int TransactionNumber { get; set; }
+
+        [Select("MasterNumber"), Where, OrderBy, Column(Type = System.Data.DbType.Int32)]
+        public int MasterNumber { get; set; }
+
+        [Select("SellerSONumber"), Where, Update]
+        public string? SellerSONumber { get; set; }
+
+        [Select("ChannelOrderNumber"), Where, Update]
+        public string? ChannelOrderNumber { get; set; }
+
+        [Select("SellerPartNumber"), Where, Update]
+        public string? SellerPartNumber { get; set; }
+
+        [Select("VendorPartNumber"), Where, Update]
+        public string? VendorPartNumber { get; set; }
+
+        [Select("ChannelSKU"), Where, Update]
+        public string? ChannelSKU { get; set; }
+
+        [Select("ChannelItemKey"), Where, Update]
+        public string? ChannelItemKey { get; set; }
+
+        [Select("ItemListingTransactionNumber"), Where, OrderBy, Column(Type = System.Data.DbType.Int32), Update(Field = "ItemListingTransactionNumber")]
+        public int? ItemListingTransactionNumber { get; set; }
+
+        [Select("ItemTransactionNumber"), Where, OrderBy, Column(Type = System.Data.DbType.Int32), Update(Field = "ItemTransactionNumber")]
+        public int? ItemTransactionNumber { get; set; }
+
+        [Select("Description"), Where, Update]
+        public string? Description { get; set; }
+
+        [Select("UnitPrice"), Where, OrderBy, Column(Type = System.Data.DbType.Decimal), Update(Field = "UnitPrice")]
+        public decimal? UnitPrice { get; set; }
+
+        [Select("OrderedQuantity"), Where, OrderBy, Column(Type = System.Data.DbType.Int32), Update(Field = "OrderedQuantity")]
+        public int? OrderedQuantity { get; set; }
+
+        [Select("OriginalTransactionNumber"), Where, OrderBy, Column(Type = System.Data.DbType.Int32), Update(Field = "OriginalTransactionNumber")]
+        public int? OriginalTransactionNumber { get; set; }
+
+        [Select("ShippedQuantity"), Where, OrderBy, Column(Type = System.Data.DbType.Int32), Update(Field = "ShippedQuantity")]
+        public int? ShippedQuantity { get; set; }
+
+        [Select("TaxAmount"), Where, OrderBy, Column(Type = System.Data.DbType.Decimal), Update(Field = "TaxAmount")]
+        public decimal? TaxAmount { get; set; }
+
+        [Select("ShippingCharge"), Where, OrderBy, Column(Type = System.Data.DbType.Decimal), Update(Field = "ShippingCharge")]
+        public decimal? ShippingCharge { get; set; }
+
+        [Select("Memo"), Where, Update]
+        public string? Memo { get; set; }
+
+        [Select("LastEditUser"), Where, OrderBy, Column(Type = System.Data.DbType.Int32), Update(Field = "LastEditUser")]
+        public int? LastEditUser { get; set; }
+
+        [Select("LastEditDate"), Where, OrderBy, Column(Type = System.Data.DbType.Int64), Update(Field = "LastEditDate")]
+        public long? LastEditDate { get; set; }
+
+        [Select("CancelQuantity"), Where, OrderBy, Column(Type = System.Data.DbType.Int32), Update(Field = "CancelQuantity")]
+        public int? CancelQuantity { get; set; }
+
+        [Select("OriginalItemListingTransactionNumber"), Where, OrderBy, Column(Type = System.Data.DbType.Int32), Update(Field = "OriginalItemListingTransactionNumber")]
+        public int? OriginalItemListingTransactionNumber { get; set; }
+
+        [Select("OriginalItemTransactionNumber"), Where, OrderBy, Column(Type = System.Data.DbType.Int32), Update(Field = "OriginalItemTransactionNumber")]
+        public int? OriginalItemTransactionNumber { get; set; }
+
+        [Select("Type"), Where, OrderBy, Column(Type = System.Data.DbType.Int32), Update(Field = "Type")]
+        public int? Type { get; set; }
+
+        [Select("OriginalChannelItemKey"), Where, Update]
+        public string? OriginalChannelItemKey { get; set; }
+
+        [Select("ChannelData"), Column(IsJson = true, Type = System.Data.DbType.String, CustomConvertToDbMethod = "RestfulSample.Controllers.UpdateOrderTransaction.T", CustomConvertFromDbMethod = "RestfulSample.Controllers.UpdateOrderTransaction.F"), Update(Field = "ChannelData")]
+        public object? ChannelData { get; set; }
+
+        public static string? T(object c)
+        {
+            return System.Text.Json.JsonSerializer.Serialize(c);
+        }
+
+        public static object? F(object? c)
+        {
+            return c != null ? System.Text.Json.JsonSerializer.Deserialize<object>(c.ToString()) : null;
         }
     }
 }

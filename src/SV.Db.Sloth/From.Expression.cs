@@ -193,6 +193,13 @@ namespace SV.Db.Sloth
                         f = new FieldStatement() { Field = me.Member.Name };
                     }
                 }
+                else if (m.Arguments[0].NodeType == ExpressionType.Convert && m.Arguments[0] is UnaryExpression u && u.Operand is MemberExpression ume && ume.Expression != null)
+                {
+                    if (ume.Expression.NodeType == ExpressionType.Parameter)
+                    {
+                        f = new FieldStatement() { Field = ume.Member.Name };
+                    }
+                }
 
                 if (f == null)
                     return null;
