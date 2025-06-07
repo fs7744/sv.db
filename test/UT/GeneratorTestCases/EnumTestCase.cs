@@ -19,7 +19,7 @@ namespace UT.GeneratorTestCases
             Assert.Contains("p.Value = args.Int;", generatedCode);
             Assert.Contains("d.Int = reader.IsDBNull(j) ? default : DBUtils.ToEnum<global::UT.GeneratorTestCases.EnumTestCaseData2>(reader.GetValue(j));", generatedCode);
             Assert.Contains("d.Int2 = reader.IsDBNull(j) ? default : DBUtils.ToEnum<global::UT.GeneratorTestCases.EnumTestCaseData2>(reader.GetValue(j));", generatedCode);
-            Assert.Contains("p.Value = args.Int2.GetValueOrDefault();", generatedCode);
+            Assert.Contains("p.Value = args.Int2.HasValue ? args.Int2.Value : DBNull.Value;", generatedCode);
         }
     }
 

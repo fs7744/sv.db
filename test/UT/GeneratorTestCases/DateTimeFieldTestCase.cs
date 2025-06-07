@@ -16,7 +16,7 @@ namespace UT.GeneratorTestCases
             Assert.NotEmpty(generatedCode);
             Assert.Contains("public class DateTimeFieldTestCaseData_", generatedCode);
             Assert.Contains("RecordFactory.RegisterRecordFactory<global::UT.GeneratorTestCases.DateTimeFieldTestCaseData>(new DateTimeFieldTestCaseData_", generatedCode);
-            Assert.Contains("p.Value = args.Int.GetValueOrDefault();", generatedCode);
+            Assert.Contains("p.Value = args.Int.HasValue ? args.Int.Value : DBNull.Value;", generatedCode);
         }
     }
 
