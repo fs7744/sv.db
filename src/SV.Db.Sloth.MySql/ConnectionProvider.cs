@@ -243,14 +243,16 @@ namespace SV.Db.Sloth.MySql
             }
             else
             {
+                table = string.Empty;
                 hasRows = false;
             }
 
-            if (table.Contains("{OrderBy}", StringComparison.OrdinalIgnoreCase))
+            if (tableTotal.Contains("{OrderBy}", StringComparison.OrdinalIgnoreCase))
             {
                 tableTotal = tableTotal.Replace("{OrderBy}", string.Empty, StringComparison.OrdinalIgnoreCase);
             }
-            else
+
+            if (hasRows && !table.Contains("{OrderBy}", StringComparison.OrdinalIgnoreCase))
             {
                 table += " {OrderBy} ";
             }

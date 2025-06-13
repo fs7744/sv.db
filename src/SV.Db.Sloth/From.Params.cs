@@ -215,7 +215,11 @@ namespace SV.Db.Sloth
             }
             var noRows = ps.TryGetValue("NoRows", out var nr) && bool.TryParse(nr, out var nnr) && nnr;
             ps.Remove("NoRows");
-            if (!noRows)
+            if (noRows)
+            {
+                builder.statement.Fields = null;
+            }
+            else
             {
                 if (ps.TryGetValue("Fields", out var fs))
                 {
