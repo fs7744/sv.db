@@ -54,7 +54,7 @@ namespace UT.Sloth
             a.OrderBy("json", nameof(QueryTest.A), nameof(QueryTest.B));
             a.OrderBy(nameof(QueryTest.A), nameof(QueryTest.B), "json");
             a.OrderBy(i => i.A, i => i.B, i => i.A.JsonExtract("$.s"), i => i.B.JsonExtract("$.sdd", "d").Desc());
-            Assert.Equal("B Asc,A Asc,json Asc,json Asc,B Asc,A Asc,json(B,'$.sdd',d) Desc,json(A,'$.s') Asc,B Asc,A Asc", From.ParseToQueryParams(a.Build(new SelectStatementOptions() { AllowNotFoundFields = true, AllowNonStrictCondition = true }))["orderby"]);
+            Assert.Equal("json Asc,A Asc,B Asc,A Asc,B Asc,json Asc,A Asc,B Asc,json(A,'$.s') Asc,json(B,'$.sdd',d) Desc", From.ParseToQueryParams(a.Build(new SelectStatementOptions() { AllowNotFoundFields = true, AllowNonStrictCondition = true }))["orderby"]);
         }
 
         [Fact]

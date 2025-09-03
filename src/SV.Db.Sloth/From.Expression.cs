@@ -101,7 +101,7 @@ namespace SV.Db.Sloth
             var f = select.statement.OrderBy;
             if (f == null)
                 f = select.statement.OrderBy = new List<FieldStatement>();
-            foreach (var item in SqlStatementParser.ParseStatements(string.Join(",", fields), ParseType.OrderByField).Cast<FieldStatement>().ToList())
+            foreach (var item in SqlStatementParser.ParseStatements(string.Join(",", fields), ParseType.OrderByField).Cast<FieldStatement>().Reverse().ToList())
             {
                 f.Add(item);
             }
