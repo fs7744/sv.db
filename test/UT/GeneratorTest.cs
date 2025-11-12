@@ -84,7 +84,7 @@ namespace UT
         {
             Compilation inputCompilation = CreateCompilation("global using global::System;\r\n"+code);
             StringBuilder diagnosticsTo = new StringBuilder();
-            var ierr = ShowDiagnostics("Input code", inputCompilation, diagnosticsTo, "CS8795", "CS1701", "CS1702", "CS8019", "CS8632");
+            var ierr = ShowDiagnostics("Input code", inputCompilation, diagnosticsTo, "CS8795", "CS1701", "CS1702", "CS8019", "CS8632", "CS9137");
             var generator = new T();
             GeneratorDriver driver = CSharpGeneratorDriver.Create(new[] { generator.AsSourceGenerator() }, parseOptions: ParseOptionsLatestLangVer);
             driver = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out var outputCompilation, out var diagnostics);
