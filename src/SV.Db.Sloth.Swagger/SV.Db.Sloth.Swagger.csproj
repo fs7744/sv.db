@@ -2,7 +2,7 @@
 
 	<Import Project="../../ProjectCommon.targets" />
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	  <IncludeSymbols>true</IncludeSymbols>
@@ -12,7 +12,7 @@
     <ProjectReference Include="..\SV.Db.Sloth\SV.Db.Sloth.csproj" />
   </ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.0" />
 	</ItemGroup>
 
 </Project>

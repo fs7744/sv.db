@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Data;
 using System.Reflection;
+using System.Text.Json.Nodes;
 
 namespace SV.Db.Sloth.Swagger
 {
@@ -25,7 +25,7 @@ namespace SV.Db.Sloth.Swagger
             var p = operation.Parameters;
             if (p == null)
             {
-                operation.Parameters = new List<OpenApiParameter>();
+                operation.Parameters = new List<IOpenApiParameter>();
                 p = operation.Parameters;
             }
             var resp = operation.Responses;
@@ -86,7 +86,7 @@ namespace SV.Db.Sloth.Swagger
                         Type = DbType.String.ToJsonType(),
                         Format = DbType.String.ToString()
                     },
-                    Example = new OpenApiString(string.Join(",", info.OrderByFields.Select(i => $"{i.Key}:asc")))
+                    Example = JsonValue.Create(string.Join(",", info.OrderByFields.Select(i => $"{i.Key}:asc")))
                 });
             }
             if (info.SelectFields.Count > 0)
@@ -100,13 +100,13 @@ namespace SV.Db.Sloth.Swagger
                         Type = DbType.String.ToJsonType(),
                         Format = DbType.String.ToString()
                     },
-                    Example = new OpenApiString(string.Join(",", info.SelectFields.Where(i => i.Key != "*").Select(i => i.Key)))
+                    Example = JsonValue.Create(string.Join(",", info.SelectFields.Where(i => i.Key != "*").Select(i => i.Key)))
                 });
                 resp["200"] = new OpenApiResponse()
                 {
                     Content = new Dictionary<string, OpenApiMediaType>()
                      {
-                         { "application/json", new OpenApiMediaType() { Example = new OpenApiString($"{{\"totalCount\":1,\"rows\":[{{{string.Join(",",info.SelectFields.Where(i => i.Key != "*").Select(i =>
+                         { "application/json", new OpenApiMediaType() { Example = JsonValue.Create($"{{\"totalCount\":1,\"rows\":[{{{string.Join(",",info.SelectFields.Where(i => i.Key != "*").Select(i =>
                          {
                              var dp = info.Columns.TryGetValue(i.Key, out var c) ? c.Type : DbType.String;
                              return $"\"{i.Key}\":\"{dp.ToJsonType()}\"";
@@ -126,7 +126,7 @@ namespace SV.Db.Sloth.Swagger
                         Type = DbType.String.ToJsonType(),
                         Format = DbType.String.ToString()
                     },
-                    Example = new OpenApiString(string.Join(" and ", info.SelectFields.Select(i => $"{i.Key}=?")))
+                    Example = JsonValue.Create(string.Join(" and ", info.SelectFields.Select(i => $"{i.Key}=?")))
                 });
                 foreach (var field in info.WhereFields)
                 {
@@ -140,7 +140,7 @@ namespace SV.Db.Sloth.Swagger
                             Type = dp.ToJsonType(),
                             Format = c != null && c.IsJson ? "json" : dp.ToString()
                         },
-                        Example = new OpenApiString("{{eq}}?")
+                        Example = JsonValue.Create("{{eq}}?")
                     });
                 }
             }

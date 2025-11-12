@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 	  <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
@@ -9,12 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\SV.Db.Analyzers\SV.Db.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
     <ProjectReference Include="..\..\src\SV.Db.Sloth.Elasticsearch\SV.Db.Sloth.Elasticsearch.csproj" />
+    <ProjectReference Include="..\..\src\SV.Db.Sloth.MySql\SV.Db.Sloth.MySql.csproj" />
     <ProjectReference Include="..\..\src\SV.Db.Sloth.SQLite\SV.Db.Sloth.SQLite.csproj" />
     <ProjectReference Include="..\..\src\SV.Db.Sloth.Swagger\SV.Db.Sloth.Swagger.csproj" />
     <ProjectReference Include="..\..\src\SV.Db.Sloth.WebApi\SV.Db.Sloth.WebApi.csproj" />

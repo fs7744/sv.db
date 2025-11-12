@@ -65,8 +65,8 @@ namespace RestfulSample.Controllers
         FROM Weather;
         """);
             var t = await dd.QueryFirstOrDefaultAsync<int>();
-            var r = await dd.QueryAsync<string>().ToListAsync();
-            return new { TotalCount = t, Rows = r };
+           // var r = await dd.QueryAsync<string>().ToListAsync();
+            return new { TotalCount = t};
         }
 
         [HttpPost("new")]

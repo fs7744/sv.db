@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi;
 using SV.Db.Sloth.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Data;
@@ -13,7 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return options;
         }
 
-        public static string ToJsonType(this DbType DbType)
+        public static JsonSchemaType ToJsonType(this DbType DbType)
         {
             switch (DbType)
             {
@@ -21,10 +22,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 case DbType.AnsiStringFixedLength:
                 case DbType.StringFixedLength:
                 case DbType.String:
-                    return "string";
+                    return JsonSchemaType.String;
 
                 case DbType.Boolean:
-                    return "boolean";
+                    return JsonSchemaType.Boolean;
 
                 case DbType.Currency:
                 case DbType.Decimal:
@@ -37,9 +38,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 case DbType.UInt32:
                 case DbType.UInt64:
                 case DbType.VarNumeric:
-                    return "number";
+                    return JsonSchemaType.Number;
 
-                default: return "object";
+                default: return JsonSchemaType.Object;
             }
         }
     }

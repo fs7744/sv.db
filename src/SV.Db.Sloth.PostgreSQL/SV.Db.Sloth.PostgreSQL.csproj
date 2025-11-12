@@ -2,14 +2,14 @@
 
 	<Import Project="../../ProjectCommon.targets" />
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	  <IncludeSymbols>true</IncludeSymbols>
 	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Npgsql" Version="9.0.1" />
+		<PackageReference Include="Npgsql" Version="9.0.4" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\SV.Db.Sloth\SV.Db.Sloth.csproj" />
