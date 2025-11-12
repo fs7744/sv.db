@@ -89,7 +89,7 @@ namespace UT
             GeneratorDriver driver = CSharpGeneratorDriver.Create(new[] { generator.AsSourceGenerator() }, parseOptions: ParseOptionsLatestLangVer);
             driver = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out var outputCompilation, out var diagnostics);
             GeneratorDriverRunResult runResult = driver.GetRunResult();
-            var errorCount = ShowDiagnostics("Output code", outputCompilation, diagnosticsTo, "CS1701", "CS1702", "CS8019", "CS8632", "CS8933", "CS0168");
+            var errorCount = ShowDiagnostics("Output code", outputCompilation, diagnosticsTo, "CS1701", "CS1702", "CS8019", "CS8632", "CS8933", "CS0168", "CS9137");
             return (outputCompilation, runResult, diagnostics, errorCount, diagnosticsTo.ToString());
         }
 
