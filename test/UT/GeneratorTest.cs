@@ -113,7 +113,7 @@ namespace UT
             {
                 var rawDiagnostics = compilation.GetSemanticModel(tree).GetDiagnostics();
                 var diagnostics = Normalize(rawDiagnostics, ignore);
-                errorCountTotal += rawDiagnostics.Count(x => x.Severity == DiagnosticSeverity.Error);
+                errorCountTotal += diagnostics.Count(x => x.Severity == DiagnosticSeverity.Error);
 
                 if (diagnostics.Any())
                 {
