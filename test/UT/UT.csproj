@@ -8,6 +8,7 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
 	<PreserveCompilationContext>true</PreserveCompilationContext>
+<InterceptorsNamespaces>$(InterceptorsNamespaces);SV.Db</InterceptorsNamespaces>
   </PropertyGroup>
 
   <ItemGroup>
@@ -42,6 +43,7 @@
 	  <Compile Update="TestData.cs">
 	    <SubType>Component</SubType>
 	  </Compile>
+
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="GeneratorTestCases/**/*.*" />
