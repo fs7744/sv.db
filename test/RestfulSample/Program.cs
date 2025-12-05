@@ -8,7 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 DictionaryConnectionStringProvider.Instance.Add("demo", ConnectionStringProvider.SQLite, "Data Source=InMemorySample;Mode=Memory;Cache=Shared");
-DictionaryConnectionStringProvider.Instance.Add("ToolBox", ConnectionStringProvider.MySql, "Server=172.16.170.161;Database=seller_toolbox;Uid=stdbo;Pwd=Msr5vim*Wdw;AllowUserVariables=True;UseXaTransactions=false;");
 DictionaryConnectionStringProvider.Instance.Add("es", ConnectionStringProvider.Elasticsearch, "http://rat.xxx.lt");
 builder.Services.AddSQLite().AddElasticsearch().AddMySql().AddConnectionStringProvider(i => DictionaryConnectionStringProvider.Instance);
 builder.Services.AddControllers();
@@ -50,9 +49,8 @@ var dd = a.ExecuteQuery<string>("""
     FROM Weather
     """).AsList();
 
-var aa = await f.From<ChannelCategoryAi>().Where(i => i.AiDescription == null).Limit(int.MaxValue).ExecuteQueryAsync<ChannelCategoryAi>();
+var aa = await f.From<PriceAdjustmentListing>().Where(i => i.TransactionNumber == 494).Limit(int.MaxValue).ExecuteQueryAsync<PriceAdjustmentListing>();
 
-var vvv = aa.Rows.Where(i => i.Channel == 7 && i.Version == "v2").ToArray();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -69,49 +67,104 @@ app.Run();
 [Db("ToolBox")]
 [Table("""
         select {Fields}
-        from ci_channel_category cc
-        left join ci_channel_category_ai cca on cc.TransactionNumber = cca.TransactionNumber
+        FROM ci_price_adjustment_listing a
+        INNER JOIN ci_price_adjustment_rule r on a.RuleTransactionNumber = r.TransactionNumber
+        inner join ci_item_listing c on a.ListingTransactionNumber = c.TransactionNumber and a.AccountId = c.AccountId
+        left join ci_item_listing cc on a.SyncListingTransactionNumber = cc.TransactionNumber and a.AccountId = cc.AccountId
         {where}
-        """, UpdateTable = "ci_channel_category_ai")]
-public class ChannelCategory
+        """, UpdateTable = "ci_price_adjustment_listing")]
+public class PriceAdjustmentListing
 {
-    [Select("cc.TransactionNumber"), OrderBy, Where, Column(Name = "TransactionNumber", Type = DbType.Int32), Update(PrimaryKey = true, NotAllowInsert = true)]
+    [Select("a.TransactionNumber"), OrderBy, Where, Column(Name = "TransactionNumber", Type = DbType.Int32), Update(PrimaryKey = true, NotAllowInsert = true)]
     public int? TransactionNumber { get; set; }
 
-    [Select("cc.Name"), OrderBy, Where, Column(Name = "Name"), Update]
-    public string? Name { get; set; }
+    [Select("a.AccountId"), OrderBy, Where, Column(Name = "AccountId", Type = DbType.Int32), Update]
+    public int? AccountId { get; set; }
 
-    [Select("cc.Version"), OrderBy, Where, Column(Name = "Version"), Update]
-    public string? Version { get; set; }
+    [Select("a.InUser"), OrderBy, Where, Column(Name = "InUser", Type = DbType.Int32), Update]
+    public int? InUser { get; set; }
 
-    [Select("cc.FullPath"), OrderBy, Where, Column(Name = "FullPath"), Update]
-    public string? FullPath { get; set; }
+    [Select("a.LastEditUser"), OrderBy, Where, Column(Name = "LastEditUser", Type = DbType.Int32), Update]
+    public int? LastEditUser { get; set; }
 
-    [Select("cc.IsLeaf"), OrderBy, Where, Column(Name = "IsLeaf", Type = DbType.Boolean), Update]
-    public bool? IsLeaf { get; set; }
+    [Select("a.InDate"), OrderBy, Where, Column(Name = "InDate", Type = DbType.Int64), Update]
+    public long? InDate { get; set; }
 
-    [Select("cc.Channel"), OrderBy, Where, Column(Name = "Channel", Type = DbType.Int32), Update]
+    [Select("a.LastEditDate"), OrderBy, Where, Column(Name = "LastEditDate", Type = DbType.Int64), Update]
+    public long? LastEditDate { get; set; }
+
+    [Select("a.ListingTransactionNumber"), OrderBy, Where, Column(Name = "ListingTransactionNumber", Type = DbType.Int32), Update]
+    public int? ListingTransactionNumber { get; set; }
+
+    [Select("a.RuleTransactionNumber"), OrderBy, Where, Column(Name = "RuleTransactionNumber", Type = DbType.Int32), Update]
+    public int? RuleTransactionNumber { get; set; }
+
+    [Select("a.SyncListingTransactionNumber"), OrderBy, Where, Column(Name = "SyncListingTransactionNumber", Type = DbType.Int32), Update]
+    public int? SyncListingTransactionNumber { get; set; }
+
+    [Select("a.Enabled"), OrderBy, Where, Column(Name = "Enabled", Type = DbType.Boolean), Update]
+    public bool? Enabled { get; set; }
+
+    [Select("a.PriceMin"), OrderBy, Where, Column(Name = "PriceMin", Type = DbType.Decimal), Update]
+    public decimal? PriceMin { get; set; }
+
+    [Select("a.PriceMax"), OrderBy, Where, Column(Name = "PriceMax", Type = DbType.Decimal), Update]
+    public decimal? PriceMax { get; set; }
+
+    [Select("c.ItemName"), OrderBy(Field = "c.ItemName"), Where(Field = "c.ItemName")]
+    public string? ItemName { get; set; }
+
+    [Select("c.ItemImage"), OrderBy(Field = "c.ItemImage"), Where(Field = "c.ItemImage")]
+    public string? ItemImage { get; set; }
+
+    [Select("c.Channel"), OrderBy(Field = "c.Channel"), Where(Field = "c.Channel")]
     public int? Channel { get; set; }
 
-    [Select("cc.ParentTransactionNumber"), OrderBy, Where, Column(Name = "ParentTransactionNumber", Type = DbType.Int32), Update]
-    public int? ParentTransactionNumber { get; set; }
-}
+    [Select("c.StoreSKU"), OrderBy(Field = "c.StoreSKU"), Where(Field = "c.StoreSKU")]
+    public string? StoreSKU { get; set; }
 
-[Db("ToolBox")]
-[Table("""
-        select {Fields}
-        from ci_channel_category cc
-        left join ci_channel_category_ai cca on cc.TransactionNumber = cca.TransactionNumber
-        {where}
-        """, UpdateTable = "ci_channel_category_ai")]
-public class ChannelCategoryAi : ChannelCategory
-{
-    [Select("cca.AiDescription"), OrderBy, Where, Column(Name = "AiDescription"), Update]
-    public string? AiDescription { get; set; }
+    [Select("c.ChannelSKU"), OrderBy(Field = "c.ChannelSKU"), Where(Field = "c.ChannelSKU")]
+    public string? ChannelSKU { get; set; }
 
-    [Select("cca.ProductTypes"), OrderBy, Where, Column(Name = "ProductTypes"), Update]
-    public string? ProductTypes { get; set; }
+    [Select("c.ChannelItemId"), OrderBy(Field = "c.ChannelItemId"), Where(Field = "c.ChannelItemId")]
+    public string? ChannelItemId { get; set; }
 
-    [Select("cca.InDate"), OrderBy, Where, Column(Name = "InDate", Type = DbType.Int64), Update]
-    public long? InDate { get; set; }
+    [Select("c.CurrencyCode"), OrderBy(Field = "c.CurrencyCode"), Where(Field = "c.CurrencyCode")]
+    public string? CurrencyCode { get; set; }
+
+    [Select("c.MerchantID"), OrderBy(Field = "c.MerchantID"), Where(Field = "c.MerchantID")]
+    public int? MerchantID { get; set; }
+
+    [Select("cc.ItemName"), OrderBy(Field = "cc.ItemName"), Where(Field = "cc.ItemName")]
+    public string? SyncItemName { get; set; }
+
+    [Select("cc.ItemImage"), OrderBy(Field = "cc.ItemImage"), Where(Field = "cc.ItemImage")]
+    public string? SyncItemImage { get; set; }
+
+    [Select("cc.Channel"), OrderBy(Field = "cc.Channel"), Where(Field = "cc.Channel")]
+    public int? SyncChannel { get; set; }
+
+    [Select("cc.StoreSKU"), OrderBy(Field = "cc.StoreSKU"), Where(Field = "cc.StoreSKU")]
+    public string? SyncStoreSKU { get; set; }
+
+    [Select("cc.ChannelSKU"), OrderBy(Field = "cc.ChannelSKU"), Where(Field = "cc.ChannelSKU")]
+    public string? SyncChannelSKU { get; set; }
+
+    [Select("cc.MerchantID"), OrderBy(Field = "cc.MerchantID"), Where(Field = "cc.MerchantID")]
+    public int? SyncMerchantID { get; set; }
+
+    [Select("cc.ChannelItemId"), OrderBy(Field = "cc.ChannelItemId"), Where(Field = "cc.ChannelItemId")]
+    public string? SyncChannelItemId { get; set; }
+
+    [Select("cc.CurrencyCode"), OrderBy(Field = "cc.CurrencyCode"), Where(Field = "cc.CurrencyCode")]
+    public string? SyncCurrencyCode { get; set; }
+
+    public decimal CheckPrice(decimal price)
+    {
+        if (PriceMin.HasValue && PriceMin > 0 && price < PriceMin)
+            return PriceMin.Value;
+        if (PriceMax.HasValue && PriceMax > 0 && price > PriceMax)
+            return PriceMax.Value;
+        return price;
+    }
 }

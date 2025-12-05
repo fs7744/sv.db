@@ -245,7 +245,7 @@ case {StringHashing.HashOrdinalIgnoreCase(colName)}:
 tokens[i] = {x}; break;");
                 read.Append($@"
                     case {x}:
-                        d.{name} = reader.IsDBNull(j) ? default : {(string.IsNullOrWhiteSpace(customConvertFromDbMethod) ? $"DBUtils.As<{tt}>" : customConvertFromDbMethod)}(reader.GetValue(j));
+                        d.{name} = reader.IsDBNull(j) ? default({tt}{(iType.IsNullable() ? "?" : "")}) : {(string.IsNullOrWhiteSpace(customConvertFromDbMethod) ? $"DBUtils.As<{tt}>" : customConvertFromDbMethod)}(reader.GetValue(j));
                         break;
 ");
             }
@@ -259,7 +259,7 @@ case {StringHashing.HashOrdinalIgnoreCase(colName)}:
 tokens[i] = {x}; break;");
                 read.Append($@"
                     case {x}:
-                        d.{name} = reader.IsDBNull(j) ? default : DBUtils.ToEnum<{tt}>(reader.GetValue(j));
+                        d.{name} = reader.IsDBNull(j) ? default({tt}{(iType.IsNullable() ? "?" : "")}) : DBUtils.ToEnum<{tt}>(reader.GetValue(j));
                         break;
 ");
             }
@@ -274,10 +274,10 @@ case {StringHashing.HashOrdinalIgnoreCase(colName)}:
 tokens[i] = type == typeof({tt}) ? {x} : {y}; break;");
                 read.Append($@"
                     case {x}:
-                        d.{name} = reader.IsDBNull(j) ? default : reader.{dbType.readerMethod}(j);
+                        d.{name} = reader.IsDBNull(j) ? default({tt}{(iType.IsNullable() ? "?": "")}) : reader.{dbType.readerMethod}(j);
                         break;
                     case {y}:
-                        d.{name} = reader.IsDBNull(j) ? default : DBUtils.As<{tt}>(reader.GetValue(j));
+                        d.{name} = reader.IsDBNull(j) ? default({tt}{(iType.IsNullable() ? "?" : "")}) : DBUtils.As<{tt}>(reader.GetValue(j));
                         break;
 ");
             }
