@@ -23,11 +23,11 @@ namespace UT.GeneratorTestCases
             Assert.Contains("public class Point_", generatedCode);
             Assert.Contains("RecordFactory.RegisterRecordFactory<global::UT.GeneratorTestCases.Point>(new Point_", generatedCode);
             Assert.Contains("p.ParameterName = \"X\";", generatedCode);
-            Assert.DoesNotContain("d.X = reader.IsDBNull(j) ? default : reader.GetDouble(j);", generatedCode);
+            Assert.DoesNotContain("d.X = reader.IsDBNull(j) ? default(double) : reader.GetDouble(j);", generatedCode);
             Assert.Contains("public class Point2_", generatedCode);
             Assert.Contains("RecordFactory.RegisterRecordFactory<global::UT.GeneratorTestCases.Point2>(new Point2_", generatedCode);
             Assert.Contains("p.ParameterName = \"X2\";", generatedCode);
-            Assert.Contains("d.X2 = reader.IsDBNull(j) ? default : reader.GetDouble(j);", generatedCode);
+            Assert.Contains("d.X2 = reader.IsDBNull(j) ? default(double) : reader.GetDouble(j);", generatedCode);
         }
     }
 

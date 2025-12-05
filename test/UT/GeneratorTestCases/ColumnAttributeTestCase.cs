@@ -33,7 +33,7 @@ namespace UT.GeneratorTestCases
             Assert.Contains("p.DbType = DbType.String;", generatedCode);
             Assert.Contains($"case {StringHashing.HashOrdinalIgnoreCase("AAA")}:", generatedCode);
             Assert.Contains($"case {StringHashing.HashOrdinalIgnoreCase("AAAd")}:", generatedCode);
-            Assert.Contains("d.Col = reader.IsDBNull(j) ? default : UT.GeneratorTestCases.ColumnAttributeTestData.C2(reader.GetValue(j));", generatedCode);
+            Assert.Contains("d.Col = reader.IsDBNull(j) ? default(global::System.Collections.Generic.List<int>) : UT.GeneratorTestCases.ColumnAttributeTestData.C2(reader.GetValue(j));", generatedCode);
         }
     }
 

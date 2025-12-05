@@ -17,8 +17,8 @@ namespace UT.GeneratorTestCases
             Assert.Contains("public class NullableFieldTestCaseData_", generatedCode);
             Assert.Contains("RecordFactory.RegisterRecordFactory<global::UT.GeneratorTestCases.NullableFieldTestCaseData>(new NullableFieldTestCaseData_", generatedCode);
             Assert.Contains("p.Value = args.Int.HasValue ? args.Int.Value : DBNull.Value;", generatedCode);
-            Assert.Contains("d.Int = reader.IsDBNull(j) ? default : reader.GetInt32(j);", generatedCode);
-            Assert.Contains("d.Int = reader.IsDBNull(j) ? default : DBUtils.As<int>(reader.GetValue(j));", generatedCode);
+            Assert.Contains("d.Int = reader.IsDBNull(j) ? default(int? ) : reader.GetInt32(j);", generatedCode);
+            Assert.Contains("d.Int = reader.IsDBNull(j) ? default(int? ) : DBUtils.As<int>(reader.GetValue(j));", generatedCode);
             Assert.Contains("p.Value = args.Int2.HasValue ? args.Int2.Value : DBNull.Value;", generatedCode);
         }
     }
