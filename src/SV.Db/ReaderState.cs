@@ -22,7 +22,7 @@ namespace SV.Db
             Reader?.Dispose();
         }
 
-        public Span<int> GetTokens()
+        public int[] GetTokens()
         {
             FieldCount = Reader!.FieldCount;
             if (Tokens is null || Tokens.Length < FieldCount)
@@ -30,7 +30,7 @@ namespace SV.Db
                 if (Tokens is not null) ArrayPool<int>.Shared.Return(Tokens);
                 Tokens = ArrayPool<int>.Shared.Rent(FieldCount);
             }
-            return MemoryMarshal.CreateSpan(ref MemoryMarshal.GetArrayDataReference(Tokens), FieldCount);
+            return Tokens;
         }
 
         public readonly ReadOnlySpan<int> RTokens

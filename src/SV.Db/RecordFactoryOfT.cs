@@ -115,7 +115,7 @@ namespace SV.Db
             {
                 Reader = reader
             };
-            var s = reader.FieldCount <= 64 ? MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(stackalloc int[reader.FieldCount]), reader.FieldCount) : state.GetTokens();
+            var s = state.GetTokens();
             GenerateReadTokens(reader, s);
             ReadOnlySpan<int> readOnlyTokens = s;
             return Read(reader, ref readOnlyTokens);
@@ -130,7 +130,7 @@ namespace SV.Db
                 {
                     Reader = reader
                 };
-                var s = reader.FieldCount <= 64 ? MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(stackalloc int[reader.FieldCount]), reader.FieldCount) : state.GetTokens();
+                var s = state.GetTokens();
                 GenerateReadTokens(reader, s);
                 ReadOnlySpan<int> readOnlyTokens = s;
                 try
@@ -158,7 +158,7 @@ namespace SV.Db
             };
             var s = state.GetTokens();
             GenerateReadTokens(reader, s);
-            return new UnBuffedEnumerator(reader, s, this, state);
+            return new UnBuffedEnumerator(reader, this, state);
         }
 
         internal unsafe struct UnBuffedEnumerator : IEnumerable<T?>, IEnumerator<T?>
@@ -166,8 +166,6 @@ namespace SV.Db
             private readonly DbDataReader reader;
             private readonly RecordFactory<T> factory;
             private readonly ReaderState state;
-            private readonly int* tokens;
-            private readonly int length;
 
             public T? Current { get; private set; }
 
@@ -178,11 +176,6 @@ namespace SV.Db
                 this.reader = reader;
                 this.factory = factory;
                 this.state = state;
-                fixed (int* ptr = &span.GetPinnableReference())
-                {
-                    tokens = ptr;
-                    length = span.Length;
-                }
             }
 
             public void Dispose()
@@ -199,7 +192,7 @@ namespace SV.Db
             {
                 if (reader.Read())
                 {
-                    var s = new ReadOnlySpan<int>(tokens, length);
+                    var s = new ReadOnlySpan<int>(state.GetTokens(), state.FieldCount);
                     Current = factory.Read(reader, ref s);
                     return true;
                 }
@@ -225,7 +218,7 @@ namespace SV.Db
             };
             var s = state.GetTokens();
             GenerateReadTokens(reader, s);
-            return new UnBuffedAsyncEnumerator(reader, s, this, state, ref cancellationToken);
+            return new UnBuffedAsyncEnumerator(reader, this, state, ref cancellationToken);
         }
 
         internal class UnBuffedAsyncEnumerator : IAsyncEnumerable<T?>, IAsyncEnumerator<T?>
@@ -233,26 +226,16 @@ namespace SV.Db
             private readonly DbDataReader reader;
             private readonly RecordFactory<T> factory;
             private readonly ReaderState state;
-            private readonly unsafe int* tokens;
-            private readonly int length;
             private readonly CancellationToken cancellationToken;
 
             public T? Current { get; private set; }
 
-            public UnBuffedAsyncEnumerator(DbDataReader reader, Span<int> span, RecordFactory<T> factory, ReaderState state, ref CancellationToken cancellationToken)
+            public UnBuffedAsyncEnumerator(DbDataReader reader, RecordFactory<T> factory, ReaderState state, ref CancellationToken cancellationToken)
             {
                 this.reader = reader;
                 this.factory = factory;
                 this.state = state;
                 this.cancellationToken = cancellationToken;
-                unsafe
-                {
-                    fixed (int* ptr = &span.GetPinnableReference())
-                    {
-                        tokens = ptr;
-                        length = span.Length;
-                    }
-                }
             }
 
             public ValueTask DisposeAsync()
@@ -278,7 +261,7 @@ namespace SV.Db
 
             private unsafe void Read()
             {
-                var s = new ReadOnlySpan<int>(tokens, length);
+                var s = new ReadOnlySpan<int>(state.GetTokens(), state.FieldCount);
                 Current = factory.Read(reader, ref s);
             }
         }
