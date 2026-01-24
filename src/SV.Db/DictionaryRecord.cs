@@ -91,47 +91,26 @@ namespace SV.Db
         public override List<T?> ReadBuffed(DbDataReader reader, int estimateRow = 0)
         {
             List<T?> list = new(estimateRow);
-            try
+            while (reader.Read())
             {
-                while (reader.Read())
-                {
-                    list.Add(ReadDict(reader));
-                }
-                return list;
+                list.Add(ReadDict(reader));
             }
-            finally
-            {
-                reader.Dispose();
-            }
+            return list;
         }
 
         public override IEnumerable<T> ReadUnBuffed(DbDataReader reader)
         {
-            try
+            while (reader.Read())
             {
-                while (reader.Read())
-                {
-                    yield return ReadDict(reader);
-                }
-            }
-            finally
-            {
-                reader.Dispose();
+                yield return ReadDict(reader);
             }
         }
 
         public override async IAsyncEnumerable<T> ReadUnBuffedAsync(DbDataReader reader, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            try
+            while (await reader.ReadAsync(cancellationToken))
             {
-                while (await reader.ReadAsync(cancellationToken))
-                {
-                    yield return ReadDict(reader);
-                }
-            }
-            finally
-            {
-                reader.Dispose();
+                yield return ReadDict(reader);
             }
         }
     }

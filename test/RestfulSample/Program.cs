@@ -49,7 +49,13 @@ var dd = a.ExecuteQuery<string>("""
     FROM Weather
     """).AsList();
 
-var aa = await f.From<PriceAdjustmentListing>().Where(i => i.TransactionNumber == 494).Limit(int.MaxValue).ExecuteQueryAsync<PriceAdjustmentListing>();
+
+var s = await a.ExecuteQueryAsync<string>("""
+    SELECT *
+    FROM Weather
+    """).ToListAsync();
+
+//var aa = await f.From<PriceAdjustmentListing>().Where(i => i.TransactionNumber == 494).Limit(int.MaxValue).ExecuteQueryAsync<PriceAdjustmentListing>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

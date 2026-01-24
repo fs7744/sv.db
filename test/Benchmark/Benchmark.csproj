@@ -14,7 +14,7 @@
 	<ItemGroup>
 		<PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
 		<PackageReference Include="SV.Enums.Analyzers" Version="1.0.0" />
-		<PackageReference Include="System.IO.Hashing" Version="10.0.1" />
+		<PackageReference Include="System.IO.Hashing" Version="10.0.2" />
 		<PackageReference Include="Dapper" Version="2.1.66" />
 		<PackageReference Include="Dapper.AOT" Version="1.0.48" />
 	</ItemGroup>

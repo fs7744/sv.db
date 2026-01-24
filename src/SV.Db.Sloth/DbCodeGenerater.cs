@@ -22,6 +22,11 @@ public class DbCodeGenerater
 
     public string GenerateMysqlCode(DbConnection connection, string table)
     {
+        return Template.EvaluateTemplate(GetMysqlTableData(connection, table));
+    }
+
+    public static TableData GetMysqlTableData(DbConnection connection, string table)
+    {
         try
         {
             connection.Open();
@@ -45,7 +50,7 @@ public class DbCodeGenerater
                 c.Init();
                 td.Columns.Add(c);
             }
-            return Template.EvaluateTemplate(td);
+            return td;
         }
         finally
         {

@@ -6,7 +6,6 @@ using System.Dynamic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 
 namespace SV.Db
 {
@@ -301,16 +300,9 @@ namespace SV.Db
                 return new KeyValuePair<string, int>(arr[i].Name, i);
             }).ToFrozenDictionary();
 
-            try
+            while (reader.Read())
             {
-                while (reader.Read())
-                {
-                    yield return (T)(object)new DynamicRecord(arr, reader, dict);
-                }
-            }
-            finally
-            {
-                reader.Dispose();
+                yield return (T)(object)new DynamicRecord(arr, reader, dict);
             }
         }
 
@@ -323,18 +315,12 @@ namespace SV.Db
                 return new KeyValuePair<string, int>(arr[i].Name, i);
             }).ToFrozenDictionary();
             List<T?> list = new(estimateRow);
-            try
+
+            while (reader.Read())
             {
-                while (reader.Read())
-                {
-                    list.Add((T)(object)new DynamicRecord(arr, reader, dict));
-                }
-                return list;
+                list.Add((T)(object)new DynamicRecord(arr, reader, dict));
             }
-            finally
-            {
-                reader.Dispose();
-            }
+            return list;
         }
 
         public override async IAsyncEnumerable<T> ReadUnBuffedAsync(DbDataReader reader, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -346,16 +332,9 @@ namespace SV.Db
                 return new KeyValuePair<string, int>(arr[i].Name, i);
             }).ToFrozenDictionary();
 
-            try
+            while (await reader.ReadAsync(cancellationToken))
             {
-                while (await reader.ReadAsync(cancellationToken))
-                {
-                    yield return (T)(object)new DynamicRecord(arr, reader, dict);
-                }
-            }
-            finally
-            {
-                reader.Dispose();
+                yield return (T)(object)new DynamicRecord(arr, reader, dict);
             }
         }
 

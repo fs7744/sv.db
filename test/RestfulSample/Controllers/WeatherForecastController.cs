@@ -1,15 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
+using MySqlConnector;
 using SV.Db;
 using SV.Db.Sloth;
 using SV.Db.Sloth.Attributes;
-using SV.Db.Sloth.Statements;
 using SV.Db.Sloth.Swagger;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Text.Json;
-using System.Threading;
 
 namespace RestfulSample.Controllers
 {
@@ -65,8 +62,8 @@ namespace RestfulSample.Controllers
         FROM Weather;
         """);
             var t = await dd.QueryFirstOrDefaultAsync<int>();
-           // var r = await dd.QueryAsync<string>().ToListAsync();
-            return new { TotalCount = t};
+            // var r = await dd.QueryAsync<string>().ToListAsync();
+            return new { TotalCount = t };
         }
 
         [HttpPost("new")]
@@ -122,7 +119,34 @@ namespace RestfulSample.Controllers
             //{
             //}
         }
+
+        [HttpPost("db/export")]
+        public async Task<object> ExportData([FromBody] DbCodeRequest req)
+        {
+            var c = new MySqlConnection(req.Db);
+            var t = DbCodeGenerater.GetMysqlTableData(c, req.Table);
+            try
+            {
+                c.Open();
+                return await c.ExecuteQueryAsync<object>($"select {string.Join(",", t.Columns.Select(i => i.ColumnName))} from {req.Table} {(string.IsNullOrWhiteSpace(req.Where) ? "" : req.Where)}", behavior: CommandBehavior.SingleResult)
+                    .ToListAsync();
+            }
+            finally
+            {
+                c.Close();
+            }
+        }
     }
+
+    public class DbCodeRequest
+    {
+        public string Db { get; set; }
+        public string? Table { get; set; }
+        public string? DbType { get; set; }
+        public string? Where { get; set; }
+        public List<Dictionary<string, object>>? Data { get; set; }
+    }
+
 
     [Db(StaticInfo.Demo)]
     [Table("select {Fields} from Weather a", UpdateTable = "Weather")]
