@@ -172,7 +172,7 @@ namespace SV.Db
 
             object? IEnumerator.Current => Current;
 
-            public UnBuffedEnumerator(DbDataReader reader, Span<int> span, RecordFactory<T> factory, ReaderState state)
+            public UnBuffedEnumerator(DbDataReader reader, RecordFactory<T> factory, ReaderState state)
             {
                 this.reader = reader;
                 this.factory = factory;
@@ -194,7 +194,8 @@ namespace SV.Db
                 if (reader.Read())
                 {
                     var s = state.GetTokens().AsSpan(state.FieldCount);
-                    Current = factory.Read(reader, ref s);
+                    ReadOnlySpan<int> readOnlyTokens = s;
+                    Current = factory.Read(reader, ref readOnlyTokens);
                     return true;
                 }
                 return false;
@@ -263,7 +264,8 @@ namespace SV.Db
             private unsafe void Read()
             {
                 var s = state.GetTokens().AsSpan(state.FieldCount);
-                Current = factory.Read(reader, ref s);
+                ReadOnlySpan<int> readOnlyTokens = s;
+                Current = factory.Read(reader, ref readOnlyTokens);
             }
         }
     }
