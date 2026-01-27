@@ -1,10 +1,9 @@
 ﻿using System.Buffers;
 using System.Data;
-using System.Runtime.InteropServices;
 
 namespace SV.Db
 {
-    public struct ReaderState
+    public class ReaderState
     {
         public IDataReader? Reader;
         public int[]? Tokens;
@@ -33,15 +32,15 @@ namespace SV.Db
             return Tokens;
         }
 
-        public readonly ReadOnlySpan<int> RTokens
-        {
-            get
-            {
-#pragma warning disable CS8604 // Possible null reference argument.
-                return MemoryMarshal.CreateReadOnlySpan(ref MemoryMarshal.GetArrayDataReference(Tokens), FieldCount);
-#pragma warning restore CS8604 // Possible null reference argument.
-            }
-        }
+        //        public readonly ReadOnlySpan<int> RTokens
+        //        {
+        //            get
+        //            {
+        //#pragma warning disable CS8604 // Possible null reference argument.
+        //                return MemoryMarshal.CreateReadOnlySpan(ref MemoryMarshal.GetArrayDataReference(Tokens), FieldCount);
+        //#pragma warning restore CS8604 // Possible null reference argument.
+        //            }
+        //        }
 
         public void Return()
         {

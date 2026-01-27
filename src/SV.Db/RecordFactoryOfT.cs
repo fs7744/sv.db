@@ -1,8 +1,6 @@
 ﻿using System.Collections;
 using System.Data;
 using System.Data.Common;
-using System.Runtime.InteropServices;
-using System;
 
 namespace SV.Db
 {
@@ -116,7 +114,7 @@ namespace SV.Db
             {
                 Reader = reader
             };
-            var s = state.GetTokens().AsSpan(state.FieldCount);
+            var s = state.GetTokens().AsSpan(0, state.FieldCount);
             GenerateReadTokens(reader, s);
             ReadOnlySpan<int> readOnlyTokens = s;
             return Read(reader, ref readOnlyTokens);
@@ -131,7 +129,7 @@ namespace SV.Db
                 {
                     Reader = reader
                 };
-                var s = state.GetTokens().AsSpan(state.FieldCount);
+                var s = state.GetTokens().AsSpan(0, state.FieldCount);
                 GenerateReadTokens(reader, s);
                 ReadOnlySpan<int> readOnlyTokens = s;
                 try
@@ -193,7 +191,7 @@ namespace SV.Db
             {
                 if (reader.Read())
                 {
-                    var s = state.GetTokens().AsSpan(state.FieldCount);
+                    var s = state.GetTokens().AsSpan(0, state.FieldCount);
                     ReadOnlySpan<int> readOnlyTokens = s;
                     Current = factory.Read(reader, ref readOnlyTokens);
                     return true;
@@ -263,7 +261,7 @@ namespace SV.Db
 
             private unsafe void Read()
             {
-                var s = state.GetTokens().AsSpan(state.FieldCount);
+                var s = state.GetTokens().AsSpan(0, state.FieldCount);
                 ReadOnlySpan<int> readOnlyTokens = s;
                 Current = factory.Read(reader, ref readOnlyTokens);
             }
