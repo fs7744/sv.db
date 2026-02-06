@@ -136,6 +136,11 @@ namespace RestfulSample.Controllers
                 c.Close();
             }
         }
+
+        public void Test()
+        {
+            factory.ExecuteInsertAsync<AccountPointsCoins>(new List<AccountPointsCoins>());
+        }
     }
 
     public class DbCodeRequest
@@ -147,6 +152,41 @@ namespace RestfulSample.Controllers
         public List<Dictionary<string, object>>? Data { get; set; }
     }
 
+
+    [Db("ToolBox")]
+    [Table("""
+    select {Fields}
+    FROM account_points_coins a
+    {where}
+    """, UpdateTable = "account_points_coins")]
+    public class AccountPointsCoins
+    {
+        [Select("a.TransactionNumber"), OrderBy, Where, Column(Name = "TransactionNumber", Type = DbType.Int64), Update(PrimaryKey = true, NotAllowInsert = true)]
+        public long? TransactionNumber { get; set; }
+
+        [Select("a.AccountId"), OrderBy, Where, Column(Name = "AccountId", Type = DbType.Int32), Update]
+        public int? AccountId { get; set; }
+
+        [Select("a.TotalPoints"), OrderBy, Where, Column(Name = "TotalPoints", Type = DbType.Decimal), Update]
+        public decimal? TotalPoints { get; set; }
+
+        [Select("a.RemainingPoints"), OrderBy, Where, Column(Name = "RemainingPoints", Type = DbType.Decimal), Update]
+        public decimal? RemainingPoints { get; set; }
+
+        [Select("a.ExpiredDate"), OrderBy, Where, Column(Name = "ExpiredDate", Type = DbType.Int64), Update]
+        public long? ExpiredDate { get; set; }
+
+        [Select("a.IsValid"), OrderBy, Where, Column(Name = "IsValid", Type = DbType.Boolean), Update]
+        public bool? IsValid { get; set; }
+
+        [Select("a.InDate"), OrderBy, Where, Column(Name = "InDate", Type = DbType.Int64), Update]
+        public long? InDate { get; set; }
+
+        [Select("a.InUser"), OrderBy, Where, Column(Name = "InUser", Type = DbType.Int32), Update]
+        public int? InUser { get; set; }
+
+
+    }
 
     [Db(StaticInfo.Demo)]
     [Table("select {Fields} from Weather a", UpdateTable = "Weather")]

@@ -89,6 +89,7 @@ namespace SV.Db.Analyzers
                     case "ExecuteReaderAsync":
                     case "ExecuteScalar":
                     case "ExecuteScalarAsync":
+                    case "ExecuteInsertRowAsync":
                         hasArgs = true;
                         break;
 
@@ -121,6 +122,7 @@ namespace SV.Db.Analyzers
                     switch (arg.Parameter?.Name)
                     {
                         case "args":
+                        case "data":
                             if (hasArgs && arg.Value is not IDefaultValueOperation)
                             {
                                 var expr = arg.Value;
@@ -138,6 +140,7 @@ namespace SV.Db.Analyzers
                                 }
                             }
                             break;
+
 
                         default: break;
                     }
