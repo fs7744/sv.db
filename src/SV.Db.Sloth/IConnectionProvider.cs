@@ -1,5 +1,5 @@
-﻿using SV.Db.Sloth.Statements;
-using SV.Db.Sloth;
+﻿using SV.Db.Sloth;
+using SV.Db.Sloth.Statements;
 using System.Data.Common;
 
 namespace SV.Db
@@ -19,6 +19,8 @@ namespace SV.Db
         Task<int> ExecuteUpdateAsync<T>(string connectionString, DbEntityInfo info, T data, CancellationToken cancellationToken);
 
         void Init(IServiceProvider provider);
+
+        Task<int> ExecuteUpdateAsync<T>(string connectionString, DbEntityInfo info, IEnumerable<T> data, int batchSize, CancellationToken cancellationToken);
     }
 
     public interface IDbConnectionProvider : IConnectionProvider

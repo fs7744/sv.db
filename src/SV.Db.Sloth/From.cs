@@ -34,17 +34,21 @@
             return p.ExecuteUpdateAsync<T>(connectionString, info, data, cancellationToken);
         }
 
-        public static async Task<int> ExecuteUpdateAsync<T>(this IConnectionFactory factory, IEnumerable<T> data, CancellationToken cancellationToken = default)
+        public static async Task<int> ExecuteUpdateAsync<T>(this IConnectionFactory factory, IEnumerable<T> data, int batchSize = 100, CancellationToken cancellationToken = default)
         {
+            if (data == null)
+            {
+                return 0;
+            }
+            else if (data.TryGetNonEnumeratedCount(out var count))
+            {
+                if (count == 0) return 0;
+                if (count == 1) return await ExecuteUpdateAsync(factory, data.First(), cancellationToken);
+            }
             var info = factory.GetDbEntityInfoOfT<T>();
             (string dbType, string connectionString) = factory.Get(info.DbKey);
             var p = ConnectionFactory.GetProvider(dbType);
-            var total = 0;
-            foreach (var item in data)
-            {
-                total += await p.ExecuteUpdateAsync<T>(connectionString, info, item, cancellationToken);
-            }
-            return total;
+            return await p.ExecuteUpdateAsync<T>(connectionString, info, data, batchSize, cancellationToken);
         }
     }
 }

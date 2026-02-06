@@ -21,6 +21,53 @@ namespace SV.Db.Sloth.MySql
             return Create(connectionString).ExecuteNonQueryAsync(CreateUpdateSql(info, data), data, cancellationToken);
         }
 
+        public async Task<int> ExecuteUpdateAsync<T>(string connectionString, DbEntityInfo info, IEnumerable<T> data, int batchSize, CancellationToken cancellationToken)
+        {
+            var connection = Create(connectionString);
+            try
+            {
+                var factory = RecordFactory.GetParamsSetter<T>();
+                if (connection.State != ConnectionState.Open)
+                {
+                    connection.Open();
+                }
+                var total = 0;
+                if (connection.CanCreateBatch)
+                {
+                    foreach (var item in data.Page(batchSize))
+                    {
+                        var batch = connection.CreateBatch();
+                        foreach (var i in item)
+                        {
+                            var cmd = batch.CreateBatchCommand();
+                            cmd.CommandText = CreateUpdateSql(info, item);
+                            cmd.CommandType = CommandType.Text;
+                            factory.SetParams(cmd, i);
+                            batch.BatchCommands.Add(cmd);
+                        }
+                        total += batch.ExecuteNonQuery();
+                    }
+                }
+                else
+                {
+                    foreach (var item in data)
+                    {
+                        var cmd = connection.CreateCommand();
+                        cmd.CommandText = CreateUpdateSql(info, item);
+                        cmd.CommandType = CommandType.Text;
+                        factory.SetParams(cmd, item);
+                        total += cmd.ExecuteNonQuery();
+                    }
+                }
+                return total;
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+
         private string CreateUpdateSql<T>(DbEntityInfo info, T? data)
         {
             var sb = new StringBuilder();

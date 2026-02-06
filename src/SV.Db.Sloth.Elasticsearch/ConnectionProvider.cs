@@ -216,6 +216,11 @@ namespace SV.Db.Sloth.Elasticsearch
         {
             throw new NotImplementedException();
         }
+
+        public Task<int> ExecuteUpdateAsync<T>(string connectionString, DbEntityInfo info, IEnumerable<T> data, int batchSize, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class ESBool
