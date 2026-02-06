@@ -4,6 +4,11 @@ using System.Transactions;
 
 namespace SV.Db
 {
+    public interface ITransactionConnectionFactory
+    {
+        public DbConnection Create(string db, string connectionString);
+    }
+
     public class TransactionConnection : DbConnection
     {
         public DbConnection RealConnection { get; }

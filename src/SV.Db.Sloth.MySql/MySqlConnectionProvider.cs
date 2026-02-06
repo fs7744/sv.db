@@ -1,8 +1,6 @@
-﻿using Microsoft.Extensions.Primitives;
-using MySqlConnector;
+﻿using MySqlConnector;
 using SV.Db.Sloth.Statements;
 using System.Collections.Frozen;
-using System.Data;
 using System.Data.Common;
 using System.Text;
 
@@ -12,6 +10,8 @@ namespace SV.Db.Sloth.MySql
     {
         public DbConnection Create(string connectionString)
         {
+            if (tcf != null)
+                return tcf.Create(ConnectionStringProvider.MySql, connectionString);
             return TransactionConnectionFactory.GetOrAdd(connectionString, s => new MySqlConnection(s));
         }
 

@@ -10,6 +10,8 @@ namespace SV.Db.Sloth.MSSql
     {
         public DbConnection Create(string connectionString)
         {
+            if (tcf != null)
+                return tcf.Create(ConnectionStringProvider.MSSql, connectionString);
             return TransactionConnectionFactory.GetOrAdd(connectionString, s => new SqlConnection(s));
         }
 

@@ -10,6 +10,8 @@ namespace SV.Db.Sloth.PostgreSQL
     {
         public DbConnection Create(string connectionString)
         {
+            if (tcf != null)
+                return tcf.Create(ConnectionStringProvider.PostgreSQL, connectionString);
             return TransactionConnectionFactory.GetOrAdd(connectionString, s => new NpgsqlConnection(s));
         }
 

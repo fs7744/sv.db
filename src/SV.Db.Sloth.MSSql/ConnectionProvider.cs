@@ -1,4 +1,5 @@
-﻿using SV.Db.Sloth.SqlParser;
+﻿using Microsoft.Extensions.DependencyInjection;
+using SV.Db.Sloth.SqlParser;
 using SV.Db.Sloth.Statements;
 using System.Data;
 using System.Data.Common;
@@ -8,8 +9,11 @@ namespace SV.Db.Sloth.MSSql
 {
     public partial class MSSqlConnectionProvider : IConnectionProvider
     {
+        private ITransactionConnectionFactory? tcf;
+
         public void Init(IServiceProvider provider)
         {
+            this.tcf = provider.GetService<ITransactionConnectionFactory>();
         }
 
         public Task<int> ExecuteUpdateAsync<T>(string connectionString, DbEntityInfo info, T data, CancellationToken cancellationToken)

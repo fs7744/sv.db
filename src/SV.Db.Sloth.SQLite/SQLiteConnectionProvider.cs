@@ -10,6 +10,8 @@ namespace SV.Db.Sloth.SQLite
     {
         public DbConnection Create(string connectionString)
         {
+            if (tcf != null)
+                return tcf.Create(ConnectionStringProvider.SQLite, connectionString);
             return TransactionConnectionFactory.GetOrAdd(connectionString, s => new SqliteConnection(s));
         }
 
