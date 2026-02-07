@@ -40,7 +40,7 @@ namespace SV.Db.Sloth.MSSql
                         foreach (var i in item)
                         {
                             var cmd = batch.CreateBatchCommand();
-                            cmd.CommandText = CreateUpdateSql(info, item);
+                            cmd.CommandText = CreateUpdateSql(info, i);
                             cmd.CommandType = CommandType.Text;
                             factory.SetParams(cmd, i);
                             batch.BatchCommands.Add(cmd);
