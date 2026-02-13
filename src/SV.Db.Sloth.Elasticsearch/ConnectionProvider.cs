@@ -351,7 +351,6 @@ namespace SV.Db.Sloth.Elasticsearch
                         break;
                     case EsBulkAction.Delete:
                         {
-                            //var wr = new Utf8JsonWriter(stream);
                             if (string.IsNullOrWhiteSpace(id))
                                 throw new ArgumentNullException(nameof(id), "Id cannot be null or empty for delete action.");
                             wr.WriteStartObject();
