@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 DictionaryConnectionStringProvider.Instance.Add("demo", ConnectionStringProvider.SQLite, "Data Source=InMemorySample;Mode=Memory;Cache=Shared");
-DictionaryConnectionStringProvider.Instance.Add("es", ConnectionStringProvider.Elasticsearch, "http://rat.xxx.lt");
+DictionaryConnectionStringProvider.Instance.Add("es", ConnectionStringProvider.Elasticsearch, "http://xxx/api/v1/sp-es/sp-settlement-transaction");
 builder.Services.AddSQLite().AddElasticsearch().AddMySql().AddConnectionStringProvider(i => DictionaryConnectionStringProvider.Instance);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

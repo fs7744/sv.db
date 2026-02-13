@@ -104,6 +104,7 @@ namespace SV.Db
         }
 
         public Func<object, IEnumerable<KeyValuePair<string, string>>> GetUpdateFields { get; set; }
+        public Func<object, object> GetPrimaryKeyValue { get; set; }
     }
 
     public static class DbEntityInfo<T>
@@ -225,6 +226,41 @@ namespace SV.Db
                 }).Where(i => i != null).ToArray();
                 c.GetUpdateFields = o => structFields.Union(checkUps.Select(x => x(o)).Where(x => x.HasValue).Select(x => x.Value));
                 Cache = c;
+                if (c.UpdateColumns?.Any(i => i.Value.PrimaryKey) == true)
+                {
+                    var pp = c.UpdateColumns.FirstOrDefault(i => i.Value.PrimaryKey);
+                    Type tt = null;
+                    var f = fields.First(x => x.Name.Equals(pp.Key, StringComparison.OrdinalIgnoreCase));
+                    if (f is PropertyInfo p)
+                    {
+                        tt = p.PropertyType;
+                    }
+                    else if (f is FieldInfo field)
+                    {
+                        tt = field.FieldType;
+                    }
+                    else
+                    {
+                        return c;
+                    }
+                    if (t.IsValueType && Nullable.GetUnderlyingType(t) is null)
+                    {
+                        return c;
+                    }
+
+                    var o = Expression.Parameter(typeof(object), "o");
+                    Expression fg;
+
+                    if (f.MemberType == MemberTypes.Property)
+                    {
+                        fg = Expression.Property(Expression.Convert(o, f.DeclaringType), f as PropertyInfo);
+                    }
+                    else
+                    {
+                        fg = Expression.Field(Expression.Convert(o, f.DeclaringType), f as FieldInfo);
+                    }
+                    c.GetPrimaryKeyValue = Expression.Lambda<Func<object, object>>(Expression.Block(new Expression[] { Expression.Convert(fg, typeof(object)) }), o).Compile();
+                }
             }
 
             return c;

@@ -1,10 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using MySqlConnector;
 using SV.Db;
-using SV.Db.Sloth;
 using SV.Db.Sloth.Attributes;
-using SV.Db.Sloth.Swagger;
-using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Text.Json;
 
@@ -26,121 +22,121 @@ namespace RestfulSample.Controllers
             this.factory = factory;
         }
 
-        [DbSwaggerByType(typeof(Weather))]
-        [HttpGet] //todo [QueryByParamsSwagger(typeof(Weather))]
-        public async Task<object> Selects()//[FromQuery, Required] string name)
-        {
-            return await this.QueryByParamsAsync<Weather>();
-        }
+        //[DbSwaggerByType(typeof(Weather))]
+        //[HttpGet] //todo [QueryByParamsSwagger(typeof(Weather))]
+        //public async Task<object> Selects()//[FromQuery, Required] string name)
+        //{
+        //    return await this.QueryByParamsAsync<Weather>();
+        //}
 
-        [HttpPost] //todo [QueryByParamsSwagger(typeof(Weather))]
-        public async Task<object> PostSelects()//[FromQuery, Required] string name)
-        {
-            return await this.QueryByBodyAsync<Weather>();
-        }
+        ////[HttpPost] //todo [QueryByParamsSwagger(typeof(Weather))]
+        ////public async Task<object> PostSelects()//[FromQuery, Required] string name)
+        ////{
+        ////    return await this.QueryByBodyAsync<Weather>();
+        ////}
 
-        [HttpGet("expr")]
-        public async Task<object> DoSelects()
-        {
-            return await factory.From<Weather>().Where(i => !i.Name.Like("e")).WithTotalCount().ExecuteQueryAsync<Weather>();
-        }
+        //[HttpGet("expr")]
+        //public async Task<object> DoSelects()
+        //{
+        //    return await factory.From<Weather>().Where(i => !i.Name.Like("e")).WithTotalCount().ExecuteQueryAsync<Weather>();
+        //}
 
-        [HttpGet("querystring")]
-        public object Doquerystring()
-        {
-            return factory.From<Weather>().Where(i => !i.Name.Like("e")).WithTotalCount().ParseToQueryString();
-        }
+        //[HttpGet("querystring")]
+        //public object Doquerystring()
+        //{
+        //    return factory.From<Weather>().Where(i => !i.Name.Like("e")).WithTotalCount().ParseToQueryString();
+        //}
 
-        [HttpGet("old")]
-        public async Task<object> OldWay()
-        {
-            var a = factory.GetConnection(StaticInfo.Demo);
-            using var dd = await a.ExecuteReaderAsync("""
-        SELECT count(1)
-        FROM Weather;
-        SELECT *
-        FROM Weather;
-        """);
-            var t = await dd.QueryFirstOrDefaultAsync<int>();
-            // var r = await dd.QueryAsync<string>().ToListAsync();
-            return new { TotalCount = t };
-        }
+        //[HttpGet("old")]
+        //public async Task<object> OldWay()
+        //{
+        //    var a = factory.GetConnection(StaticInfo.Demo);
+        //    using var dd = await a.ExecuteReaderAsync("""
+        //SELECT count(1)
+        //FROM Weather;
+        //SELECT *
+        //FROM Weather;
+        //""");
+        //    var t = await dd.QueryFirstOrDefaultAsync<int>();
+        //    // var r = await dd.QueryAsync<string>().ToListAsync();
+        //    return new { TotalCount = t };
+        //}
 
-        [HttpPost("new")]
-        public async Task<object> Insert([FromBody] Weather weather)
-        {
-            return await factory.ExecuteInsertRowAsync<Weather, int>(weather);
-        }
+        //[HttpPost("new")]
+        //public async Task<object> Insert([FromBody] Weather weather)
+        //{
+        //    return await factory.ExecuteInsertRowAsync<Weather, int>(weather);
+        //}
 
-        [HttpPost("new-batch")]
-        public async Task<object> Insert([FromBody] Weather[] weather)
-        {
-            return await factory.ExecuteInsertAsync<Weather>(weather);
-        }
+        //[HttpPost("new-batch")]
+        //public async Task<object> Insert([FromBody] Weather[] weather)
+        //{
+        //    return await factory.ExecuteInsertAsync<Weather>(weather);
+        //}
 
-        [HttpPost("update")]
-        public async Task<object> Update([FromBody] Weather[] weather)
-        {
-            return await factory.ExecuteUpdateAsync<Weather>(weather);
-        }
+        //[HttpPost("update")]
+        //public async Task<object> Update([FromBody] Weather[] weather)
+        //{
+        //    return await factory.ExecuteUpdateAsync<Weather>(weather);
+        //}
 
-        [HttpPut("TEST")]
-        [DbSwaggerByType(typeof(UpdateOrderTransaction))]
-        public async Task<object> QueryUserInfo(UpdateOrderTransaction[] transactions)
-        {
-            var masterNumber = transactions.First().MasterNumber;
-            var ids = transactions.Select(i => i.TransactionNumber).ToArray();
-            //var statement = factory.ParseByParams<UpdateOrderTransaction>(new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)
-            //{
-            //    { "MasterNumber", masterNumber.ToString() },
-            //    { "TransactionNumber", $"{{{{in}}}}{System.Text.Json.JsonSerializer.Serialize(ids)}" },
-            //    { "Fields", "TransactionNumber"},
-            //    { "Rows", ids.Length.ToString()}
-            //}, out var info);
-            //return await factory.ExecuteQueryAsync<UpdateOrderTransaction>(info, statement);
-            return await factory.From<UpdateOrderTransaction>().Where(i => i.MasterNumber == masterNumber && i.TransactionNumber.In(ids))
-               .Limit(ids.Length)
-               .Select(nameof(UpdateOrderTransaction.TransactionNumber))
-               .ExecuteQueryAsync<UpdateOrderTransaction>();
-            return await this.QueryByParamsAsync<UpdateOrderTransaction>();
-        }
+        //[HttpPut("TEST")]
+        //[DbSwaggerByType(typeof(UpdateOrderTransaction))]
+        //public async Task<object> QueryUserInfo(UpdateOrderTransaction[] transactions)
+        //{
+        //    var masterNumber = transactions.First().MasterNumber;
+        //    var ids = transactions.Select(i => i.TransactionNumber).ToArray();
+        //    //var statement = factory.ParseByParams<UpdateOrderTransaction>(new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)
+        //    //{
+        //    //    { "MasterNumber", masterNumber.ToString() },
+        //    //    { "TransactionNumber", $"{{{{in}}}}{System.Text.Json.JsonSerializer.Serialize(ids)}" },
+        //    //    { "Fields", "TransactionNumber"},
+        //    //    { "Rows", ids.Length.ToString()}
+        //    //}, out var info);
+        //    //return await factory.ExecuteQueryAsync<UpdateOrderTransaction>(info, statement);
+        //    return await factory.From<UpdateOrderTransaction>().Where(i => i.MasterNumber == masterNumber && i.TransactionNumber.In(ids))
+        //       .Limit(ids.Length)
+        //       .Select(nameof(UpdateOrderTransaction.TransactionNumber))
+        //       .ExecuteQueryAsync<UpdateOrderTransaction>();
+        //    return await this.QueryByParamsAsync<UpdateOrderTransaction>();
+        //}
 
-        [HttpPost("account/profile")]
-        public async Task<object> UpdateAccountProfile([FromBody, Required] AccountProfile accountProfile)
-        {
-            return await factory.ExecuteUpdateAsync<AccountProfile>(accountProfile);
-            //return await factory.ExecuteInsertAsync(accountProfile);
-            //var has = (await factory.From<AccountProfile>().Where(i => i.AccountId == accountProfile.AccountId && i.Key == accountProfile.Key).Select(nameof(AccountProfile.AccountId)).Limit(1).ExecuteQueryAsync<int>()).Rows?.Count > 0;
-            //if (has)
-            //{
-            //    return await factory.ExecuteUpdateAsync(accountProfile);
-            //}
-            //else
-            //{
-            //}
-        }
+        //[HttpPost("account/profile")]
+        //public async Task<object> UpdateAccountProfile([FromBody, Required] AccountProfile accountProfile)
+        //{
+        //    return await factory.ExecuteUpdateAsync<AccountProfile>(accountProfile);
+        //    //return await factory.ExecuteInsertAsync(accountProfile);
+        //    //var has = (await factory.From<AccountProfile>().Where(i => i.AccountId == accountProfile.AccountId && i.Key == accountProfile.Key).Select(nameof(AccountProfile.AccountId)).Limit(1).ExecuteQueryAsync<int>()).Rows?.Count > 0;
+        //    //if (has)
+        //    //{
+        //    //    return await factory.ExecuteUpdateAsync(accountProfile);
+        //    //}
+        //    //else
+        //    //{
+        //    //}
+        //}
 
-        [HttpPost("db/export")]
-        public async Task<object> ExportData([FromBody] DbCodeRequest req)
-        {
-            var c = new MySqlConnection(req.Db);
-            var t = DbCodeGenerater.GetMysqlTableData(c, req.Table);
-            try
-            {
-                c.Open();
-                return await c.ExecuteQueryAsync<object>($"select {string.Join(",", t.Columns.Select(i => i.ColumnName))} from {req.Table} {(string.IsNullOrWhiteSpace(req.Where) ? "" : req.Where)}", behavior: CommandBehavior.SingleResult)
-                    .ToListAsync();
-            }
-            finally
-            {
-                c.Close();
-            }
-        }
+        //[HttpPost("db/export")]
+        //public async Task<object> ExportData([FromBody] DbCodeRequest req)
+        //{
+        //    var c = new MySqlConnection(req.Db);
+        //    var t = DbCodeGenerater.GetMysqlTableData(c, req.Table);
+        //    try
+        //    {
+        //        c.Open();
+        //        return await c.ExecuteQueryAsync<object>($"select {string.Join(",", t.Columns.Select(i => i.ColumnName))} from {req.Table} {(string.IsNullOrWhiteSpace(req.Where) ? "" : req.Where)}", behavior: CommandBehavior.SingleResult)
+        //            .ToListAsync();
+        //    }
+        //    finally
+        //    {
+        //        c.Close();
+        //    }
+        //}
 
-        public void Test()
-        {
-            factory.ExecuteInsertAsync<AccountPointsCoins>(new List<AccountPointsCoins>());
-        }
+        //public void Test()
+        //{
+        //    factory.ExecuteInsertAsync<AccountPointsCoins>(new List<AccountPointsCoins>());
+        //}
     }
 
     public class DbCodeRequest

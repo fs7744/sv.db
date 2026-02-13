@@ -1,4 +1,5 @@
-﻿using SV.Db;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+using SV.Db;
 using SV.Db.Sloth.Elasticsearch;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -14,6 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddElasticsearch(this IServiceCollection services, string key = ConnectionStringProvider.Elasticsearch, Action<HttpClient> config = null)
         {
             InitElasticsearch(key);
+            services.TryAddSingleton<IEsClient>(i => ConnectionFactory.GetProvider(ConnectionStringProvider.Elasticsearch) as IEsClient ?? new ElasticsearchConnectionProvider(key));
             services.AddHttpClient(key, httpClient =>
             {
                 config?.Invoke(httpClient);

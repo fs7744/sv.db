@@ -6,21 +6,44 @@ using System.Text.Json.Serialization;
 
 namespace SV.Db.Sloth.Elasticsearch
 {
-    public partial class ElasticsearchConnectionProvider : IConnectionProvider
+    public enum EsBulkAction
+    {
+        Create,
+        Update,
+        Delete
+    }
+
+    public interface IEsClient
+    {
+        Task<BulkResponse> BulkAsync<T>(string connectionString, string index, Func<T, (EsBulkAction action, string id)> func, IEnumerable<T> data, int batchSize, CancellationToken cancellationToken);
+
+        Task<BulkResponse> BulkDeleteAsync(string connectionString, string index, IEnumerable<string> data, int batchSize, CancellationToken cancellationToken);
+    }
+
+    public partial class ElasticsearchConnectionProvider : IConnectionProvider, IEsClient
     {
         public Task<int> ExecuteInsertAsync<T>(string connectionString, DbEntityInfo info, T data, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return ExecuteInsertAsync(connectionString, info, new[] { data }, 1, cancellationToken);
         }
 
-        public Task<int> ExecuteInsertAsync<T>(string connectionString, DbEntityInfo info, IEnumerable<T> data, int batchSize, CancellationToken cancellationToken)
+        public async Task<int> ExecuteInsertAsync<T>(string connectionString, DbEntityInfo info, IEnumerable<T> data, int batchSize, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            Func<object, object> f = info.GetPrimaryKeyValue;
+            if (f == null)
+                f = (object o) => null;
+            var res = await BulkAsync<T>(connectionString, info.Table, (d) =>
+            {
+                var k = f(d);
+                return (EsBulkAction.Create, k?.ToString());
+            }, data, batchSize, cancellationToken).ConfigureAwait(false);
+
+            return res.Took;
         }
 
         public Task<int> ExecuteUpdateAsync<T>(string connectionString, DbEntityInfo info, T data, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return ExecuteUpdateAsync(connectionString, info, new[] { data }, 1, cancellationToken);
         }
 
         public PageResult<T> ExecuteQuery<T>(string connectionString, DbEntityInfo info, SelectStatement statement)
@@ -212,14 +235,151 @@ namespace SV.Db.Sloth.Elasticsearch
             throw new NotImplementedException(v.ToString());
         }
 
-        public Task<R> ExecuteInsertRowAsync<T, R>(string connectionString, DbEntityInfo info, T data, CancellationToken cancellationToken)
+        public async Task<R> ExecuteInsertRowAsync<T, R>(string connectionString, DbEntityInfo info, T data, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            Func<object, object> f = info.GetPrimaryKeyValue;
+            if (f == null)
+                f = (object o) => null;
+            var k = f(data);
+            var res = await BulkAsync<T>(connectionString, info.Table, (d) =>
+            {
+                return (EsBulkAction.Create, k?.ToString());
+            }, new[] { data }, 1, cancellationToken).ConfigureAwait(false);
+
+            return (R)k;
         }
 
-        public Task<int> ExecuteUpdateAsync<T>(string connectionString, DbEntityInfo info, IEnumerable<T> data, int batchSize, CancellationToken cancellationToken)
+        public async Task<int> ExecuteUpdateAsync<T>(string connectionString, DbEntityInfo info, IEnumerable<T> data, int batchSize, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            Func<object, object> f = info.GetPrimaryKeyValue;
+            if (f == null)
+                f = (object o) => null;
+            var res = await BulkAsync<T>(connectionString, info.Table, (d) =>
+            {
+                var k = f(d);
+                return (EsBulkAction.Update, k?.ToString());
+            }, data, batchSize, cancellationToken).ConfigureAwait(false);
+
+            return res.Took;
+        }
+
+        private static readonly byte[] br = System.Text.Encoding.UTF8.GetBytes("\n");
+        public async Task<BulkResponse> BulkAsync<T>(string connectionString, string index, Func<T, (EsBulkAction action, string id)> func, IEnumerable<T> data, int batchSize, CancellationToken cancellationToken)
+        {
+            var client = CreateClient();
+            if (!connectionString.EndsWith("/_bulk", StringComparison.OrdinalIgnoreCase))
+            {
+                connectionString += "/_bulk";
+            }
+            var rr = new BulkResponse() { Items = new List<BulkInfo>() };
+            foreach (var items in data.Chunk(batchSize))
+            {
+                var content = new PushStreamContent(async (stream, content, context) =>
+                {
+                    //var s = new MemoryStream();
+                    await WriteData(index, func, stream, items);
+                    //s.Seek(0, SeekOrigin.Begin);
+                    //var dd = System.Text.Encoding.UTF8.GetString(s.ToArray());
+                    //s.Seek(0, SeekOrigin.Begin);
+                    //await s.CopyToAsync(stream);
+                });
+                content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+                var resp = await client.PostAsync(connectionString, content, cancellationToken);
+                resp.EnsureSuccessStatusCode();
+                var r = await resp.Content.ReadFromJsonAsync<BulkResponse>(cancellationToken);
+                rr.Took += rr.Took;
+                rr.Errors = rr.Errors || r.Errors;
+                if (r.Items.IsNotNullOrEmpty())
+                    rr.Items.AddRange(r.Items);
+            }
+
+            return rr;
+        }
+
+        private static async Task WriteData<T>(string index, Func<T, (EsBulkAction action, string id)> func, Stream stream, T[] items)
+        {
+            var wr = new Utf8JsonWriter(stream);
+            foreach (var d in items)
+            {
+                var (action, id) = func(d);
+                switch (action)
+                {
+                    case EsBulkAction.Create:
+                        {
+                            wr.WriteStartObject();
+                            wr.WritePropertyName("create");
+                            wr.WriteStartObject();
+                            wr.WriteString("_index", index);
+                            if (!string.IsNullOrWhiteSpace(id))
+                            {
+                                wr.WriteString("_id", id);
+                            }
+                            wr.WriteEndObject();
+                            wr.WriteEndObject();
+                            await wr.FlushAsync();
+                            wr.Reset();
+                            stream.Write(br);
+                            JsonSerializer.Serialize(wr, d, options);
+                            await wr.FlushAsync();
+                            wr.Reset();
+                            stream.Write(br);
+                        }
+                        break;
+                    case EsBulkAction.Update:
+                        {
+                            if (string.IsNullOrWhiteSpace(id))
+                                throw new ArgumentNullException(nameof(id), "Id cannot be null or empty for delete action.");
+
+                            wr.WriteStartObject();
+                            wr.WritePropertyName("update");
+                            wr.WriteStartObject();
+                            wr.WriteString("_index", index);
+                            wr.WriteString("_id", id);
+                            wr.WriteEndObject();
+                            wr.WriteEndObject();
+                            await wr.FlushAsync();
+                            wr.Reset();
+                            stream.Write(br);
+                            wr.WriteStartObject();
+                            wr.WritePropertyName("doc");
+                            JsonSerializer.Serialize(wr, d, options);
+                            wr.WriteEndObject();
+                            await wr.FlushAsync();
+                            wr.Reset();
+                            stream.Write(br);
+                        }
+                        break;
+                    case EsBulkAction.Delete:
+                        {
+                            //var wr = new Utf8JsonWriter(stream);
+                            if (string.IsNullOrWhiteSpace(id))
+                                throw new ArgumentNullException(nameof(id), "Id cannot be null or empty for delete action.");
+                            wr.WriteStartObject();
+                            wr.WritePropertyName("delete");
+                            wr.WriteStartObject();
+                            wr.WriteString("_index", index);
+                            wr.WriteString("_id", id);
+                            wr.WriteEndObject();
+                            wr.WriteEndObject();
+                            await wr.FlushAsync();
+                            wr.Reset();
+                            stream.Write(br);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        public async Task<BulkResponse> BulkDeleteAsync(string connectionString, string index, IEnumerable<string> data, int batchSize, CancellationToken cancellationToken)
+        {
+            var res = await BulkAsync<string>(connectionString, index, (d) =>
+            {
+                return (EsBulkAction.Delete, d?.ToString());
+            }, data, batchSize, cancellationToken).ConfigureAwait(false);
+
+            return res;
         }
     }
 
@@ -264,5 +424,71 @@ namespace SV.Db.Sloth.Elasticsearch
     public class ESResult<T>
     {
         public ESResultHits<T> hits { get; set; }
+    }
+
+    public class BulkResponse
+    {
+        [JsonPropertyName("took")]
+        public int Took { get; set; }
+
+        [JsonPropertyName("errors")]
+        public bool Errors { get; set; }
+
+        [JsonPropertyName("items")]
+        public List<BulkInfo> Items { get; set; }
+    }
+
+    public class BulkInfo
+    {
+        [JsonPropertyName("index")]
+        public BulkUpdateInfo Index { get; set; }
+
+        [JsonPropertyName("delete")]
+        public BulkUpdateInfo Delete { get; set; }
+
+        [JsonPropertyName("create")]
+        public BulkUpdateInfo Create { get; set; }
+
+        [JsonPropertyName("update")]
+        public BulkUpdateInfo Update { get; set; }
+    }
+
+    public class BulkUpdateInfo
+    {
+        [JsonPropertyName("_index")]
+        public string Index { get; set; }
+
+        [JsonPropertyName("_id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("_version")]
+        public int Version { get; set; }
+
+        [JsonPropertyName("result")]
+        public string Result { get; set; }
+
+        [JsonPropertyName("_shards")]
+        public BulkUpdateShards Shards { get; set; }
+
+        [JsonPropertyName("status")]
+        public int Status { get; set; }
+
+        [JsonPropertyName("_seq_no")]
+        public int SeqNo { get; set; }
+
+        [JsonPropertyName("_primary_term")]
+        public int PrimaryTerm { get; set; }
+    }
+
+    public class BulkUpdateShards
+    {
+        [JsonPropertyName("total")]
+        public int Total { get; set; }
+
+        [JsonPropertyName("successful")]
+        public int Successful { get; set; }
+
+        [JsonPropertyName("failed")]
+        public int Failed { get; set; }
     }
 }
