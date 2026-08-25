@@ -36,6 +36,7 @@
 	  <ProjectReference Include="..\..\src\SV.Db.Sloth.SQLite\SV.Db.Sloth.SQLite.csproj" />
 	  <ProjectReference Include="..\..\src\SV.Db.Sloth\SV.Db.Sloth.csproj" />
 	  <ProjectReference Include="..\..\src\SV.Db\SV.Db.csproj" />
+	  <ProjectReference Include="..\..\src\SV.Script\SV.Script.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
