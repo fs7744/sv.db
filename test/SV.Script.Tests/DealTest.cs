@@ -9,6 +9,7 @@ public class AccountVIPDeal
     public string? PromoCode { get; set; }
     public PriceType PriceType { get; set; }
     public long? Now { get; set; }
+    public bool? HasPayed { get; set; }
 }
 
 public enum PriceType
@@ -28,6 +29,10 @@ public class DealTest
     .RegisterType<AccountVIPDeal>()
     .RegisterType<PriceType>();
         script = engine.Compile("""
+            if(deal.HasPayed == true)
+            {
+                return 0;
+            }
             let m = deal.PriceType == PriceType.Monthly ? deal.Qty : deal.Qty * 12;
             if (m >= 1 && m <= 5)
             {
@@ -54,7 +59,8 @@ public class DealTest
     [InlineData(2, PriceType.Monthly, 6, 1.6)]
     [InlineData(2, PriceType.Monthly, 12, 1.4)]
     [InlineData(2, PriceType.Annual, 1, 1.4)]
-    public void TestAccountVIPDeal(decimal amt, PriceType priceType, int qty, decimal expected)
+    [InlineData(2, PriceType.Annual, 1, 0, true)]
+    public void TestAccountVIPDeal(decimal amt, PriceType priceType, int qty, decimal expected, bool hasPayed = false)
     {
         // Arrange
         var deal = new AccountVIPDeal
@@ -65,7 +71,8 @@ public class DealTest
             LastEditUser = 1,
             PromoCode = "PROMO123",
             PriceType = priceType,
-            Now = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            Now = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            HasPayed = hasPayed
         };
 
         var r = script.Run(new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
